@@ -14,6 +14,7 @@ Dish is a hack.
 
 Dish is written in coffee-script, and is based on the recursive descent parser at http://lisperator.net/pltut/
 
+Status - just starting. Generates module header, nothing else.	
 ### example
 
 ```d
