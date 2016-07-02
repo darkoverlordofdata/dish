@@ -1,0 +1,225 @@
+## primitives
+
+## these assignments are required so that we create globals.
+
+readFile = false;
+readDir = false;
+writeFile = false;
+makeDir = false;
+symlink = false;
+readlink = false;
+fstat = false;
+lstat = false;
+isFile = false;
+isDirectory = false;
+isSymlink = false;
+pathJoin = false;
+pathBasename = false;
+pathDirname = false;
+forEach = false;
+length = false;
+arrayRef = false;
+arraySet = false;
+stringStartsWith = false;
+parallel = false;
+cons = false;
+isCons = false;
+car = false;
+cdr = false;
+NIL = false;
+setCar = false;
+setCdr = false;
+RESET = false;
+SHIFT = false;
+
+js:raw "(function(){
+
+  // filesystem
+
+  var fs = require('fs');
+  var path = require('path');
+
+  readFile = function(k, filename) {
+    fs.readFile(filename, function(err, data){
+      if (err) throw new Error(err);
+      Execute(k, [ data ]);
+    });
+  };
+
+  readDir = function(k, dirname) {
+    fs.readdir(dirname, function(err, files){
+      if (err) throw new Error(err);
+      Execute(k, [ files ]);
+    });
+  };
+
+  writeFile = function(k, filename, data) {
+    fs.writeFile(filename, data, function(err){
+      if (err) throw new Error(err);
+      Execute(k, [ false ]);
+    });
+  };
+
+  makeDir = function(k, dirname) {
+    fs.mkdir(dirname, function(err){
+      if (err) throw new Error(err);
+      Execute(k, [ false ]);
+    });
+  };
+
+  symlink = function(k, src, dest) {
+    fs.symlink(src, dest, function(err){
+      if (err) throw new Error(err);
+      Execute(k, [ false ]);
+    });
+  };
+
+  readlink = function(k, path) {
+    fs.readlink(path, function(err, target){
+      if (err) throw new Error(err);
+      Execute(k, [ target ]);
+    });
+  };
+
+  fstat = function(k, pathname) {
+    fs.stat(pathname, function(err, stat){
+      if (err && err.code != 'ENOENT') throw new Error(err);
+      Execute(k, [ err ? false : stat ]);
+    });
+  };
+
+  lstat = function(k, pathname) {
+    fs.lstat(pathname, function(err, stat){
+      if (err && err.code != 'ENOENT') throw new Error(err);
+      Execute(k, [ err ? false : stat ]);
+    });
+  };
+
+  isFile = function(k, stat) {
+    k(stat.isFile());
+  };
+
+  isDirectory = function(k, stat) {
+    k(stat.isDirectory());
+  };
+
+  isSymlink = function(k, stat) {
+    k(stat.isSymbolicLink());
+  };
+
+  pathJoin = function(k) {
+    k(path.join.apply(path, [].slice.call(arguments, 1)));
+  };
+
+  pathBasename = function(k, x) {
+    k(path.basename(x));
+  };
+
+  pathDirname = function(k, x) {
+    k(path.dirname(x));
+  };
+
+  // lists
+
+  function Cons(car, cdr) {
+    this.car = car;
+    this.cdr = cdr;
+  }
+
+  isCons = function(k, thing) {
+    k(thing instanceof Cons);
+  };
+
+  cons = function(k, car, cdr) {
+    k(new Cons(car, cdr));
+  };
+
+  car = function(k, cell) {
+    k(cell.car);
+  };
+
+  cdr = function(k, cell) {
+    k(cell.cdr);
+  };
+
+  setCar = function(k, cell, car) {
+    k(cell.car = car);
+  };
+
+  setCdr = function(k, cell, cdr) {
+    k(cell.cdr = cdr);
+  };
+
+  NIL = {};
+  NIL.car = NIL;
+  NIL.cdr = NIL;
+
+  // arrays
+
+  length = function(k, thing) {
+    k(thing.length);
+  };
+
+  arrayRef = function(k, array, index) {
+    k(array[index]);
+  };
+
+  arraySet = function(k, array, index, value) {
+    k(array[index] = value);
+  };
+
+  // strings
+
+  stringStartsWith = function(k, str, prefix) {
+    k(str.substr(0, prefix.length) == prefix);
+  };
+
+  parallel = function(k, f){
+    var n = 0, result = [], i = 0;
+    f(function(){ if (i == 0) k(false) }, pcall);
+    function pcall(kpcall, chunk){
+      var index = i++;
+      n++;
+      chunk(function(rchunk){
+        n--;
+        result[index] = rchunk;
+        if (n == 0) Execute(k, [ result ]);
+      });
+      kpcall(false);
+    }
+  };
+
+  // delimited continuations
+
+  var pstack = [];
+
+  function _goto(f) {
+    f(function KGOTO(r){
+      var h = pstack.pop();
+      h(r);
+    });
+  }
+
+  RESET = function(KRESET, th){
+    pstack.push(KRESET);
+    _goto(th);
+  };
+
+  SHIFT = function(KSHIFT, f){
+    _goto(function(KGOTO){
+      f(KGOTO, function SK(k1, v){
+        pstack.push(k1);
+        KSHIFT(v);
+      });
+    });
+  };
+
+})()";
+
+forEach = lambda(array, f)
+  let (n = length(array))
+    let loop (i = 0)
+      if (i < n) {
+        f(arrayRef(array, i), i);
+        loop(i + 1);
+      };

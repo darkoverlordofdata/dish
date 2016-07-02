@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+/**
+ * tools/server
+ * 
+ * Used by F5 ./settings/launch.json
+ * 
+ * author: darkoverlordofdata@gmail.com
+ */
+/**
+ * Run a static server
+ * 
+ * npm install open --save-dev
+ * npm install superstatic --save-dev
+ */
+var server = require('superstatic').server;
+var open = require('open');
+var path = require('path');
+
+var options = {
+ port: 0xd16a,
+ host: 'localhost',
+ config: {
+  root: './web',
+  routes: {
+   '/': 'index.html'
+  }
+ },
+ cwd: path.resolve(__dirname, '..'),
+ debug: false 
+};
+
+server(options).listen(function(err) {
+ open('http://localhost:53610/web', '/home/bruce/Applications/firefox/firefox');
+});

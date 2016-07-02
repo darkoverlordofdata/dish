@@ -1,0 +1,32 @@
+{
+  "name": "dish",
+  "version": "0.0.1",
+  "description": "d?ish is a dlike language that transpiles to asmjs (I hope)",
+  "main": "index.js",
+  "scripts": {
+    "_vscode_build": "coffee ./src/dish src/test.d",
+    "publish": "gulp publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darkoverlordofdata/dish.git"
+  },
+  "author": "darkoverlordofdata",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-gh-pages": "^0.5.2",
+    "gulp-manifest": "0.0.7",
+    "gulp-shell": "^0.4.2",
+    "gulp-webserver": "^0.9.1",
+    "open": "0.0.5",
+    "sbt-bin": "^0.1.1",
+    "superstatic": "^4.0.3",
+    "systemjs": "^0.19.31"
+  },
+  "homepage": "https://github.com/darkoverlordofdata/dish",
+  "dependencies": {
+    "morgan": "^1.7.0"
+  }
+}
