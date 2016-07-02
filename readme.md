@@ -12,7 +12,7 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Dish is written in es6, and is based on the recursive descent parser at http://lisperator.net/pltut/
+Dish is written in coffee-script, and is based on the recursive descent parser at http://lisperator.net/pltut/
 
 Status - just starting. Generates module header, nothing else.	
 
