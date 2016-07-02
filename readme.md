@@ -15,6 +15,15 @@ Dish is a hack.
 Dish is written in coffee-script, and is based on the recursive descent parser at http://lisperator.net/pltut/
 
 Status - just starting. Generates module header, nothing else.	
+
+The goal of dish is to insulate me from the twiddly syntax of jsasm. 
+
+* use the type information to add type coercions to generated code.
+* generate import/export bindings.
+* generate the module header
+* add sugar for heap managemenr and pointer types
+
+
 ### example
 
 ```d
