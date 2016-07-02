@@ -1,10 +1,13 @@
 ###
- * parse.js
+ * parse
+ * 
+ * @param input token stream
+ * @returns ast 
  * 
 ###
 "use strict"
 
-parse = module.exports = (input) ->
+module.exports = (input) ->
     PRECEDENCE = 
         "=": 1
         "||": 2
@@ -12,7 +15,6 @@ parse = module.exports = (input) ->
         "<": 7, ">": 7, "<=": 7, ">=": 7, "==": 7, "!=": 7
         "+": 10, "-": 10
         "*": 20, "/": 20, "%": 20
-
 
     is_punc = (ch) ->
         tok = input.peek()
@@ -27,15 +29,15 @@ parse = module.exports = (input) ->
         tok && tok.type is "op" && (!op || tok.value is op) && tok
 
     skip_punc = (ch) ->
-        if (is_punc(ch)) input.next()
+        if (is_punc(ch)) then input.next()
         else input.croak("Expecting punctuation: \"" + ch + "\"")
 
     skip_kw = (kw) ->
-        if (is_kw(kw)) input.next()
+        if (is_kw(kw)) then input.next()
         else input.croak("Expecting keyword: \"" + kw + "\"")
 
     skip_op = (op) ->
-        if (is_op(op)) input.next()
+        if (is_op(op)) then input.next()
         else input.croak("Expecting operator: \"" + op + "\"")
 
     unexpected = () ->
@@ -53,8 +55,6 @@ parse = module.exports = (input) ->
                     left     : left
                     right    : maybe_binary(parse_atom(), his_prec)
                 }, my_prec)
-            
-        
         left
 
     delimited = (start, stop, separator, parser) ->

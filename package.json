@@ -15,6 +15,7 @@
   "author": "darkoverlordofdata",
   "license": "MIT",
   "devDependencies": {
+    "coffee-script": "^1.10.0",
     "gulp": "^3.9.0",
     "gulp-gh-pages": "^0.5.2",
     "gulp-manifest": "0.0.7",

@@ -12,7 +12,7 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Dish is written in coffee-script, and is based on the recursive descent parser at http://lisperator.net/pltut/
+Dish is written in es6, and is based on the recursive descent parser at http://lisperator.net/pltut/
 
 Status - just starting. Generates module header, nothing else.	
 
@@ -22,6 +22,7 @@ The goal of dish is to insulate me from the twiddly syntax of jsasm.
 * generate import/export bindings.
 * generate the module header
 * add sugar for heap managemenr and pointer types
+* no SSA or TCA or other low level optimization - that is done by OdinMonkey/TurboFan
 
 
 ### example
@@ -48,8 +49,6 @@ export double geometricMean(int start, int end) {
     exp(logSum(start, end));
     t2 = now();
     return t2 - t1;
-
-
 }
 
 ```

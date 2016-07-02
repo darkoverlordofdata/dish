@@ -1,13 +1,16 @@
+###*
+# codegen.js
+# 
 ###
- * codegen.js
- * 
-###
-"use strict"
-FALSE = type: "bool", value: false
-TRUE = type: "bool", value: true
 
+'use strict'
 
-js = (ast) ->
+module.exports = (ast) ->
+
+  FALSE = type: 'bool', value: false
+  TRUE = type: 'bool', value: true
+
+  js = (ast) ->
     switch (ast.type) 
         when "num"    then js_atom   (ast)
         when "bool"   then js_atom   (ast)
@@ -20,54 +23,55 @@ js = (ast) ->
         when "prog"   then js_prog   (ast)
         when "call"   then js_call   (ast)
         when 'import' then js_import (ast)
-        else throw new Error("Dunno how to make_js for " + JSON.stringify(ast))
+        else throw new Error("CodeGen: unknown ast type: " + JSON.stringify(ast))
 
-make_var = (name) -> name
 
-js_import = (ast) -> "var #{ast.value} = stdlib.#{ast.value}"
+  js_import = (ast) -> "var #{ast.value} = stdlib.#{ast.value}"
 
-js_atom = (ast) -> JSON.stringify(ast.value) 
+  js_atom = (ast) -> JSON.stringify ast.value
 
-js_var = (ast) -> make_var(ast.value)
+  make_var = (name) -> name
 
-js_not = (ast) -> if is_bool(ast.body) then "!#{js(ast.body)}" else "(#{js(ast.body)} === false)"
+  js_var = (ast) -> make_var ast.value
 
-js_assign = (ast) -> js_binary(ast)
+  js_not = (ast) -> if is_bool(ast.body) then "!#{js(ast.body)}" else "(#{js(ast.body)} === false)"
 
-js_prog = (ast) -> ast.prog.map(js).join("")
+  js_assign = (ast) -> js_binary ast
 
-js_call = (ast) -> js(ast.func) + "(#{ast.args.map(js).join(", ")})"
+  js_prog = (ast) -> ast.prog.map(js).join ';'
 
-js_binary = (ast) ->
+  js_call = (ast) -> "#{js(ast.func)}(#{ast.args.map(js).join(', ')})"
+
+  js_binary = (ast) ->
     left = js(ast.left)
     right = js(ast.right)
-    switch (ast.operator) 
-        when "&&"
-            break if (is_bool(ast.left))
-            return "((#{left} !== false) && #{right})"
-        when "||"
-            break if (is_bool(ast.left))
-            return "((I2_TMP = #{left}) !== false ? I2_TMP : #{right})"
-    
+    switch ast.operator
+      when '&&'
+        if is_bool(ast.left)
+          break
+        return "((#{left} !== false) && #{right})"
+      when "||"
+        if is_bool(ast.left)
+          break
+        return "((I2_TMP = #{left}) !== false ? I2_TMP : #{right})"
     "(#{left}#{ast.operator}#{right})"
 
-is_bool = (ast) ->
-    switch (ast.type) 
-        when "bool" then return true
-        when "not" then return true
-        when "if" then return is_bool(ast.then) || (ast.else && is_bool(ast.else))
-        when "binary"
-            if ",<,<=,==,!=,>=,>,".indexOf(",#{ast.operator},") >= 0
-                return true
-            if (ast.operator == "&&" || ast.operator == "||")
-                return is_bool(ast.left) && is_bool(ast.right)
+  is_bool = (ast) ->
+    switch ast.type
+      when 'bool', 'not'
+        return true
+      when 'if'
+        return is_bool(ast.then) or ast.else and is_bool(ast.else)
+      when 'binary'
+        if ',<,<=,==,!=,>=,>,'.indexOf(',' + ast.operator + ',') >= 0
+          return true
+        if ast.operator == '&&' or ast.operator == '||'
+          return is_bool(ast.left) and is_bool(ast.right)
     false
 
-js_if = (ast) ->
+  js_if = (ast) ->
     cond = js(ast.cond)
-    if !is_bool(ast.cond) then cond += " !== false"
-    "(#{cond} ? #{js(ast.then)} : #{js(ast.else || FALSE)}"
+    cond += " !== false" if !is_bool(ast.cond)
+    "(#{cond} ? #{js(ast.then)} : #{js(ast.else or FALSE)})"
 
-
-
-codegen = module.exports = (ast) -> js(ast)
+  js ast

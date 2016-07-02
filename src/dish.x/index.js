@@ -6,6 +6,7 @@
  *      node ./src/dish src/test.d
  * 
  */
+require('coffee-script/register')
 var InputStream = require('./InputStream');
 var TokenStream = require('./TokenStream');
 var codegen = require('./codegen');
