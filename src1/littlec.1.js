@@ -18,16 +18,6 @@ const TEMP = 4
 const STRING = 5 
 const BLOCK = 6
 
-var token_type$ = [
-  'DELIMITER',
-  'IDENTIFIER',
-  'NUMBER',
-  'KEYWORD',
-  'TEMP',
-  'STRING',
-  'BLOCK'
-]
-
 const ARG = 0 
 const CHAR = 1 
 const INT = 2 
@@ -41,10 +31,6 @@ const RETURN = 9
 const EOL = 10 
 const FINISHED = 11 
 const END = 12
-
-var tok$ = [
-  'ARG', 'CHAR', 'INT', 'IF', 'ELSE', 'FOR', 'DO', 'WHILE', 'SWITCH', 'RETURN', 'EOL', 'FINISHED', 'EMD'
-]
 
 const LT = 1 
 const LE = 2 
@@ -162,7 +148,7 @@ function interpretBlock() {
       /* Not a keyword, so process expression. */
         putback()  /* restore token to input stream for
                        further processing by evalExpression() */
-        var v = evalExpression(0)  /* process the expression */
+        evalExpression(0)  /* process the expression */
         if (token!==';') raise(SEMI_EXPECTED, 'interpretBlock')
     }
     else if (token_type===BLOCK) { /* if block delimiter */
@@ -636,7 +622,7 @@ function evalExpression3(value) {
   var  op = ''
   var partial_value = 0
 
-  value = evalExpression4(value)
+  evalExpression4(value)
   while((op = token) === '*' || op === '/' || op === '%') {
     getToken()
     partial_value = evalExpression4(partial_value)
@@ -765,13 +751,8 @@ function raise(error, from) {
   
 }
 
-function getToken() {
-  var r= getToken1();
-  console.log('getToken', token, token_type$[token_type], tok, tok$[tok])
-  return r
-}
 /* Get a token. */
-function getToken1() {
+function getToken() {
 
   var temp
 
@@ -894,7 +875,6 @@ function getToken1() {
   /* see if a string is a command or a variable */
   if (token_type===TEMP) {
     tok = lookUp(token) /* convert to internal rep */
-    console.log('lookup', token, tok)
     if (tok) token_type = KEYWORD /* is a keyword */
     else token_type = IDENTIFIER
   }
@@ -914,7 +894,7 @@ function lookUp(s) {
   for (var item in table) {
     if (table[item].command === s) return table[item].tok
   }
-  return -1;
+  return null
 }
 
 /* Return index of internal library function or -1 if

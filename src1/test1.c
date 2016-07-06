@@ -1,3 +1,5 @@
+int x;
+
 double geometricMean(int start, int end) {
 
     double t1 = 0.0;
@@ -14,8 +16,11 @@ double geometricMean(int start, int end) {
 }
 double logSum(int start, int end) {
 
-	double sum = 0.0;
-    int p = 0, q = 0, i = 0, count = 0;
+    int p = 0;
+    int q = 0;
+    int i = 0;
+    int count = 0;
+    double sum = 0.0;
     for (i=start; i<count; i++) {
         for (p = start/8, q = end/8; p<q; p+= 8) {
             sum = sum + 10;

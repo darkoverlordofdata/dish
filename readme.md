@@ -12,9 +12,10 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Dish is written in coffee-script, and is based on the recursive descent parser at http://lisperator.net/pltut/
+Status - just starting. Generates module header, nothing else.
 
-Status - just starting. Generates module header, nothing else.	
+After days of trying to write my own parser, I used Jison. Later the same day, I have a working poc. 
+Using escodegen to create output.
 
 The goal of dish is to insulate me from the twiddly syntax of jsasm. 
 

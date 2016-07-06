@@ -120,6 +120,7 @@ function parse(input) {
     function parse_return() {
     }
     function parse_int() {
+        console.log('PARSE INT')
     }
     function parse_double() {
     }
@@ -147,6 +148,7 @@ function parse(input) {
     }
     function parse_atom() {
         return maybe_call(function(){
+            console.log(input.peek())
             if (is_punc("(")) {
                 input.next();
                 var exp = parse_expression();
