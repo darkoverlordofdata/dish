@@ -4,10 +4,10 @@
   "description": "d?ish is a dlike language that transpiles to asmjs (I hope)",
   "main": "index.js",
   "scripts": {
-    "_vscode_build": "jison src/dish.bison src/dish.flex --outfile src/dish.js && node src/dish.js src/test.d",
+    "_vscode_build": "node ./src/index.js src/test.d",
     "_vscode_builx": "node src1/littlec.js src1/test.c",
-    "_vscode_buily": "node ./test.js",
-    "_vscode_builz": "coffee ./src/dish src/test.d",
+    "_vscode_buily": "jison src/dish.bison src/dish.flex --outfile src/dish.js && node src/dish.js src/test.d",
+    "_vscode_builz": "node ./test.js",
     "publish": "gulp publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
