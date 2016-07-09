@@ -3,7 +3,7 @@
 
 ### dish transpiler for asmjs
 
-JsAsm has 'int-ish' variable typing. 
+Asm.js has 'int-ish' variable typing. 
 Why not 'd-ish' language support?
 
 Dish transpiles such code to jsasm.
