@@ -12,10 +12,10 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Status - just starting. Generates module header, nothing else.
+Status - just starting. simple module:
 
-After days of trying to write my own parser, I used Jison. Later the same day, I have a working poc. 
-Using escodegen to create output.
+		node ./src/index.js src/test.d > out.js
+
 
 The goal of dish is to insulate me from the twiddly syntax of jsasm. 
 
@@ -32,10 +32,10 @@ The goal of dish is to insulate me from the twiddly syntax of jsasm.
 import std.Math.exp;
 import std.Math.log;
 import foreign.now;
-//
+/*
 //
 //  comment
-//
+*/
 double logSum(int start, int end) {
 	...
 }
@@ -56,16 +56,5 @@ export double geometricMean(int start, int end) {
 
 ### steps 
 
-	emit module header
-	generate var assignment from stdlib or usrlib for imports
-	generate heap arrays
-	emit global scope variable defs
-	process each function
-		emit parameter type anotations
-		emit variable type anotations
-		emit each line with type anotations
-		emit return with type anotations
-	emit export object
-	emit module end
 
 
