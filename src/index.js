@@ -12,37 +12,43 @@ var u2 = require("uglify-js")
 var lexer = require('./lexer')
 var parser = require('./parser')
 var codegen = require('escodegen')
+var manifest = require('../package.json')
 
 function main(argc, argv) {
-    console.log("** dish **\n")
+    console.log(`/*** dish ${manifest.version} ***/`)
     if (argc!==3) {
         console.log("Usage: dish <filename>\n")
         process.exit(1)
     }
+    console.log("/*** "+ argv[2] + " ***/")
+
 
     let d = fs.readFileSync(argv[2], 'utf8')
+    let name = argv[2].split('/').pop().split('.')[0]
     
 
     try {
-        let ast = parser.parse(lexer(d))
-        let js = codegen.generate(ast, {verbatim: 'verbatim'})
-        let asm = [
-            "(function(stdlib, foreign, heap) {",
-            '"use asm";',
-            "var HEAPI8 = new stdlib.Int8Array(heap);",
-            "var HEAPU8 = new stdlib.Uint8Array(heap);",
-            "var HEAPI16 = new stdlib.Int16Array(heap);",
-            "var HEAPU16 = new stdlib.Uint16Array(heap);",
-            "var HEAPI32 = new stdlib.Int32Array(heap);",
-            "var HEAPU32 = new stdlib.Uint32Array(heap);",
-            "var HEAPI32 = new stdlib.Int32Array(heap);",
-            "var HEAPF32 = new stdlib.Float32Array(heap);",
-            "var HEAPF64 = new stdlib.Float64Array(heap);",
-            js,
-            "}(stdlib || window, usrlib, heap || new ArrayBuffer(\"0x4000\")));"
-        ].join('')
+        let parsed = parser.parse(lexer(d))
+        let js = codegen.generate(parsed.ast, {verbatim: 'verbatim'})
+        let asm = []
 
-        console.log(u2.parse(asm).print_to_string({
+        asm.push("var " + name + " = (function(stdlib, foreign, heap) {")
+        asm.push('"use asm";')
+        if (parsed.float)   asm.push("var fround = stdlib.Math.fround;")
+        if (parsed.heapi8)  asm.push("var HEAPI8 = new stdlib.Int8Array(heap);")
+        if (parsed.heapu8)  asm.push("var HEAPU8 = new stdlib.Uint8Array(heap);")
+        if (parsed.heapi16) asm.push("var HEAPI16 = new stdlib.Int16Array(heap);")
+        if (parsed.heapu16) asm.push("var HEAPU16 = new stdlib.Uint16Array(heap);")
+        if (parsed.heapi32) asm.push("var HEAPI16 = new stdlib.Int32Array(heap);")
+        if (parsed.heapu32) asm.push("var HEAPU16 = new stdlib.Uint32Array(heap);")
+        if (parsed.heapf32) asm.push("var HEAPF32 = new stdlib.Float32Array(heap);")
+        if (parsed.heapf64) asm.push("var HEAPF64 = new stdlib.Float32Array(heap);")
+        asm.push(js)
+        asm.push(parsed.exporting)
+        asm.push("}(stdlib || window, usrlib, heap || new ArrayBuffer(\"0x4000\")));")
+
+        //console.log(asm)
+        console.log(u2.parse(asm.join('')).print_to_string({
             beautify: true,
             indent_level: 4
         })
@@ -53,8 +59,7 @@ function main(argc, argv) {
     } catch(ex) {
         console.log(ex)
     }
-    console.log("done.'")
-
+    //console.log("done.")
 
 }
 main(process.argv.length, process.argv)

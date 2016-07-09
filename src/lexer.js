@@ -61,7 +61,7 @@ function Tokenizer(source) {
     function isDelim(ch)      { return /[,;(){}[\]:]/.test(ch) }
     function isOperator(ch)   { return /[+\-*\/%=&|<>!]/.test(ch) }
     function isKeyword(wd)    {
-        return /import|from|export|return|int|double|float|if|else|true|false|while|do|for/.test(wd);
+        return /break|case|continue|do|double|else|export|float|for|from|if|import|int|return|switch|while/.test(wd);
     }
 
 

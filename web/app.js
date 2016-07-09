@@ -89,6 +89,7 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPF64 = new stdlib.Float64Array(buffer);
                 var t1 = 0.0;
                 function logSum(start, end) {
+                    }
                     start = start | 0;
                     end = end | 0;
                     var sum = 0.0, p = 0, q = 0, i = 0, count = 0;

@@ -1,4 +1,6 @@
 "use strict"
+const Token = require('./Token')
+
 module.exports = {factory:factory}
 
 function clone(obj) {
@@ -13,8 +15,10 @@ function factory() {
     return {
         ImportDeclaration: ImportDeclaration,
         IntDeclaration: IntDeclaration,
+        FloatDeclaration: FloatDeclaration,
         DoubleDeclaration: DoubleDeclaration,
         FunctionDeclaration: FunctionDeclaration,
+        ExportDeclaration: ExportDeclaration,
         Return: Return
 
     }
@@ -44,19 +48,33 @@ function factory() {
 
 
     }
-    function Return() {
+    function Return(value, argument) {
         return {
             "type": "ReturnStatement",
-            "argument": null
+            "argument": argument //? Argument(argument) : null
         }
     }
+
+    function Argument(token) {
+        if (token.type === Token.Identifier) {
+            return {
+                "type": "Identifier",
+                "name": token.value
+            }
+        } else return {
+            "type": "Literal",
+            "value": token.value,
+            "raw": '"'+token.value+'"'
+        }
+    }
+
 
     /**
      * double <name>; 
      * 
-     * |> var <name> = 0.0;
+     * <|> var <name> = 0.0;
      */
-    function DoubleDeclaration(name) {
+    function DoubleDeclaration(name, init) {
         return {
             "type": "VariableDeclaration",
             "declarations": [
@@ -66,7 +84,7 @@ function factory() {
                         "type": "Identifier",
                         "name": name
                     },
-                    "init": {
+                    "init": init || {
                         "type": "Literal",
                         "value": 0,
                         "raw": "0.0",
@@ -81,9 +99,9 @@ function factory() {
     /**
      * int <name>;
      * 
-     * |> var <name> = 0;
+     * <|> var <name> = 0;
      */
-    function IntDeclaration(name) {
+    function IntDeclaration(name, init) {
         return {
             "type": "VariableDeclaration",
             "declarations": [
@@ -93,11 +111,10 @@ function factory() {
                         "type": "Identifier",
                         "name": name
                     },
-                    "init": {
+                    "init": init || {
                         "type": "Literal",
                         "value": 0,
-                        "raw": "0",
-                        "verbatim": "'0'"
+                        "raw": "0"
                     }
                 }
             ],
@@ -105,11 +122,40 @@ function factory() {
         }
     }
 
+    function FloatDeclaration(name, init) {
+        return {
+            "type": "VariableDeclaration",
+            "declarations": [
+                {
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": name
+                    },
+                    "init": init || {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "fround"
+                        },
+                        "arguments": [
+                            {
+                                "type": "Literal",
+                                "value": 0,
+                                "raw": "0"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "kind": "var"
+        }
+    }
         
     /**
      * import <name> from <libname.source>;
      * 
-     * |> var <name> = stdlib.libname.source;
+     * <|> var <name> = stdlib.libname.source;
      */
     function ImportDeclaration(libname, source, name) {
         return {
@@ -144,6 +190,40 @@ function factory() {
                 }
             ],
             "kind": "var"
+        }
+    }
+
+    function ExportDeclaration(exporting) {
+        return {
+            "type": "ReturnStatement",
+            "argument": {
+                "type": "ObjectExpression",
+                "properties": _exportValues(exporting)
+            }
+        }
+
+
+    }
+
+    function _exportValues(exporting) {
+        let properties = []
+        for (let i in exporting) {
+            let name = exporting[i]
+            properties.push({
+                "type": "Property",
+                "key": {
+                    "type": "Identifier",
+                    "name": name
+                },
+                "computed": false,
+                "value": {
+                    "type": "Identifier",
+                    "name": name
+                },
+                "kind": "init",
+                "method": false,
+                "shorthand": false
+            })
         }
     }
 
