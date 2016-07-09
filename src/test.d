@@ -11,6 +11,6 @@ double zDouble;
 
 export int logSum(double x, int y) {
     int z;
-    //z = 2;
+    //z = 42;
     return;
 }

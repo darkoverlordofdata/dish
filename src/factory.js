@@ -1,3 +1,8 @@
+/*
+ * Factory
+ * 
+ *  Create output ast structures to be consumed by escodegen
+ */
 "use strict"
 const Token = require('./Token')
 
@@ -6,19 +11,17 @@ module.exports = {factory:factory}
 function clone(obj) {
     return JSON.parse(JSON.stringify(obj))
 }
-/**
- * escodegen node factory
- */
 function factory() {
-
-
+    /**
+     * escodegen node factory api:
+     */
     return {
         ImportDeclaration: ImportDeclaration,
+        ExportDeclaration: ExportDeclaration,
         IntDeclaration: IntDeclaration,
         FloatDeclaration: FloatDeclaration,
         DoubleDeclaration: DoubleDeclaration,
         FunctionDeclaration: FunctionDeclaration,
-        ExportDeclaration: ExportDeclaration,
         Return: Return
 
     }

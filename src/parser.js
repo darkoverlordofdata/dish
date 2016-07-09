@@ -134,7 +134,7 @@ function parse(input) {
         const body = []
         expect('{')
         while (!match('}')) {
-            body.push(parseExpression())
+            body.push(parseStatement())
             if (!input.eof()) expect(';')
         }
         expect('}')
@@ -145,13 +145,7 @@ function parse(input) {
     /**
      * Everything except import, export, function
      */
-    function parseExpression() {
-        if (match('(')) {
-            input.next()
-            const exp = parseExpression()
-            expect(')')
-            return exp
-        }
+    function parseStatement() {
         //=================================
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('case'))       return parseCase()
@@ -166,11 +160,60 @@ function parse(input) {
         if (matchKeyword('return'))     return parseReturn()
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
+
+        const tok = input.peek()
+        // if (tok.type === Token.Identifier) {
+        //     input.next()
+        //     expect('=')
+
+        // }
         //=================================
         unexpected()
         process.exit(0)
     }    
 
+    function parseExpression() {
+
+    }
+
+    function condition() {
+        expression()
+        if (match('==') || match('!=') || match('<=') || match('<') || match('>=') || match('<')) {
+            input.next()
+            expression()
+        }
+    }
+
+    function expression() {
+        if (match('+') || match('-')) {
+            input.next()
+        }
+        term()
+        while (match('+') || match('-')) {
+            input.next()
+            term()
+        }
+    }
+
+    function term() {
+        factor()
+        while (match('*') || match('/')) {
+            input.next()
+            factor()
+        }
+    }
+
+    function factor() {
+        let tok = input.peek()
+        if (tok.type === Token.Identifier) {
+
+        } else if (tok.type === Token.Number) {
+
+        } else if (match('(')'))
+            expresion()
+            expect(')')
+
+    }
 
 
     function parseBreak() {
@@ -277,7 +320,6 @@ function parse(input) {
         } else {
             value = factory.Return(parseExpression())
         }
-        expect(';')
         return value
     }
     function parseSwitch() {

@@ -1,5 +1,6 @@
 /*** dish 0.0.1 ***/
 /*** src/test.d ***/
+Expecting delimiter: [;] found Delimiter '}' at line 16, col 1
 var test = function(stdlib, foreign, heap) {
     "use asm";
     var fround = stdlib.Math.fround;
@@ -10,6 +11,7 @@ var test = function(stdlib, foreign, heap) {
     var fFloat = fround(0);
     var zDouble = 0.0;
     function logSum(x, y) {
+        var z = 0;
         return;
     }
     return {
