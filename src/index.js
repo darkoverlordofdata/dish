@@ -53,12 +53,11 @@ function main(argc, argv) {
         heapf64: false
     }
 
-
-
-    console.log(data)
     const tpl = liquid.Template.parse(fs.readFileSync("./src/asm.tpl.js", 'utf8'))
     let out = tpl.render(data)
-    while (/\n\n/.test(out)) out = out.replace(/\n\n/mg, '\n') 
+    while (/\n\n/.test(out)) 
+        out = out.replace(/\n\n/mg, '\n') 
+
     console.log(out)
     process.exit(0)
 
