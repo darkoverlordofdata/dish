@@ -21,8 +21,43 @@ function factory() {
         IntDeclaration: IntDeclaration,
         FloatDeclaration: FloatDeclaration,
         DoubleDeclaration: DoubleDeclaration,
+        IntParameter: IntParameter,
+        FloatParameter: FloatParameter,
+        DoubleParameter: DoubleParameter,
         FunctionDeclaration: FunctionDeclaration,
+        AssignmentStatement: AssignmentStatement,
+        CallExpression: CallExpression,
         Return: Return
+
+    }
+
+    function CallExpression(name, args) {
+        return {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "CallExpression",
+                "callee": {
+                    "type": "Identifier",
+                    "name": name.value
+                },
+                "arguments": args || []
+            }
+        }
+    }
+
+    function AssignmentStatement(name, expression) {
+        return {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "Identifier",
+                    "name": name.value
+                },
+                "right": expression
+            }
+        }
 
     }
 
@@ -51,27 +86,37 @@ function factory() {
 
 
     }
-    function Return(value, argument) {
+    function Return(expression) {
         return {
             "type": "ReturnStatement",
-            "argument": argument //? Argument(argument) : null
+            "argument": expression
         }
     }
 
-    function Argument(token) {
-        if (token.type === Token.Identifier) {
-            return {
-                "type": "Identifier",
-                "name": token.value
+
+
+    function DoubleParameter(name) {
+        return {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "Identifier",
+                    "name": name.value
+                },
+                "right": {
+                    "type": "UnaryExpression",
+                    "operator": "+",
+                    "argument": {
+                        "type": "Identifier",
+                        "name": name.value
+                    },
+                    "prefix": true
+                }
             }
-        } else return {
-            "type": "Literal",
-            "value": token.value,
-            "raw": '"'+token.value+'"'
         }
     }
-
-
     /**
      * double <name>; 
      * 
@@ -99,6 +144,32 @@ function factory() {
         }
     }
 
+    function IntParameter(name) {
+        return {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "Identifier",
+                    "name": name.value
+                },
+                "right": {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                        "type": "Identifier",
+                        "name": name.value
+                    },
+                    "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                    }
+                }
+            }
+        }
+    }
     /**
      * int <name>;
      * 
@@ -122,6 +193,33 @@ function factory() {
                 }
             ],
             "kind": "var"
+        }
+    }
+
+    function FloatParameter(name) {
+        return {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "Identifier",
+                    "name": name.value
+                },
+                "right": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": "fround"
+                    },
+                    "arguments": [
+                        {
+                            "type": "Identifier",
+                            "name": name.value
+                        }
+                    ]
+                }
+            }
         }
     }
 

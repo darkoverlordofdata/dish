@@ -32,6 +32,8 @@
   "homepage": "https://github.com/darkoverlordofdata/dish",
   "dependencies": {
     "escodegen": "^1.8.0",
+    "jsep": "^0.3.0",
+    "liquid.coffee": "^0.1.6",
     "morgan": "^1.7.0"
   }
 }

@@ -10,6 +10,7 @@ module.exports = {
 function parse(input) {
     const factory = require('./factory').factory()
     const Token = require('./Token')
+    const jsep = require('jsep')
     const PRECEDENCE = {
         ')': 0, ';': 0, ',': 0, '=': 0, ']': 0,
         '||': 1,
@@ -28,6 +29,8 @@ function parse(input) {
     const symtbl = { global: {} }
     const exporting = []
 
+    let currentFunction = ''
+
     let float = false
     let heapi8 = false
     let heapu8 = false
@@ -39,6 +42,9 @@ function parse(input) {
     let heapf64 = false
 
     parseMain()
+    // console.log('------------------')
+    // console.log(symtbl)
+    // console.log('------------------')
     return {
         ast: ast,           //  main code body ast
         float: float,       //  floats used?
@@ -50,6 +56,7 @@ function parse(input) {
         heapu32: heapu32,
         heapf32: heapf32,
         heapf64: heapf64,
+        exports: {logSum: "logSum"},
         exporting: exportToString(),
     }
 
@@ -89,7 +96,7 @@ function parse(input) {
     function parseMain() {
         while (!input.eof()) {
             ast.body.push(parseGlobal())
-            if (!input.eof()) expect(';')
+            if (!input.eof()) if (match(';')) expect(';')
         }
     }
 
@@ -122,6 +129,7 @@ function parse(input) {
         } else {
             throw new Exception(`Function ${name.value} already defined.`)
         }
+        currentFunction = name.value
         
         const args = []
         expect('(')
@@ -133,6 +141,19 @@ function parse(input) {
 
         const body = []
         expect('{')
+        for (let i=0; i<args.length; i++) {
+            switch(args[i].type.value) {
+                case 'int':
+                    body.push(factory.IntParameter(args[i].name))
+                    break
+                case 'float':
+                    body.push(factory.FloatParameter(args[i].name))
+                    break
+                case 'double':
+                    body.push(factory.DoubleParameter(args[i].name))
+                    break
+            }
+        }
         while (!match('}')) {
             body.push(parseStatement())
             if (!input.eof()) expect(';')
@@ -151,68 +172,65 @@ function parse(input) {
         if (matchKeyword('case'))       return parseCase()
         if (matchKeyword('continue'))   return parseContinue()
         if (matchKeyword('do'))         return parseDo()
-        if (matchKeyword('double'))     return parseDouble()
+        if (matchKeyword('double'))     return parseDouble(currentFunction)
         if (matchKeyword('else'))       return parseElse()
-        if (matchKeyword('float'))      return parseFloat()
+        if (matchKeyword('float'))      return parseFloat(currentFunction)
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parsIf()
-        if (matchKeyword('int'))        return parseInt()
+        if (matchKeyword('int'))        return parseInt(currentFunction)
         if (matchKeyword('return'))     return parseReturn()
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
 
-        const tok = input.peek()
-        // if (tok.type === Token.Identifier) {
-        //     input.next()
-        //     expect('=')
-
-        // }
+        if (input.peek().type === Token.Variable) {
+            input.next()
+            switch (input.peek().value) {
+                case '(':
+                    input.putBack()
+                    return parseCall()
+                    break
+                case '=':
+                    input.putBack()
+                    return parseAssignment()
+                    break
+            }
+        }
         //=================================
         unexpected()
         process.exit(0)
     }    
 
-    function parseExpression() {
+    function parseCall() {
+        let name = input.next();
+        const arg = []
+        let pos = 0
+        expect('(')
+        while (!match(')')) {
+            if (match(',')) {
+                expect(',')
+                pos++
+            } else {
+                if (!arg[pos]) arg[pos] = []
+                arg[pos].push(input.next().value)
+            }
 
+        }
+        expect(')')
+        const params = []
+        for (let i=0; i<arg.length; i++) {
+            params.push(jsep(arg[i].join('')))
+        }
+        return factory.CallExpression(name, params)
     }
 
-    function condition() {
-        expression()
-        if (match('==') || match('!=') || match('<=') || match('<') || match('>=') || match('<')) {
-            input.next()
-            expression()
+    function parseAssignment() {
+        let name = input.next();
+        expect('=')
+        let tokens = []
+        while (!match(';')) {
+            tokens.push(input.next().value)
         }
-    }
-
-    function expression() {
-        if (match('+') || match('-')) {
-            input.next()
-        }
-        term()
-        while (match('+') || match('-')) {
-            input.next()
-            term()
-        }
-    }
-
-    function term() {
-        factor()
-        while (match('*') || match('/')) {
-            input.next()
-            factor()
-        }
-    }
-
-    function factor() {
-        let tok = input.peek()
-        if (tok.type === Token.Identifier) {
-
-        } else if (tok.type === Token.Number) {
-
-        } else if (match('(')'))
-            expresion()
-            expect(')')
-
+        return factory.AssignmentStatement(name, jsep(tokens.join(' ')))
     }
 
 
@@ -318,10 +336,28 @@ function parse(input) {
         if (match(';')) {
             value = factory.Return()
         } else {
-            value = factory.Return(parseExpression())
+            let tokens = []
+            while (!match(';')) {
+                tokens.push(input.next().value)
+            }
+
+            let castExpression = ''
+            switch(symtbl.global[currentFunction].type) {
+                case 'int':
+                    castExpression = '(('+tokens.join(' ')+')|0)'
+                    break
+                case 'double':
+                    castExpression = '+('+tokens.join(' ')+')'
+                    break
+                case 'float':
+                    castExpression = 'fround('+tokens.join(' ')+')'
+                    break
+            }
+            value = factory.Return(jsep(castExpression))
         }
         return value
     }
+
     function parseSwitch() {
         expectKeyword('switch')
     }

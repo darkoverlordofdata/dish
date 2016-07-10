@@ -9,8 +9,14 @@ int xInt;
 float fFloat;
 double zDouble;
 
-export int logSum(double x, int y) {
+export double logSum(double x, int y) {
     int z;
-    //z = 42;
-    return;
+    z = 42 + 13;
+    return z;
+}
+
+int geometricMean() {
+    int x;
+    x = 20;
+    logSum(x, 10);
 }

@@ -89,6 +89,12 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPF64 = new stdlib.Float64Array(buffer);
                 var t1 = 0.0;
 
+                function test() {
+                    var z = 0;
+                    z = 42;
+                    return z | 0;
+                }
+
                 function logSum(start, end) {
                     
                     start = start | 0;
@@ -121,7 +127,7 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                 }
                 return {
                     geometricMean: geometricMean,
-                    getTime: getTime
+                    getTime: getTime,
                 };
             }(stdlib_1.default, ffi_1.default, buffer)));
         }
