@@ -1,5 +1,3 @@
-/*** dish {{ version }} ***/
-/*** {{ source }} ***/
 var {{ name }} = function(stdlib, foreign, heap) {
 "use asm";
 
@@ -13,8 +11,8 @@ var {{ name }} = function(stdlib, foreign, heap) {
 {% if heapf32 %}var HEAPF32 = new stdlib.Float32Array(heap);{% endif %}
 {% if heapf64 %}var HEAPF64 = new stdlib.Float32Array(heap);{% endif %}
 {{ code }}    
-return {% for func in exports %}
-    {{ func.key }}:{{ func.value }},{% endfor %}
+return { {% for func in exports %}
+    {{ func.key }}:{{ func.value }},{% endfor %} 
 };
 }(stdlib || window, usrlib, heap || new ArrayBuffer({{ heapsize }}));
 

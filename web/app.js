@@ -99,9 +99,9 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                     
                     start = start | 0;
                     end = end | 0;
-                    var sum = 0.0, p = 0, q = 0, i = 0, count = 0;
+                    var sum = 0.0, p = 0, q = 0, i = 0, count = 0, k = 0;
                     count = 1000;
-                    for (i = start; (i | 0) < (count | 0); i = (i + 1) | 0) {
+                    for (i = start, k = 0; (i | 0) < (count | 0); i = (i + 1) | 0, k = (k + 1) | 0) {
                         // asm.js forces byte addressing of the heap by requiring shifting by 3
                         for (p = start << 3, q = end << 3; (p | 0) < (q | 0); p = (p + 8) | 0) {
                             sum = sum + +log(HEAPF64[p >> 3]);

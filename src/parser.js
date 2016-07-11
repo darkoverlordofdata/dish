@@ -1,6 +1,10 @@
 /**
  * parse.js
  * 
+ * - Bit Twiddlefast
+ * 
+ * Parses the statements and builds infrastructure requirements
+ * expression parsing is handed off to jsep.
  */
 'use strict'
 
@@ -27,7 +31,7 @@ function parse(input) {
     const block = [] // current output block
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
-    const exporting = []
+    const exporting = {}
 
     let currentFunction = ''
 
@@ -42,13 +46,11 @@ function parse(input) {
     let heapf64 = false
 
     parseMain()
-    // console.log('------------------')
-    // console.log(symtbl)
-    // console.log('------------------')
+
     return {
         ast: ast,           //  main code body ast
-        float: float,       //  floats used?
-        heapi8: heapi8,     //  heap used flags
+        float: float,       //  floats?
+        heapi8: heapi8,     //  heap useage flags
         heapu8: heapu8,
         heapi16: heapi16,
         heapu16: heapu16,
@@ -56,21 +58,9 @@ function parse(input) {
         heapu32: heapu32,
         heapf32: heapf32,
         heapf64: heapf64,
-        exports: {logSum: "logSum"},
-        exporting: exportToString(),
+        exports: exporting
     }
 
-    function exportToString() {
-        if (exporting.length === 0) return ''
-        let str = 'return {'
-        for (let i=0; i<exporting.length; i++) {
-            let name = exporting[i]
-            str += `${name}: ${name},`
-        }
-        str += '}'
-        return str
-
-    }
     function match(ch) {
         const tok = input.peek()
         return tok.type === Token.Delimiter && tok.value === ch
@@ -143,20 +133,14 @@ function parse(input) {
         expect('{')
         for (let i=0; i<args.length; i++) {
             switch(args[i].type.value) {
-                case 'int':
-                    body.push(factory.IntParameter(args[i].name))
-                    break
-                case 'float':
-                    body.push(factory.FloatParameter(args[i].name))
-                    break
-                case 'double':
-                    body.push(factory.DoubleParameter(args[i].name))
-                    break
+                case 'int':     body.push(factory.IntParameter(args[i].name)); break
+                case 'float':   body.push(factory.FloatParameter(args[i].name)); break
+                case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
             }
         }
         while (!match('}')) {
             body.push(parseStatement())
-            if (!input.eof()) expect(';')
+            if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
         
@@ -169,11 +153,9 @@ function parse(input) {
     function parseStatement() {
         //=================================
         if (matchKeyword('break'))      return parseBreak()
-        if (matchKeyword('case'))       return parseCase()
         if (matchKeyword('continue'))   return parseContinue()
         if (matchKeyword('do'))         return parseDo()
         if (matchKeyword('double'))     return parseDouble(currentFunction)
-        if (matchKeyword('else'))       return parseElse()
         if (matchKeyword('float'))      return parseFloat(currentFunction)
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parsIf()
@@ -223,25 +205,39 @@ function parse(input) {
         return factory.CallExpression(name, params)
     }
 
+    /**
+     * returns 1 AssignmentExpression or a SequenceExpression of AssignmentExpression
+     */
     function parseAssignment() {
-        let name = input.next();
+        let names = [input.next().value]
+        let seq = []
         expect('=')
         let tokens = []
-        while (!match(';')) {
-            tokens.push(input.next().value)
+        while (!match(';') && !match(')')) {
+            if (match(',')) {
+                expect(',')
+                names.push(input.next().value)
+                seq.push(jsep(tokens.join(' ')))
+                expect('=')
+                tokens = []
+            } else tokens.push(input.next().value)
         }
-        return factory.AssignmentStatement(name, jsep(tokens.join(' ')))
+        if (names.length === 1)
+            return factory.AssignmentStatement(names[0], jsep(tokens.join(' ')))
+        else {
+            seq.push(jsep(tokens.join(' ')))
+            return factory.AssignmentStatement(names, seq)
+        }
     }
 
 
     function parseBreak() {
         expectKeyword('break')
-    }
-    function parseCase() {
-        expectKeyword('case')
+        factory.BreakStatement()
     }
     function parseContinue() {
         expectKeyword('continue')
+        factory.ContinueStatement()
     }
     function parseDo() {
         expectKeyword('do')
@@ -258,29 +254,26 @@ function parse(input) {
             return factory.DoubleDeclaration(name.value)
         }
     }
-    function parseElse() {
-        expectKeyword('else')
-    }
     function parseExport() {
         expectKeyword('export')
         if (matchKeyword('int')) {
             expectKeyword('int')
             const name = input.peek()
-            exporting.push(name.value)
+            exporting[name.value] = name.value
             input.putBack()
             return parseInt()
         }
         if (matchKeyword('double')) {
             expectKeyword('double')
             const name = input.peek()
-            exporting.push(name.value)
+            exporting[name.value] = name.value
             input.putBack()
             return parseDouble()
         }
         if (matchKeyword('float')) {
             expectKeyword('float')
             const name = input.peek()
-            exporting.push(name.value)
+            exporting[name.value] = name.value
             input.putBack()
             return parseFloat()
         }
@@ -300,6 +293,33 @@ function parse(input) {
     }
     function parseFor() {
         expectKeyword('for')
+        let init = []
+        let tokens = []
+        let update = []
+        let body = []
+        expect('(')
+
+        while (!match(';')) { // Initialize
+            init.push(parseAssignment())
+        }
+        expect(';')
+        while (!match(';')) { // Test
+            tokens.push(input.next().value)
+        }
+        expect(';')
+        while (!match(')')) { // Update
+            update.push(parseAssignment())
+        }
+        expect(')')
+        expect('{')
+        while (!match('}')) { // Block
+            body.push(parseStatement())
+            if (!input.eof()) if (match(';')) expect(';')
+        }
+        expect('}')
+        var f = factory.ForStatement(init, jsep(tokens.join(' ')), update, body)
+        return f;
+        
     }
     function parseInt(scope) {
         scope = scope || 'global'
@@ -315,9 +335,29 @@ function parse(input) {
     }
     function parseIf() {
         expectKeyword('if')
-        const cond = parseExpression()
-        if (!match('{')) expectKeyword('then')
-        const then = parseExpression()
+        expect('(')
+        let tokens = []
+        while (!match(')')) {
+            tokens.push(input.next().value)
+        }
+        expect(')')
+        const consequent = []
+        expect('{')
+        while (!match('}')) {
+            consequent.push(parseStatement())
+            if (!input.eof()) if (match(';')) expect(';')
+        }
+        expect('}')
+        const alternate = []
+        if (matchKeyword('else')) {
+            expect('{')
+            while (!match('}')) {
+                alternate.push(parseStatement())
+                if (!input.eof()) if (match(';')) expect(';')
+            }
+            expect('}')
+        }
+        return factory.IfStatement(jsep(tokens.join(' ')), consequent, alternate)
     }
     /**
      * import func from lib
@@ -343,15 +383,9 @@ function parse(input) {
 
             let castExpression = ''
             switch(symtbl.global[currentFunction].type) {
-                case 'int':
-                    castExpression = '(('+tokens.join(' ')+')|0)'
-                    break
-                case 'double':
-                    castExpression = '+('+tokens.join(' ')+')'
-                    break
-                case 'float':
-                    castExpression = 'fround('+tokens.join(' ')+')'
-                    break
+                case 'int':     castExpression = '(('+tokens.join(' ')+')|0)'; break
+                case 'double':  castExpression = '+('+tokens.join(' ')+')'; break
+                case 'float':   castExpression = 'fround('+tokens.join(' ')+')'; break
             }
             value = factory.Return(jsep(castExpression))
         }
@@ -360,11 +394,49 @@ function parse(input) {
 
     function parseSwitch() {
         expectKeyword('switch')
-    }
-    function parseWhile() {
-        expectKeyword('while')
+        expect('(')
+        let tokens = []
+        let cases = []
+        let this_case = null;
+        while (!match(')')) {
+            tokens.push(input.next().value)
+        }
+        expect(')')
+        expect('{')
+        while (!match('}')) {
+            while (matchKeyword('case')) {
+                expectKeyword('case')
+                this_case = []
+                cases.push(this_case)
+                while (!matchKeyword('break')) {
+                    this_case.push(parseStatement())
+                    if (!input.eof()) if (match(';')) expect(';')
+                }
+                expectKeyword('break')
+                this_case.push(factory.BreakStatement())
+            }
+        }
+        expect('}')
+        return factory.SwitchStatement(jsep(tokens.join(' ')), cases)
     }
 
+    function parseWhile() {
+        expectKeyword('while')
+        expect('(')
+        let tokens = []
+        while (!match(')')) {
+            tokens.push(input.next().value)
+        }
+        expect(')')
+        const body = []
+        expect('{')
+        while (!match('}')) {
+            body.push(parseStatement())
+            if (!input.eof()) if (match(';')) expect(';')
+        }
+        expect('}')
+        return factory.WhileStatement(jsep(tokens.join(' ')), body)
+    }
 
     
 }

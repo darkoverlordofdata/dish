@@ -27,8 +27,77 @@ function factory() {
         FunctionDeclaration: FunctionDeclaration,
         AssignmentStatement: AssignmentStatement,
         CallExpression: CallExpression,
+        BreakStatement: BreakStatement,
+        ContinueStatement: ContinueStatement,
+        WhileStatement: WhileStatement,
+        IfStatement: IfStatement,
+        SwitchStatement: SwitchStatement,
+        ForStatement: ForStatement,
+        SequenceExpression: SequenceExpression,
+        AssignmentExpression: AssignmentExpression,
         Return: Return
 
+    }
+
+    /** the init of a for statement */
+    function SequenceExpression(assignmentExpressions) {
+        return {
+            "type": "SequenceExpression",
+            "expressions": assignmentExpressions || []
+        }
+    }
+
+    function ForStatement(init, test, update, body) {
+        return {
+            "type": "ForStatement",
+            "init": init[0].expression,
+            "test": test,
+            "update": update[0].expression,
+            "body": {
+                "type": "BlockStatement",
+                "body": body
+            }          
+        }
+    }
+
+    function SwitchStatement(discriminant, cases) {
+        return {
+            "type": "SwitchStatement",
+            "discriminant": discriminant,
+            "cases": cases
+        }
+    }
+    function IfStatement(test, consequent, alternate) {
+        return {
+            "type": "IfStatement",
+            "test": test,
+            "consequent": consequent,
+            "alternate": alternate
+        }
+    }
+
+    function WhileStatement(cond, body) {
+        return {
+            "type": "WhileStatement",
+            "test": cond,
+            "body": {
+                "type": "BlockStatement",
+                "body": body
+            }
+        }
+    }
+
+    function ContinueStatement() {
+        return {
+            "type": "ContinueStatement",
+            "label": null
+        }
+    }
+    function BreakStatement() {
+        return {
+            "type": "BreakStatement",
+            "label": null
+        }
     }
 
     function CallExpression(name, args) {
@@ -45,21 +114,42 @@ function factory() {
         }
     }
 
-    function AssignmentStatement(name, expression) {
-        return {
-            "type": "ExpressionStatement",
-            "expression": {
-                "type": "AssignmentExpression",
-                "operator": "=",
-                "left": {
-                    "type": "Identifier",
-                    "name": name.value
-                },
-                "right": expression
+    function AssignmentStatement(names, expressions) {
+        
+        if (Array.isArray(names)) {
+            if (names.length === 1) return AssignmentExpression(names[0], expressions[0])
+            else return {
+                "type": "ExpressionStatement",
+                "expression": {
+                    "type": "SequenceExpression",
+                    "expressions": (function(seq) {
+                        for (let i=0; i<names.length; i++) {
+                            seq.push(AssignmentExpression(names[i], expressions[i]))
+                        }
+                        return seq
+                    }([]))
+                }
+            }
+        } else  {
+            return {
+                "type": "ExpressionStatement",
+                "expression": AssignmentExpression(names, expressions)
             }
         }
-
     }
+
+    function AssignmentExpression(name, expression) {
+        return {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+                "type": "Identifier",
+                "name": name
+            },
+            "right": expression
+        }
+    }
+    
 
     function FunctionDeclaration(name, args, body) {
 
