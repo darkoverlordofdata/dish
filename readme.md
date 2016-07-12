@@ -3,12 +3,20 @@
 
 
 ### dish, pronounced \dē-ˈiSH\,  is a d-like transpiler for asmjs
-
 Asm.js has 'int-ish' variable typing. 
-Why not 'd-ish' language support?
+Why not 'c-ish' language support? 
+But acually, we need something a little more modern. So Dish is born.
 
-Dish transpiles such code to asm.js.
+## Why?
+Emscripten is great if you have a legacy c++ application to port to the browser.
+
+But what about a library to use with existing javascipt? Hand coding asm.js is not pleasant.
+
+## About dish
+Dish transpiles d-like code to asm.js.
+
 Dish uses the *.d extension to leverage ide syntax hghlighting. 
+
 Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
@@ -24,7 +32,7 @@ The goal of dish is to insulate me from the twiddly syntax of jsasm.
 * generate import/export bindings.
 * generate the module header
 * add sugar for heap management and pointer types
-* no SSA or TCA or other low level optimization - that is done by OdinMonkey/TurboFan
+* no algorythmic optimization. produce idiomatic code so that the OdinMonkey or TurboFan will optimize.
 
 Grammer
 
