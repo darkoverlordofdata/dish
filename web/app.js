@@ -95,13 +95,29 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                     return z | 0;
                 }
 
+                function zogSum(x, y) {
+                    x = +x;         // (double x,
+                    y = y | 0;      // int y)
+                    var z = 0.0;    // double z;
+                    var q = 0;      // int q;
+                    var i = 0.0;    // double i;
+                    var j = 0;      // int j;
+                    z = +42 + +130;   // terms must agree in type
+                    x = +21;           // initialize after all var's
+                    for (i = 0.0, j = 0; (j|0)<10; i = i + 1.0, j = j + 1|0) {
+                        z = z - 1.0;
+                    }
+                    return +z;
+                }
+                
+
                 function logSum(start, end) {
                     
                     start = start | 0;
                     end = end | 0;
                     var sum = 0.0, p = 0, q = 0, i = 0, count = 0, k = 0;
                     count = 1000;
-                    for (i = start, k = 0; (i | 0) < (count | 0); i = (i + 1) | 0, k = (k + 1) | 0) {
+                    for (i = start, k = 0; (i | 0) < (count | 0); i = i + 1 | 0, k = k + 1 | 0) {
                         // asm.js forces byte addressing of the heap by requiring shifting by 3
                         for (p = start << 3, q = end << 3; (p | 0) < (q | 0); p = (p + 8) | 0) {
                             sum = sum + +log(HEAPF64[p >> 3]);

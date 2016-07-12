@@ -1,7 +1,8 @@
 
-# d?ish
+# dee·ish
 
-### dish transpiler for asmjs
+
+### dish, pronounced \dē-ˈiSH\,  is a d-like transpiler for asmjs
 
 Asm.js has 'int-ish' variable typing. 
 Why not 'd-ish' language support?

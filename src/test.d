@@ -1,31 +1,21 @@
 import exp from Math;
 import log from Math;
-import myFunc from myLib;
-/*
- *
- * comment
- */
-int xInt;
-float fFloat;
-double zDouble;
+import now from usrlib;
 
-export double logSum(double x, int y) {
-    int z;
-    int x;
-    z = 42 + 13, x = 21;
+double logSum(int start, int end) {
+    
+    double sum;
+    int p;
+    int q;
     int i;
-    int j;
-    for (i=0, j=0; i<10; i = i+1, j = j+1) {
-        z = z -1;
-    }
-    return z;
-}
+    int count;
+    int k;
 
-int geometricMean() {
-    int x;
-    x = 20;
-    logSum(x, 10);
-    while (x>0) {
-        x = x-1;
+    count = 1000;
+    for (i = start, k = 0; i < count; i=i+1, k=k+1) {
+        for (p = start, q = end; p < q; p=p+1) {
+            sum = sum + HEAPF64[p];
+        }
     }
+    return sum;
 }
