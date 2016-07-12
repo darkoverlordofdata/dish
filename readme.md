@@ -46,6 +46,8 @@ Grammer
 
 ### example
 
+#### test.d
+
 ```d
 import exp from Math;
 import log from Math;
@@ -65,6 +67,7 @@ export int logSum(double x, int y) {
 
 ```
 
+#### test.js
 ```javascript
 var test = function(stdlib, foreign, heap) {
     "use asm";
