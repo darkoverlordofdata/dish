@@ -300,10 +300,49 @@ function parse(input) {
      * returns 1 AssignmentExpression or a SequenceExpression of AssignmentExpression
      */
     function parseAssignment() {
+        const names = []
+        const inits = []
+        let name = ''
+        let tokens = []
+        while (!match(';') && !match(')')) {
+            if (name === '') { /* next token MUST be the lhs */
+                if (input.peek().type === Token.Variable) {
+                    name = input.next().value
+                    tokens = []
+                } else {
+                    input.raise('Expecting lhs variable')
+                }
+            } else if (match('=')) {
+                expect('=')
+            } else if (match('++')) {
+                expect('++') 
+                tokens.push('(')
+                tokens.push(name)
+                tokens.push('+')
+                tokens.push('1')
+                tokens.push(')')
+                tokens.push('|')
+                tokens.push('0')
+            } else if (match(',')) {
+                expect(',')
+                names.push(name)
+                inits.push(jsep(tokens.join(' ')))
+                name = ''
+            } else {
+                tokens.push(input.next().value)
+            }
+        }
+        names.push(name)
+        inits.push(jsep(tokens.join(' ')))
+        if (names.length === 1) {
+            return factory.AssignmentStatement(names[0], jsep(tokens.join(' ')))
+        } else {
+            return factory.AssignmentStatement(names, inits)
+        }
         
     }
 
-    function parseAssignments() {
+    function parseAssignmentz() {
         let names = [input.next().value]
         let seq = []
         expect('=')
@@ -317,54 +356,7 @@ function parse(input) {
                 tokens = []
             } else tokens.push(input.next().value)
         }
-        if (names.length === 1)
-            return factory.AssignmentStatement(names[0], jsep(tokens.join(' ')))
-        else {
-            seq.push(jsep(tokens.join(' ')))
-            return factory.AssignmentStatement(names, seq)
-        }
-    }
-
-    function parseAssignmentz() {
-        let names = [input.next().value]
-        let seq = []
-        let pp = match('++')
-        if (pp) expect('++') 
-        else expect('=')
-        // expect('=')
-        let tokens = []
-        while (!match(';') && !match(')')) {
-            if (match(',')) {
-                expect(',')
-                names.push(input.next().value)
-                seq.push(jsep(tokens.join(' ')))
-                pp = match('++')
-                if (pp) expect('++') 
-                else expect('=')
-                // expect('=')
-                console.log(tokens)
-                tokens = []
-            } else {
-                if (pp) {
-                    console.log('===============')
-                    console.log(names[names.length-1])
-                    console.log('===============')
-                    tokens.push('(')
-                    tokens.push(names[names.length-1])
-                    tokens.push('+')
-                    tokens.push('1')
-                    tokens.push(')')
-                    tokens.push('|')
-                    tokens.push('0')
-                }
-                else  {
-                    let str = input.next().value
-                    console.log('str', str)
-                    tokens.push(str)
-                }
-            }
-        }
-        console.log(tokens)
+        console.log('#', input.peek())
         if (names.length === 1)
             return factory.AssignmentStatement(names[0], jsep(tokens.join(' ')))
         else {

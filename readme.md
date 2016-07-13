@@ -2,15 +2,12 @@
 # dee·ish
 
 
-### dish, pronounced \dē-ˈiSH\,  is a d-like transpiler for asmjs
-Asm.js has 'int-ish' variable typing. 
-Why not 'c-ish' language support? 
-But acually, we need something a little more modern. So Dish is born.
+### dish, or \dē-ˈiSH\,  is a d-like transpiler for asm.js
 
 ## Why?
-Emscripten is great if you have a legacy c++ application to port to the browser.
+Emscripten is great if you have an entire c++ application to port to the browser.
 
-But what about a library to use with existing javascipt? Hand coding asm.js is not pleasant.
+But what about creating a library to use with existing javascipt? Hand coding asm.js is not pleasant.
 
 ## About dish
 Dish transpiles d-like code to asm.js.
@@ -26,7 +23,7 @@ Status - just starting. simple module:
 		node ./src/index.js src/test.d > out.js
 
 
-The goal of dish is to insulate me from the twiddly syntax of jsasm. 
+The goal of dish is to insulate me from the twiddly syntax of asm.js. 
 
 * use the type information to add type coercions to generated code.
 * generate import/export bindings.
@@ -49,20 +46,16 @@ Grammer
 #### test.d
 
 ```d
-import exp from Math;
 import log from Math;
-import myFunc from myLib;
-/*
- *
- * comment
- */
-int xInt;
-float fFloat;
-double zDouble;
+import now from usrlib;
 
-export int logSum(double x, int y) {
+export int logSum(int start, int end) {
     int z;
-    return;
+    int k;
+    for (k=start; k<end; k++) {
+        z = k;
+    }
+    return z;
 }
 
 ```
@@ -70,22 +63,23 @@ export int logSum(double x, int y) {
 #### test.js
 ```javascript
 var test = function(stdlib, foreign, heap) {
-    "use asm";
-    var fround = stdlib.Math.fround;
-    var exp = stdlib.Math.exp;
-    var log = stdlib.Math.log;
-    var myFunc = foreign.myLib.myFunc;
-    var xInt = 0;
-    var fFloat = fround(0);
-    var zDouble = 0.0;
-    function logSum(x, y) {
-        var z = 0;
-        return;
+"use asm";
+var log = stdlib.Math.log;
+var now = foreign.usrlib.now;
+function logSum(start, end) {
+    start = start | 0;
+    end = end | 0;
+    var z = 0;
+    var k = 0;
+    for (k = start; (k | 0) < (end | 0); k = k + 1 | 0) {
+        z = k;
     }
-    return {
-        logSum: logSum
-    };
-}(stdlib || window, usrlib, heap || new ArrayBuffer(0x4000));
+    return z | 0;
+}    
+return { 
+    logSum:logSum, 
+};
+}(stdlib || window, usrlib, heap || new ArrayBuffer(16384));
 ```
 
 
