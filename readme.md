@@ -50,10 +50,10 @@ import log from Math;
 import now from usrlib;
 
 export int logSum(int start, int end) {
-    int z;
+    int z=42;
     int k;
     for (k=start; k<end; k++) {
-        z = k;
+        z = z+k;
     }
     return z;
 }
@@ -71,8 +71,9 @@ function logSum(start, end) {
     end = end | 0;
     var z = 0;
     var k = 0;
+    z = 42;
     for (k = start; (k | 0) < (end | 0); k = k + 1 | 0) {
-        z = k;
+        z = z + k;
     }
     return z | 0;
 }    

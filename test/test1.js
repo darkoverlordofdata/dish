@@ -1,4 +1,4 @@
-var test = function(stdlib, foreign, heap) {
+var test1 = function(stdlib, foreign, heap) {
 "use asm";
 var exp = stdlib.Math.exp;
 var log = stdlib.Math.log;
@@ -12,9 +12,9 @@ function logSum(start, end) {
     var i = 0;
     var count = 0;
     var k = 0;
+    k = k + 1, p = 2;
     count = end - start;
     k = start;
-    k = k + 1, p = 2;
     for (k = start; (i | 0) < (end | 0); k = k + 1 | 0) {
         i = k;
     }

@@ -34,7 +34,10 @@ function parse(input) {
     const symtbl = { global: {} }
     const exporting = {}
 
-    let currentFunction = ''
+    let currentScope = ''
+    let priorScope = ''
+    let injectInit = false
+
 
     let float = false
     let heapi8 = false
@@ -79,7 +82,7 @@ function parse(input) {
         if (Array.isArray(tokens)) {
             if (conditional) {
                 // coerce each term individually
-                let scope = currentFunction === '' ? 'global' : currentFunction
+                let scope = currentScope === '' ? 'global' : currentScope
                 let temp = []
                 for (let i=0; i<tokens.length; i++) {
                     let token = tokens[i]
@@ -208,7 +211,7 @@ function parse(input) {
         } else {
             throw new Exception(`Function ${name.value} already defined.`)
         }
-        currentFunction = name.value
+        currentScope = name.value
         
         const args = []
         expect('(')
@@ -229,9 +232,13 @@ function parse(input) {
                 case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
             }
         }
+
+
         while (!match('}')) {
-            body.push(parseStatement())
+            
+            body.push(parseStatement(body))
             if (!input.eof()) if (match(';')) expect(';')
+
         }
         expect('}')
         
@@ -241,20 +248,38 @@ function parse(input) {
     /**
      * Everything except import, export, function
      */
-    function parseStatement() {
+    function parseStatement(body) {
+        //=================================
+        if (matchKeyword('double'))     return parseDouble(currentScope)
+        if (matchKeyword('float'))      return parseFloat(currentScope)
+        if (matchKeyword('int'))        return parseInt(currentScope)
+
+        if (body) {
+            if (currentScope !== priorScope) {
+                priorScope = currentScope
+                for (let name in symtbl[currentScope]) {
+                    let sym = symtbl[currentScope][name]
+                    if (sym.init) {
+                        body.push(factory.AssignmentStatement(sym.name, jsep(sym.init)))
+                    }
+                }
+            }
+        }
+
+
+
+        // console.log(symtbl[currentScope])
         //=================================
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('continue'))   return parseContinue()
         if (matchKeyword('do'))         return parseDo()
-        if (matchKeyword('double'))     return parseDouble(currentFunction)
-        if (matchKeyword('float'))      return parseFloat(currentFunction)
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parsIf()
-        if (matchKeyword('int'))        return parseInt(currentFunction)
         if (matchKeyword('return'))     return parseReturn()
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
 
+        //=================================
         if (input.peek().type === Token.Variable) {
             input.next()
             switch (input.peek().value) {
@@ -305,16 +330,16 @@ function parse(input) {
         let name = ''
         let tokens = []
         while (!match(';') && !match(')')) {
-            if (name === '') { /* next token MUST be the lhs */
+            if (name === '') { /* next token MUST be the lhs, therefore it's the name */
                 if (input.peek().type === Token.Variable) {
                     name = input.next().value
                     tokens = []
                 } else {
                     input.raise('Expecting lhs variable')
                 }
-            } else if (match('=')) {
+            } else if (match('=')) { /** eat the equal operator */
                 expect('=')
-            } else if (match('++')) {
+            } else if (match('++')) { /** expand the ++ operator */
                 expect('++') 
                 tokens.push('(')
                 tokens.push(name)
@@ -323,12 +348,12 @@ function parse(input) {
                 tokens.push(')')
                 tokens.push('|')
                 tokens.push('0')
-            } else if (match(',')) {
+            } else if (match(',')) { /** a sequence of assignments */
                 expect(',')
                 names.push(name)
                 inits.push(jsep(tokens.join(' ')))
                 name = ''
-            } else {
+            } else { /** just copy the token to the output stack */
                 tokens.push(input.next().value)
             }
         }
@@ -340,43 +365,6 @@ function parse(input) {
             return factory.AssignmentStatement(names, inits)
         }
         
-    }
-
-    function parseAssignmentz() {
-        let names = [input.next().value]
-        let seq = []
-        expect('=')
-        let tokens = []
-        while (!match(';') && !match(')')) {
-            if (match(',')) {
-                expect(',')
-                names.push(input.next().value)
-                seq.push(jsep(tokens.join(' ')))
-                expect('=')
-                tokens = []
-            } else tokens.push(input.next().value)
-        }
-        console.log('#', input.peek())
-        if (names.length === 1)
-            return factory.AssignmentStatement(names[0], jsep(tokens.join(' ')))
-        else {
-            seq.push(jsep(tokens.join(' ')))
-            return factory.AssignmentStatement(names, seq)
-        }
-    }
-
-    function fixAssignment(name, tokens) {
-
-        let scope = currentFunction === '' ? 'global' : currentFunction
-
-        for (let i=0; i<tokens.length; i++) {
-            if (tokens[i].type === Token.Number) {
-                switch(symtbl[scope][name].type) {
-                    case 'double':  tokens[i].value = "(+" + tokens[i].value + ")"; break
-                    case 'float':   tokens[i].value = "fround(" + tokens[i].value + ")"; break
-                }
-            }
-        }
     }
 
 
@@ -396,10 +384,20 @@ function parse(input) {
         expectKeyword('double')
         const name = input.next()
         if (input.peek().value === '(') {
-            symtbl[scope][name.value] = { name:name.value, type:'double', func:true }
+            symtbl[scope][name.value] = { name:name.value, type:'double', func:true, init:'' }
             return parseFunction(scope, 'double', name)
+
+        } else if (match('=')) { /** initialization */
+            expect('=')
+            let tokens = []
+            while (!match(';')) {
+                tokens.push(input.next().value)
+            }
+            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:tokens.join(' ') }
+            return factory.DoubleDeclaration(name.value)
+
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'double', func:false }
+            symtbl[scope][name.value] = { name:name.value, type:'double', func:false, init:'' }
             return factory.DoubleDeclaration(name.value)
         }
     }
@@ -433,10 +431,20 @@ function parse(input) {
         float = true
         const name = input.next()
         if (input.peek().value === '(') {
-            symtbl[scope][name.value] = { name:name.value, type:'float', func:true }
+            symtbl[scope][name.value] = { name:name.value, type:'float', func:true, init:'' }
             return parseFunction(scope, 'float', name)
+
+        } else if (match('=')) { /** initialization */
+            expect('=')
+            let tokens = []
+            while (!match(';')) {
+                tokens.push(input.next().value)
+            }
+            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:tokens.join(' ') }
+            return factory.FloatDeclaration(name.value)
+
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'float', func:false }
+            symtbl[scope][name.value] = { name:name.value, type:'float', func:false, init:'' }
             return factory.FloatDeclaration(name.value)
         }
     }
@@ -474,11 +482,21 @@ function parse(input) {
         scope = scope || 'global'
         expectKeyword('int')
         const name = input.next()
-        if (input.peek().value === '(') {
-            symtbl[scope][name.value] = { name:name.value, type:'int', func:true }
+        if (input.peek().value === '(') { /** function definition */
+            symtbl[scope][name.value] = { name:name.value, type:'int', func:true, init:'' }
             return parseFunction(scope, 'int', name)
+
+        } else if (match('=')) { /** initialization */
+            expect('=')
+            let tokens = []
+            while (!match(';')) {
+                tokens.push(input.next().value)
+            }
+            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:tokens.join(' ') }
+            return factory.IntDeclaration(name.value)
+
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'int', func:false }
+            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:'' }
             return factory.IntDeclaration(name.value)
         }
     }
@@ -531,7 +549,7 @@ function parse(input) {
             }
 
             let castExpression = ''
-            switch(symtbl.global[currentFunction].type) {
+            switch(symtbl.global[currentScope].type) {
                 case 'int':     castExpression = '(('+tokens.join(' ')+')|0)'; break
                 case 'double':  castExpression = '+('+tokens.join(' ')+')'; break
                 case 'float':   castExpression = 'fround('+tokens.join(' ')+')'; break

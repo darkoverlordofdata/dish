@@ -11,10 +11,10 @@ export double logSum(int start, int end) {
     int count;
     int k;
 
-    count = start;
+    count = end - start;
     k=start;
     k = k+1, p=2;
-    for (k=start; i<start; k++) {
+    for (k=start; i<end; k++) {
         i = k;
     }
     for (i = start, k = 0; i < count; i++, k++) {
