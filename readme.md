@@ -18,9 +18,9 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Status - just starting. simple module:
+Status - happy path only
 
-		node ./src/index.js src/test.d > out.js
+		node ./src/dish.js test/test.d > test/test.js
 
 
 The goal of dish is to insulate me from the twiddly syntax of asm.js. 
@@ -28,8 +28,7 @@ The goal of dish is to insulate me from the twiddly syntax of asm.js.
 * use the type information to add type coercions to generated code.
 * generate import/export bindings.
 * generate the module header
-* add sugar for heap management and pointer types
-* no algorythmic optimization. produce idiomatic code so that the OdinMonkey or TurboFan will optimize.
+* no algorythmic optimization. produce idiomatic code so that OdinMonkey or TurboFan will optimize.
 
 Grammer
 
@@ -39,12 +38,14 @@ Grammer
 * import/export can only be used at the module level.
 * within a function: break, case, continue, do, else, for, if, return, switch, while
 
+Todo: 
 
+* add sugar for heap management and pointer types
+* char type as int. So 'a' is the same as 97|0
 
 ### example
 
 #### test.d
-
 ```d
 import log from Math;
 import now from usrlib;
@@ -83,4 +84,38 @@ return {
 }(stdlib || window, usrlib, heap || new ArrayBuffer(16384));
 ```
 
+
+### resources
+
+http://mrale.ph/blog/2013/03/28/why-asmjs-bothers-me.html
+
+http://danluu.com/malloc-tutorial/
+
+http://www.2ality.com/2013/02/asm-js.html
+
+http://ejohn.org/blog/asmjs-javascript-compile-target/
+
+http://asmjs.org/spec/latest/
+
+
+### notes
+
+I'm using esprima ast 'schema' as my target.  Then, escodegen is used to generate the final javascript code.
+Code is parsed with recursive descent. My parser stops when it get's to an expression, and hands off to jsep, 
+which also generates esprima schema. I do some munging of the expression - adding type coercions - prior to
+the handoff. 
+
+Esprima has 1 issue - literal floats with a zero floating part are truncated to ints - but only as far as asm.js
+is concerned - in standard javascript there is no difference. To work around this, floats are encoded with qoute 
+wrapper - i.e. '0.0'. After the call to escodegen, these wrappers are removed using regexp. This works because
+quoted literals don't exist in asm.js, with the sole exception of the 'use asm' pragma, therefore any quoted
+values I find are the floats that I've encoded. 
+
+
+### testing
+
+compare run times with asmjs disabled
+
+also implement merseene twister prng. http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
+Compare also to my mt19937.ts project
 

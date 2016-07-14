@@ -87,8 +87,7 @@ function parse(input) {
                 for (let i=0; i<tokens.length; i++) {
                     let token = tokens[i]
                     if (token.type == Token.Variable) {
-                        let _scope = symtbl[scope]
-                        if (!_scope[token.value])  {
+                        if (!symtbl[scope][token.value])  {
                             temp.push(token)
                             continue // todo: finish this
                         }
@@ -124,6 +123,7 @@ function parse(input) {
                 return jsep0(str.join(' '))
             } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
                 let temp = []
+                console.log('do I get here?')
                 temp.push(tokens[0])
                 temp.push(new Token(Token.Delimiter, '='))
                 temp.push(new Token(Token.Delimiter, '('))
@@ -249,12 +249,10 @@ function parse(input) {
      * Everything except import, export, function
      */
     function parseStatement(body) {
-        //=================================
-        if (matchKeyword('double'))     return parseDouble(currentScope)
-        if (matchKeyword('float'))      return parseFloat(currentScope)
-        if (matchKeyword('int'))        return parseInt(currentScope)
-
-        if (body) {
+        if (body) { /** only in top level of function */
+            if (matchKeyword('double')) return parseDouble(currentScope)
+            if (matchKeyword('float'))  return parseFloat(currentScope)
+            if (matchKeyword('int'))    return parseInt(currentScope)
             if (currentScope !== priorScope) {
                 priorScope = currentScope
                 for (let name in symtbl[currentScope]) {
@@ -265,10 +263,6 @@ function parse(input) {
                 }
             }
         }
-
-
-
-        // console.log(symtbl[currentScope])
         //=================================
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('continue'))   return parseContinue()
@@ -278,7 +272,6 @@ function parse(input) {
         if (matchKeyword('return'))     return parseReturn()
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
-
         //=================================
         if (input.peek().type === Token.Variable) {
             input.next()

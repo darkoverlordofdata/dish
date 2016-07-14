@@ -2,13 +2,14 @@
     "compilerOptions": {
         "target": "es5",
         "module": "system",
-        "rootDir": "src",
+        "rootDir": "src/app",
         "outFile": "web/app.js"
     },
     "files": [
-        "src/stdlib.js",
-        "src/ffi.js",
-        "src/asm.js",
-        "src/load.js"
+        "src/app/stdlib.js",
+        "src/app/ffi.js",
+        "src/app/asm.js",
+        "src/app/mt19937.js",
+        "src/app/load.js"
     ]
 }

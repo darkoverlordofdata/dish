@@ -32,7 +32,7 @@ System.register("stdlib", [], function(exports_1, context_1) {
 System.register("ffi", [], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
-    var Ffi;
+    var Ffi, HEAP, buffer;
     return {
         setters:[],
         execute: function() {
@@ -44,21 +44,31 @@ System.register("ffi", [], function(exports_2, context_2) {
                 Ffi.now = function () {
                     return performance.now();
                 };
+                Ffi.malloc = function (n) {
+                    var m;
+                    m = HEAP[0];
+                    HEAP[0] = m + n;
+                    return m;
+                };
                 return Ffi;
             })();
             exports_2("default",Ffi);
+            exports_2("buffer", buffer = new ArrayBuffer(0x40000));
+            HEAP = new Int32Array(buffer);
+            HEAP[0] = 16;
         }
     }
 });
 System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
-    var ffi_1, stdlib_1;
-    var SLOW_HEAP_SIZE, FAST_HEAP_SIZE, buffer, asm;
+    var ffi_1, ffi_2, stdlib_1;
+    var SLOW_HEAP_SIZE, FAST_HEAP_SIZE, asm;
     return {
         setters:[
             function (ffi_1_1) {
                 ffi_1 = ffi_1_1;
+                ffi_2 = ffi_1_1;
             },
             function (stdlib_1_1) {
                 stdlib_1 = stdlib_1_1;
@@ -66,7 +76,7 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
         execute: function() {
             SLOW_HEAP_SIZE = 0x10000; /* 64k Minimum heap size */
             FAST_HEAP_SIZE = 0x40000; /* 256k for performance */
-            exports_3("buffer", buffer = new ArrayBuffer(FAST_HEAP_SIZE));
+            //export const buffer = new ArrayBuffer(FAST_HEAP_SIZE)
             /**
              * asm.js
              *
@@ -78,7 +88,9 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                 "use asm";
                 var exp = stdlib.Math.exp;
                 var log = stdlib.Math.log;
+                var fround = stdlib.Math.fround;
                 var now = usrlib.now;
+                var malloc = usrlib.malloc;
                 var HEAP8 = new stdlib.Int8Array(buffer);
                 var HEAP16 = new stdlib.Int16Array(buffer);
                 var HEAP32 = new stdlib.Int32Array(buffer);
@@ -88,36 +100,12 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPF32 = new stdlib.Float32Array(buffer);
                 var HEAPF64 = new stdlib.Float64Array(buffer);
                 var t1 = 0.0;
-
-                function test() {
-                    var z = 0;
-                    z = 42;
-                    return z | 0;
-                }
-
-                function zogSum(x, y) {
-                    x = +x;         // (double x,
-                    y = y | 0;      // int y)
-                    var z = 0.0;    // double z;
-                    var q = 0;      // int q;
-                    var i = 0.0;    // double i;
-                    var j = 0;      // int j;
-                    z = +42 + +130;   // terms must agree in type
-                    x = +21;           // initialize after all var's
-                    for (i = 0.0, j = 0; (j|0)<10; i = i + 1.0, j = j + 1|0) {
-                        z = z - 1.0;
-                    }
-                    return +z;
-                }
-                
-
                 function logSum(start, end) {
-                    
                     start = start | 0;
                     end = end | 0;
-                    var sum = 0.0, p = 0, q = 0, i = 0, count = 0, k = 0;
+                    var sum = 0.0, p = 0, q = 0, i = 0, count = 0;
                     count = 1000;
-                    for (i = start, k = 0; (i | 0) < (count | 0); i = i + 1 | 0, k = k + 1 | 0) {
+                    for (i = start; (i | 0) < (count | 0); i = (i + 1) | 0) {
                         // asm.js forces byte addressing of the heap by requiring shifting by 3
                         for (p = start << 3, q = end << 3; (p | 0) < (q | 0); p = (p + 8) | 0) {
                             sum = sum + +log(HEAPF64[p >> 3]);
@@ -141,18 +129,122 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                     t1 = +geometricMean(10 | 0, 20000 | 0);
                     return +t1;
                 }
+                function test_malloc(n) {
+                    n = n | 0;
+                    var m = 0;
+                    m = malloc(n | 0) | 0;
+                    return m | 0;
+                }
                 return {
                     geometricMean: geometricMean,
                     getTime: getTime,
+                    test_malloc: test_malloc
                 };
-            }(stdlib_1.default, ffi_1.default, buffer)));
+            }(stdlib_1.default, ffi_1.default, ffi_2.buffer)));
+        }
+    }
+});
+System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
+    "use strict";
+    var __moduleName = context_4 && context_4.id;
+    var ffi_3, ffi_4, stdlib_2;
+    var mt19937;
+    return {
+        setters:[
+            function (ffi_3_1) {
+                ffi_3 = ffi_3_1;
+                ffi_4 = ffi_3_1;
+            },
+            function (stdlib_2_1) {
+                stdlib_2 = stdlib_2_1;
+            }],
+        execute: function() {
+            exports_4("mt19937", mt19937 = (function (stdlib, foreign, heap) {
+                "use asm";
+                var HEAP = new stdlib.Uint32Array(heap);
+                var malloc = foreign.malloc;
+                var imul = stdlib.Math.imul;
+                var N = 624;
+                var M = 397;
+                var MATRIX_A = 0x9908b0df; /* constant vector a */
+                var UPPER_MASK = 0x80000000; /* most significant w-r bits */
+                var LOWER_MASK = 0x7fffffff; /* least significant r bits */
+                var mt = 0; /* ptr -> the array for the state vector  */
+                var mti = 625; /* mti==N+1 means mt[N] is not initialized */
+                /* initializes mt[N] with a seed */
+                function init_genrand(s) {
+                    s = s | 0;
+                    mt = malloc(N << 2) | 0; // malloc(N*sizeof(int))
+                    HEAP[mt + 0 >> 2] = s & 0xffffffff;
+                    for (mti = 1; (mti | 0) < (N | 0); mti = mti + 1 | 0) {
+                        HEAP[mt + mti >> 2] =
+                            imul(1812433253, HEAP[mt + mti - 1 >> 2] ^ (HEAP[mt + mti - 1 >> 2] >> 30)) + mti | 0;
+                        //(1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+                        // (1812433253 * HEAP[mt+mti-1>>2] ^ (HEAP[mt+mti-1>>2] >> 30)) + mti | 0; 
+                        /* See Knuth TAOCP Vol2. 3rd Ed. P.106x` for multiplier. */
+                        /* In the previous versions, MSBs of the seed affect   */
+                        /* only MSBs of the array mt[].                        */
+                        /* 2002/01/09 modified by Makoto Matsumoto             */
+                        HEAP[mt + mti >> 2] = HEAP[mt + mti >> 2] & 0xffffffff;
+                    }
+                }
+                /* generates a random number on [0,0xffffffff]-interval */
+                function genrand_int32() {
+                    var y = 0;
+                    var mag01 = 0;
+                    var kk = 0;
+                    mag01 = malloc(2 << 2) | 0;
+                    HEAP[mag01 + 0 >> 2] = 0;
+                    HEAP[mag01 + 1 >> 2] = MATRIX_A;
+                    if ((mti | 0) >= (N | 0)) {
+                        if ((mti | 0) == (N + 1 | 0))
+                            init_genrand(5489); /* a default initial seed is used */
+                        for (kk = 0; (kk | 0) < (N - M | 0); kk = kk + 1 | 0) {
+                            y = (HEAP[mt + kk >> 2] & UPPER_MASK) | (HEAP[mt + kk + 1 >> 2] & LOWER_MASK);
+                            HEAP[mt + kk >> 2] = HEAP[mt + kk + M >> 2] ^ (y >> 1) ^ HEAP[mag01 + (y & 1) >> 2];
+                        }
+                        for (; (kk | 0) < (N - 1 | 0); kk = kk + 1 | 0) {
+                            y = (HEAP[mt + kk >> 2] & UPPER_MASK) | (HEAP[mt + kk + 1 >> 2] & LOWER_MASK);
+                            HEAP[mt + kk >> 2] = HEAP[mt + kk + M - N >> 2] ^ (y >> 1) ^ HEAP[mag01 + (y & 1) >> 2];
+                        }
+                        y = (HEAP[mt + N - 1 >> 2] & UPPER_MASK) | (HEAP[mt + 0 >> 2] & LOWER_MASK);
+                        HEAP[mt + N - 1 >> 2] = HEAP[mt + M - 1 >> 2] ^ (y >> 1) ^ HEAP[mag01 + (y & 1) >> 2];
+                        mti = 0;
+                    }
+                    y = HEAP[mt + mti >> 2] | 0;
+                    mti = mti + 1 | 0;
+                    /* Tempering */
+                    y = y ^ (y >> 11);
+                    y = y ^ (y << 7) & 0x9d2c5680;
+                    y = y ^ (y << 15) & 0xefc60000;
+                    y = y ^ (y >> 18);
+                    return y | 0;
+                }
+                return {
+                    genrand_int32: genrand_int32,
+                };
+            }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
         }
     }
 });
 // Generated by CoffeeScript 1.10.0
 System["import"]('asm').then(function (module) {
+    var elapsed;
     console.log('asm loaded');
-    return console.log("asm.getTime = " + (module.asm.getTime()));
+    elapsed = module.asm.getTime();
+    console.log("asm.getTime = " + elapsed);
+    console.log("Compile", elapsed < 200 ? "Ok" : "ERROR");
+    console.log(module.asm.test_malloc(16));
+    return console.log(module.asm.test_malloc(16));
+}, function (err) {
+    return console.log(err);
+});
+System["import"]('mt19937').then(function (module) {
+    console.log('mt19937 loaded');
+    console.log(module.mt19937.genrand_int32());
+    console.log(module.mt19937.genrand_int32());
+    console.log(module.mt19937.genrand_int32());
+    return console.log(module.mt19937.genrand_int32());
 }, function (err) {
     return console.log(err);
 });
