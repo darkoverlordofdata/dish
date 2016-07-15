@@ -44,11 +44,17 @@ System.register("ffi", [], function(exports_2, context_2) {
                 Ffi.now = function () {
                     return performance.now();
                 };
-                Ffi.malloc = function (n) {
-                    var m;
-                    m = HEAP[0];
-                    HEAP[0] = m + n;
-                    return m;
+                /*
+                 * malloc
+                 *
+                 * @param nBytes number of bytes required
+                 * @returns starting offset in the heap
+                 */
+                Ffi.malloc = function (nBytes) {
+                    var offset;
+                    offset = HEAP[0];
+                    HEAP[0] = offset + nBytes;
+                    return offset;
                 };
                 return Ffi;
             })();
@@ -163,7 +169,6 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
                 "use asm";
                 var HEAP = new stdlib.Uint32Array(heap);
                 var malloc = foreign.malloc;
-                var imul = stdlib.Math.imul;
                 var N = 624;
                 var M = 397;
                 var MATRIX_A = 0x9908b0df; /* constant vector a */
@@ -171,47 +176,69 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var LOWER_MASK = 0x7fffffff; /* least significant r bits */
                 var mt = 0; /* ptr -> the array for the state vector  */
                 var mti = 625; /* mti==N+1 means mt[N] is not initialized */
+                function peek(addr) {
+                    addr = addr | 0;
+                    addr = addr << 2;
+                    return HEAP[addr >> 2] | 0;
+                }
+                function poke(addr, value) {
+                    addr = addr | 0;
+                    value = value | 0;
+                    addr = addr << 2;
+                    HEAP[addr >> 2] = value;
+                }
                 /* initializes mt[N] with a seed */
                 function init_genrand(s) {
                     s = s | 0;
+                    var t1 = 0;
+                    var t2 = 0;
+                    var k = 0;
+                    var r2 = 0.0;
+                    var r3 = 0.0;
                     mt = malloc(N << 2) | 0; // malloc(N*sizeof(int))
-                    HEAP[mt + 0 >> 2] = s & 0xffffffff;
+                    //HEAP[mt] = s & 0xffffffff;
+                    poke(mt, s & 0xffffffff);
                     for (mti = 1; (mti | 0) < (N | 0); mti = mti + 1 | 0) {
-                        HEAP[mt + mti >> 2] =
-                            imul(1812433253, HEAP[mt + mti - 1 >> 2] ^ (HEAP[mt + mti - 1 >> 2] >> 30)) + mti | 0;
-                        //(1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
-                        // (1812433253 * HEAP[mt+mti-1>>2] ^ (HEAP[mt+mti-1>>2] >> 30)) + mti | 0; 
-                        /* See Knuth TAOCP Vol2. 3rd Ed. P.106x` for multiplier. */
-                        /* In the previous versions, MSBs of the seed affect   */
-                        /* only MSBs of the array mt[].                        */
-                        /* 2002/01/09 modified by Makoto Matsumoto             */
-                        HEAP[mt + mti >> 2] = HEAP[mt + mti >> 2] & 0xffffffff;
+                        // mt[mti] = 
+                        // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+                        t1 = peek(mt + mti - 1 | 0) | 0;
+                        t2 = t1 >> 30;
+                        // r2 = +(t1 ^ t2);
+                        //r3 = +(mti|0);
+                        // k = ~~(1812433253.0 * r2 + r3);
+                        // poke(mt+mti|0, k|0);
+                        poke(mt + mti | 0, ~~(1812433253.0 * +(t1 ^ t2) + +(mti | 0)));
                     }
                 }
                 /* generates a random number on [0,0xffffffff]-interval */
                 function genrand_int32() {
                     var y = 0;
+                    var y1 = 0;
+                    var y2 = 0;
                     var mag01 = 0;
                     var kk = 0;
-                    mag01 = malloc(2 << 2) | 0;
-                    HEAP[mag01 + 0 >> 2] = 0;
-                    HEAP[mag01 + 1 >> 2] = MATRIX_A;
+                    mag01 = malloc(2 << 3) | 0;
+                    poke(mag01, 0);
+                    poke(mag01 + 1 | 0, MATRIX_A);
+                    // HEAP[mag01+0] = 0;
+                    // HEAP[mag01+1] = MATRIX_A;
                     if ((mti | 0) >= (N | 0)) {
                         if ((mti | 0) == (N + 1 | 0))
                             init_genrand(5489); /* a default initial seed is used */
                         for (kk = 0; (kk | 0) < (N - M | 0); kk = kk + 1 | 0) {
-                            y = (HEAP[mt + kk >> 2] & UPPER_MASK) | (HEAP[mt + kk + 1 >> 2] & LOWER_MASK);
-                            HEAP[mt + kk >> 2] = HEAP[mt + kk + M >> 2] ^ (y >> 1) ^ HEAP[mag01 + (y & 1) >> 2];
+                            y = ((peek(mt + kk | 0) | 0) & UPPER_MASK) | ((peek(mt + kk + 1 | 0) | 0) & LOWER_MASK);
+                            poke(mt + kk | 0, (peek(mt + kk + M | 0) | 0) ^ (y >> 1) ^ (peek(mag01 + (y & 1) | 0) | 0) | 0);
                         }
                         for (; (kk | 0) < (N - 1 | 0); kk = kk + 1 | 0) {
-                            y = (HEAP[mt + kk >> 2] & UPPER_MASK) | (HEAP[mt + kk + 1 >> 2] & LOWER_MASK);
-                            HEAP[mt + kk >> 2] = HEAP[mt + kk + M - N >> 2] ^ (y >> 1) ^ HEAP[mag01 + (y & 1) >> 2];
+                            y = ((peek(mt + kk | 0) | 0) & UPPER_MASK) | ((peek(mt + kk + 1 | 0) | 0) & LOWER_MASK);
+                            poke(mt + kk | 0, (peek(mt + kk + M - N | 0) | 0) ^ (y >> 1) ^ (peek(mag01 + (y & 1) | 0) | 0) | 0);
                         }
-                        y = (HEAP[mt + N - 1 >> 2] & UPPER_MASK) | (HEAP[mt + 0 >> 2] & LOWER_MASK);
-                        HEAP[mt + N - 1 >> 2] = HEAP[mt + M - 1 >> 2] ^ (y >> 1) ^ HEAP[mag01 + (y & 1) >> 2];
+                        y = ((peek(mt + N - 1 | 0) | 0) & UPPER_MASK) | ((peek(mt + 0 | 0) | 0) & LOWER_MASK);
+                        // poke(mt+N-1, peek(mt+M-1) ^ (y >> 1) ^ peek(mag01+(y&1)));
+                        poke(mt + N - 1 | 0, (peek(mt + M - 1 | 0) | 0) ^ (y >> 1) ^ (peek(mag01 + (y & 1) | 0) | 0) | 0);
                         mti = 0;
                     }
-                    y = HEAP[mt + mti >> 2] | 0;
+                    y = peek(mt + mti | 0) | 0;
                     mti = mti + 1 | 0;
                     /* Tempering */
                     y = y ^ (y >> 11);

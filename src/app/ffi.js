@@ -12,11 +12,19 @@ Ffi = (function() {
     return performance.now();
   };
 
-  Ffi.malloc = function(n) {
-    var m;
-    m = HEAP[0];
-    HEAP[0] = m + n;
-    return m;
+
+  /*
+   * malloc
+   *
+   * @param nBytes number of bytes required
+   * @returns starting offset in the heap
+   */
+
+  Ffi.malloc = function(nBytes) {
+    var offset;
+    offset = HEAP[0];
+    HEAP[0] = offset + nBytes;
+    return offset;
   };
 
   return Ffi;
