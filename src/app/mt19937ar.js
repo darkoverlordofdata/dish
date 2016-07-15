@@ -1,5 +1,5 @@
-'use strict'
 export const mt19937ar = (function() {
+    'use strict'
 
     /* Period parameters */  
     const N = 624

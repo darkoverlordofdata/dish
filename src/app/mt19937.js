@@ -44,7 +44,7 @@ export const mt19937 = (function(stdlib, foreign, heap) {
             
             t1 = peek(mt+mti-1|0)|0;
             t2 = t1 >> 30;
-            poke(mt+mti|0, ~~(1812433253.0 * +(t1 ^ t2) + +(mti|0)));
+            poke(mt+mti|0, ~~(1812433253.0 * +(t1 ^ t2) + +(mti|0))&0xffffffff);
             
             /* See Knuth TAOCP Vol2. 3rd Ed. P.106x` for multiplier. */
             /* In the previous versions, MSBs of the seed affect   */
@@ -61,7 +61,7 @@ export const mt19937 = (function(stdlib, foreign, heap) {
         var y2 = 0;
         var mag01 = 0;
         var kk = 0;
-        mag01 = malloc(2<<3)|0;
+        mag01 = malloc(2<<2)|0;
         poke(mag01, 0);
         poke(mag01+1|0, MATRIX_A)
         // HEAP[mag01+0] = 0;

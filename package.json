@@ -23,6 +23,7 @@
     "gulp-shell": "^0.4.2",
     "gulp-webserver": "^0.9.1",
     "open": "0.0.5",
+    "qunit-bdd": "^0.6.1",
     "sbt-bin": "^0.1.1",
     "superstatic": "^4.0.3",
     "systemjs": "^0.19.31"
@@ -32,6 +33,7 @@
     "escodegen": "^1.8.0",
     "jsep": "^0.3.0",
     "liquid.coffee": "^0.1.6",
-    "morgan": "^1.7.0"
+    "morgan": "^1.7.0",
+    "qunitjs": "^1.12.0"
   }
 }
