@@ -17,6 +17,7 @@ export const mt19937 = (function(stdlib, foreign, heap) {
     var mt = 0;     /* ptr -> the array for the state vector  */
     var mti = 625;  /* mti==N+1 means mt[N] is not initialized */
 
+    var T = 0;
 
     function peek(addr) {
         addr = addr | 0;
@@ -36,25 +37,13 @@ export const mt19937 = (function(stdlib, foreign, heap) {
         s = s | 0;
         var t1 = 0;
         var t2 = 0;
-        var k = 0;
-        var r2 = 0.0;
-        var r3 = 0.0;
 
         mt = malloc(N<<2)|0 // malloc(N*sizeof(int))
-        //HEAP[mt] = s & 0xffffffff;
         poke(mt, s & 0xffffffff)
         for (mti=1; (mti|0)<(N|0); mti = mti+1|0) {
             
-        // mt[mti] = 
-	    // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
-
             t1 = peek(mt+mti-1|0)|0;
             t2 = t1 >> 30;
-            // r2 = +(t1 ^ t2);
-            //r3 = +(mti|0);
-            // k = ~~(1812433253.0 * r2 + r3);
-            // poke(mt+mti|0, k|0);
-
             poke(mt+mti|0, ~~(1812433253.0 * +(t1 ^ t2) + +(mti|0)));
             
             /* See Knuth TAOCP Vol2. 3rd Ed. P.106x` for multiplier. */
@@ -114,7 +103,25 @@ export const mt19937 = (function(stdlib, foreign, heap) {
     }
 
 
+    function test() {
+        var i=0;
+        var MAX = 0;
+        var t1 = 0.0;
+        var t2 = 0.0;
+        var t = 0;
+
+        MAX = 10000;
+        // t1 = +now();
+        for (i=0; (i|0) < (MAX|0); i = (i + 1)|0) {
+            t = genrand_int32()|0;
+        }
+        // t2 = +now();
+        return// +(t2 - t1);
+
+    }
+
     return { 
         genrand_int32:genrand_int32, 
+        test: test
     }
 }(Stdlib, Ffi, buffer))

@@ -10,6 +10,7 @@
         "src/app/ffi.js",
         "src/app/asm.js",
         "src/app/mt19937.js",
+        "src/app/mt19937ar.js",
         "src/app/load.js"
     ]
 }

@@ -20,7 +20,7 @@ function init_genrand(s)
 	    // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
         t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
         mt[mti] = (1812433253 * t2 + mti); 
-        if (T++<5) console.log(t2, (1812433253 * t2 + mti)&0xffffffff) ;
+        //if (T++<5) console.log(t2, (1812433253 * t2 + mti)&0xffffffff) ;
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -76,7 +76,17 @@ function genrand_int32()
 
 console.log("mt19937ar!")
 
-console.log(genrand_int32())
-console.log(genrand_int32())
-console.log(genrand_int32())
-console.log(genrand_int32())
+window.testResults = [
+    [genrand_int32(), genrand_int32(), genrand_int32(), genrand_int32(), genrand_int32()],
+    [0,0,0,0,0]
+
+]
+
+var MAX = 10000
+var t1 = performance.now()
+for (var i=0; i<MAX; i++) {
+    genrand_int32()
+}
+var t2 = performance.now()
+
+console.log("mt19937ar! "+(t2-t1))
