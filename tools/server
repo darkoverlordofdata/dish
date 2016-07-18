@@ -30,5 +30,5 @@ var options = {
 };
 
 server(options).listen(function(err) {
- open('http://localhost:53610/web');//, '/home/bruce/Applications/firefox/firefox');
+ open('http://localhost:53610/web', '/home/bruce/Applications/firefox/firefox');
 });

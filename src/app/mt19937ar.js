@@ -35,6 +35,7 @@ export const mt19937ar = (function() {
             /* for >32 bit machines */
             
         }
+        for (var x=0; x<20; x++) console.log('ar', mt[x])
     }
 
 
