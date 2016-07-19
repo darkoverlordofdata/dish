@@ -1,48 +1,11 @@
 #!/usr/bin/env coffee
 
 jsep = require 'jsep'
-
-nodes = []
-inArray = false
-traverse = (node) ->
-    node.array = inArray
-    if node.type is 'BinaryExpression'
-        nodes.push type: 'Operator', op:node.operator, array: inArray
-        traverse(node.right)
-        traverse(node.left)
-    else
-        switch node.type
-            when 'MemberExpression'
-                inArray = true
-                node.object.array = true
-                node.object.array_name = node.object.name
-                # add the array base address to the indexing
-                nodes.push type: 'Operator', op:'+', array: inArray
-                nodes.push node.object
-                traverse(node.property)
-                inArray = false
-            when 'Identifier' 
-                nodes.push node
-            when 'Literal'
-                nodes.push node
-
-# ast = jsep('(mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK)')
 # ast = jsep('(1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti)')
 # ast = jsep('mt[mti] & 4294967295')
+# ast = jsep('(mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK)')
 # ast = jsep('mt[kk+M-N] ^ (y >> 1) ^ mag01[y & 1]')
-ast = jsep('(mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK)')
-ast = jsep('mt[kk+M-N] ^ (y >> 1) ^ mag01[y & 1]')
 
-#console.log ast
-traverse(ast)
-
-nodes = nodes.reverse()
-#console.log nodes
-#process.exit 0
-
-###
-===================================================================
-###
 class Token
     constructor:(@node) ->
     toString: ->
@@ -52,57 +15,63 @@ class Token
             when 'Operator'     then @node.op
             else ''
 
-
 curr = ''
 prev = ''
 
-getName = () ->
+createVar = () ->
     prev = curr
     curr = "$#{uniqueId}"
-    curr = if curr.length == 2 then "$0#{uniqueId}" else curr
+    curr = if curr.length is 2 then "$0#{uniqueId}" else curr
     uniqueId++
     curr
 
 
-outputArray = () ->
-    getName()
-    out[curr] = "#{curr} = #{prev} << 2"
-    getName()
-    out[curr] = "#{curr} = HEAP[#{prev}>>2]|0"
-    stack.push curr
+nodes = []
+traverse = (node) ->
+    switch node.type
+        when 'BinaryExpression'
+            nodes.push type: 'Operator', op:node.operator
+            traverse(node.left)
+            traverse(node.right)
+        when 'MemberExpression'
+            nodes.push type: 'Operator', op:'+', array:true
+            traverse(node.object)
+            traverse(node.property)
+        when 'Identifier' 
+            nodes.push node
+        when 'Literal'
+            nodes.push node
+
+traverse(jsep('mt[kk+M-N] ^ (y >> 1) ^ mag01[y & 1]'))
+nodes = nodes.reverse()
 
 p = 0
 out = {}
-prior = array: false
 uniqueId = 1
 stack = []
-operator = ''
 while p<nodes.length
     node = nodes[p]
-    if prior.array is true and node.array is false then outputArray()
     switch node.type
-        when 'Literal'
+        when 'Literal', 'Identifier'
             stack.push new Token(node)
-
-        when 'Identifier'
-            stack.push new Token(node)
-                
         when 'Operator'
-            getName()
+            createVar()
             op1 = stack.pop()
-            if prior.array then if prior.type is 'Operator' then stack.pop()
             op2 = stack.pop()
-            operator = node.op
-            out[curr] = "#{curr} = #{op2.toString()} #{operator} #{op1.toString()}"
-            switch operator
+            out[curr] = "#{curr} = #{op2.toString()} #{node.op} #{op1.toString()}"
+            switch node.op
                 when '|', '&', '>>', '<<', '^'
                 else out[curr] += '|0'
             stack.push new Token(type: 'Identifier', name: curr) 
-
-
-    prior = node
+            if node.array
+                createVar()
+                out[curr] = "#{curr} = #{prev} << 2"
+                createVar()
+                out[curr] = "#{curr} = HEAP[#{prev}>>2]|0"
+                stack.pop() # pop off the prev, replace with curr
+                stack.push new Token(type: 'Identifier', name: curr) 
+            
     p++
 
-console.log stack
 console.log '================='
 console.log out
