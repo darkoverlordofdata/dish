@@ -12,18 +12,28 @@ function logSum(start, end) {
     var i = 0;
     var count = 0;
     var k = 0;
-    count = end - start;
-    k = start;
-    k = k + 1, p = 2;
-    for (k = start; (i | 0) < (end | 0); k = k + 1 | 0) {
-        i = k;
+    count =     $01 = start - end | 0;;
+    k = ;
+    k =     $01 = 1 + k | 0;, p = ;
+    for (k = ;         $01 = 0 | end;
+        $02 = 0 | i;
+        $03 = $01 < $02 | 0;; k =         $01 = 1 + k | 0;
+        $02 = 0 | $01;) {
+        i = ;
     }
-    for (i = start, k = 0; (i | 0) < (count | 0); i = i + 1 | 0, k = k + 1 | 0) {
-        for (p = start, q = end; (p | 0) < (q | 0); p = p + 1 | 0) {
-            sum = sum + 1;
+    for (i = , k = ;         $01 = 0 | count;
+        $02 = 0 | i;
+        $03 = $01 < $02 | 0;; i =         $01 = 1 + i | 0;
+        $02 = 0 | $01;, k =         $01 = 1 + k | 0;
+        $02 = 0 | $01;) {
+        for (p = , q = ;             $01 = 0 | q;
+            $02 = 0 | p;
+            $03 = $01 < $02 | 0;; p =             $01 = 1 + p | 0;
+            $02 = 0 | $01;) {
+            sum =             $01 = 1 + sum | 0;;
         }
     }
-    return +sum;
+    return;
 }    
 return { 
     logSum:logSum, 

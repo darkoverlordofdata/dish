@@ -4,9 +4,8 @@
   "description": "d?ish is a dlike language that transpiles to asmjs (I hope)",
   "main": "index.js",
   "scripts": {
-    "_vscode_build": "./jsep.coffee",
-    "_vscode_build1": "coffee -bc src/app && tsc -p jsconfig.json",
-    "_vscode_build_parse": "coffee -bc ./src/dish.coffee && node ./src/dish.js test/test1.d --output test/test1.js",
+    "_vscode_build": "./jsep.js",
+    "_vscode_buildz": "coffee -bc ./src/dish.coffee && node ./src/dish.js test/test.d --output test/test.js",
     "publish": "gulp publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -32,6 +31,7 @@
   "homepage": "https://github.com/darkoverlordofdata/dish",
   "dependencies": {
     "escodegen": "^1.8.0",
+    "esprima": "^2.7.2",
     "esrecurse": "^4.1.0",
     "jsep": "^0.3.0",
     "liquid.coffee": "^0.1.6",

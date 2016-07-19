@@ -11,9 +11,12 @@
 module.exports = {
     parse: parse
 }
+
 function parse(input) {
-    const factory = require('./factory')//.factory()
-    const codegen = require('escodegen');
+    const expression = require('./expression')
+    const factory = require('./factory')
+    const codegen = require('escodegen')
+    const esprima = require('esprima')
     const Token = require('./Token')
     const jsep0 = require('jsep')
     const PRECEDENCE = {
@@ -37,6 +40,23 @@ function parse(input) {
     let currentScope = ''
     let priorScope = ''
     let injectInit = false
+    function transpile(ex) {
+        //console.log(ex)
+        /* expression to ast */
+        let l0 = jsep0(ex) 
+        console.log('==========================')
+        console.log(ex)
+        return l0
+        //console.log(l0)  
+        /* ast to TAC */
+        let l1 = expression.compile(l0)
+        //console.log(l1)           
+        /* TAC to javascript */
+        let l2 = esprima.parse(l1)
+        //console.log(JSON.stringify(l2.body, null, 2))           
+        return l2.body[0] 
+    }
+
 
 
     let float = false
@@ -120,7 +140,7 @@ function parse(input) {
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
-                return jsep0(str.join(' '))
+                return transpile(str.join(' '))
             } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
                 let temp = []
                 console.log('do I get here?')
@@ -137,7 +157,7 @@ function parse(input) {
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
-                return jsep0(str.join(' '))
+                return transpile(str.join(' '))
 
 
             }
@@ -146,10 +166,10 @@ function parse(input) {
                 for (let i=0; i<tokens.length; i++) {
                     str.push(tokens[i].value)
                 }
-                return jsep0(str.join(' '))
+                return transpile(str.join(' '))
             }
         } else {
-            return jsep0(tokens)
+            return transpile(tokens)
         }
     }
 
@@ -280,9 +300,9 @@ function parse(input) {
                     input.putBack()
                     return parseCall()
                     break
-                case '=':
+                case '=':  
                     input.putBack()
-                    return parseAssignment()
+                    return parseAssignment(body)
                     break
             }
         }
@@ -316,8 +336,11 @@ function parse(input) {
 
     /**
      * returns 1 AssignmentExpression or a SequenceExpression of AssignmentExpression
+     * 
+     * TODO:
+     * @param body     to handle optional multi line return
      */
-    function parseAssignment() {
+    function parseAssignment(body) {
         const names = []
         const inits = []
         let name = ''
