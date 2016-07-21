@@ -40,23 +40,6 @@ function parse(input) {
     let currentScope = ''
     let priorScope = ''
     let injectInit = false
-    function transpile(ex) {
-        //console.log(ex)
-        /* expression to ast */
-        let l0 = jsep0(ex) 
-        console.log('==========================')
-        console.log(ex)
-        return l0
-        //console.log(l0)  
-        /* ast to TAC */
-        let l1 = expression.compile(l0)
-        //console.log(l1)           
-        /* TAC to javascript */
-        let l2 = esprima.parse(l1)
-        //console.log(JSON.stringify(l2.body, null, 2))           
-        return l2.body[0] 
-    }
-
 
 
     let float = false
@@ -140,7 +123,7 @@ function parse(input) {
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
-                return transpile(str.join(' '))
+                return jsep0(str.join(' '))
             } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
                 let temp = []
                 console.log('do I get here?')
@@ -157,7 +140,7 @@ function parse(input) {
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
-                return transpile(str.join(' '))
+                return jsep0(str.join(' '))
 
 
             }
@@ -166,10 +149,10 @@ function parse(input) {
                 for (let i=0; i<tokens.length; i++) {
                     str.push(tokens[i].value)
                 }
-                return transpile(str.join(' '))
+                return jsep0(str.join(' '))
             }
         } else {
-            return transpile(tokens)
+            return jsep0(tokens)
         }
     }
 
@@ -219,7 +202,7 @@ function parse(input) {
         if (matchKeyword('export')) return parseExport()
         if (matchKeyword('float'))  return parseFloat()
         if (matchKeyword('import')) return parseImport()
-        if (matchKeyword('int'))    return parseInt()
+        if (matchKeyword('int'))    return parseInteger()
         //=================================
         unexpected()
         process.exit(0)
@@ -252,6 +235,7 @@ function parse(input) {
                 case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
             }
         }
+        body.push(body.vars = factory.IntDeclaration('$00'))
 
 
         while (!match('}')) {
@@ -272,8 +256,9 @@ function parse(input) {
         if (body) { /** only in top level of function */
             if (matchKeyword('double')) return parseDouble(currentScope)
             if (matchKeyword('float'))  return parseFloat(currentScope)
-            if (matchKeyword('int'))    return parseInt(currentScope)
+            if (matchKeyword('int'))    return parseInteger(currentScope)
             if (currentScope !== priorScope) {
+                expression.reset()
                 priorScope = currentScope
                 for (let name in symtbl[currentScope]) {
                     let sym = symtbl[currentScope][name]
@@ -299,11 +284,9 @@ function parse(input) {
                 case '(':
                     input.putBack()
                     return parseCall()
-                    break
                 case '=':  
                     input.putBack()
-                    return parseAssignment(body)
-                    break
+                    return parseMultiAssignment(body)
             }
         }
         //=================================
@@ -335,12 +318,76 @@ function parse(input) {
     }
 
     /**
-     * returns 1 AssignmentExpression or a SequenceExpression of AssignmentExpression
+     * parse complex assignment statements
      * 
-     * TODO:
-     * @param body     to handle optional multi line return
+     * @param body     
      */
-    function parseAssignment(body) {
+    function parseMultiAssignment(body) {
+        let name = ''
+        let tokens = []
+        while (!match(';')) {
+            if (name === '') { /* next token MUST be the lhs, therefore it's the name */
+                if (input.peek().type === Token.Variable) {
+                    name = input.next().value
+                    tokens = []
+                } else {
+                    input.raise('Expecting lhs variable')
+                }
+            } else if (match('=')) { /** eat the equal operator */
+                expect('=')
+            } else if (match('++')) { /** expand the ++ operator */
+                expect('++') 
+                tokens.push('(')
+                tokens.push(name)
+                tokens.push('+')
+                tokens.push('1')
+                tokens.push(')')
+                tokens.push('|')
+                tokens.push('0')
+            } else { /** just copy the token to the output stack */
+                tokens.push(input.next().value)
+            }
+        }
+        let ast = jsep(tokens.join(' '))
+        if (ast.type === 'BinaryExpression') {
+            let lines = expression.transpile(ast)
+            let names = Object.keys(lines)
+            for (let index in names) {
+                if (parseInt(index, 10) === names.length-1) {
+                    createTemp(body, name, 'int', 0)
+                    return factory.AssignmentStatement(name, jsep(lines[names[index]]))
+                } else {
+                    createTemp(body, names[index], 'int', 0)
+                    body.push(factory.AssignmentStatement(names[index], jsep(lines[names[index]])))
+                }
+            }
+        } else {
+            return factory.AssignmentStatement(name, ast)
+        }
+    }
+
+    function createTemp(body, name, type, value) {
+        if (!symtbl[currentScope][name]) {
+            symtbl[currentScope][name] = { name:name, type:type, func:false, init:'' }
+            body.vars.declarations.push({
+                "type": "VariableDeclarator",
+                "id": {
+                    "type": "Identifier",
+                    "name": name
+                },
+                "init": {
+                    "type": "Literal",
+                    "value": value,
+                    "raw": "0"
+                }
+            })
+        }
+    }
+    /**
+     * returns a sequence of AssignmentExpressions - for loop header
+     * 
+     */
+    function parseAssignment() {
         const names = []
         const inits = []
         let name = ''
@@ -424,7 +471,7 @@ function parse(input) {
             const name = input.peek()
             exporting[name.value] = name.value
             input.putBack()
-            return parseInt()
+            return parseInteger()
         }
         if (matchKeyword('double')) {
             expectKeyword('double')
@@ -494,7 +541,7 @@ function parse(input) {
         return f;
         
     }
-    function parseInt(scope) {
+    function parseInteger(scope) {
         scope = scope || 'global'
         expectKeyword('int')
         const name = input.next()

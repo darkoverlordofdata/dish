@@ -14,6 +14,9 @@ esprima = require('esprima')
 // console.log(ex.expression(jsep('mt[kk+M-N] ^ (y >> 1) ^ mag01[y & 1]')))
 
 
-var x = ex.compile(jsep('(x & 4294967295) | (y >>1)'))
+var y = jsep('(x & 4294967295) | (exp(y) >>1)')
+console.log(JSON.stringify(y, null, 2))
+process.exit(0)
+var x = ex.transpile(jsep('(x & 4294967295) | (y >>1)'))
 console.log(x)
 // console.log(JSON.stringify(esprima.parse(x), null, 2))

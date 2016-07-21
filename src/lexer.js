@@ -59,7 +59,7 @@ function Tokenizer(source) {
     function isIdStart(ch)    { return /[a-z_]/i.test(ch) }
     function isId(ch)         { return /[a-z_0-9]/i.test(ch) }
     function isDelim(ch)      { return /[,;(){}[\]:]/.test(ch) }
-    function isOperator(ch)   { return /[+\-*\/%=&|<>!]/.test(ch) }
+    function isOperator(ch)   { return /[+\-*\/%=&|<>!^]/.test(ch) }
     function isKeyword(wd)    {
         return /break|case|continue|do|double|else|export|float|for|from|if|import|int|return|switch|while/.test(wd);
     }
@@ -112,7 +112,7 @@ function Tokenizer(source) {
             return new Token(Token.Delimiter, readWhile(isOperator), input.getLine(), input.getCol())
         }
 
-        input.raise(`Can't handle character:  + ${ch}`)
+        throw new Error(`Can't handle character:  + ${ch}`)
     }
 
     /*

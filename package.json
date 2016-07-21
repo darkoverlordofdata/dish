@@ -4,8 +4,8 @@
   "description": "d?ish is a dlike language that transpiles to asmjs (I hope)",
   "main": "index.js",
   "scripts": {
-    "_vscode_build": "./jsep.js",
-    "_vscode_buildz": "coffee -bc ./src/dish.coffee && node ./src/dish.js test/test.d --output test/test.js",
+    "_vscode_buildy": "./jsep.js",
+    "_vscode_build": "coffee -bc ./src/dish.coffee && node ./src/dish.js test/test.d --output test/test.js",
     "publish": "gulp publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

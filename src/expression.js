@@ -9,7 +9,8 @@
 'use strict'
 
 module.exports = {
-    compile: compile
+    transpile: transpile,
+    reset: reset
 }
 class Token {
     constructor(node) {
@@ -20,14 +21,32 @@ class Token {
             case 'Identifier':  return this.node.name
             case 'Literal':     return this.node.value
             case 'Operator':    return this.node.op
+            case 'CallExpression': 
+                let args = []
+                let argz = this.node.arguments
+                for (let arg in argz) {
+                    switch(argz[arg].type) {
+                        case 'CallExpression':      console.log('Not Supported'); process.exit(0) 
+                        case 'BinaryExpression':    console.log('Not Supported'); process.exit(0) 
+                        case 'Literal':             args.push(argz[arg].value); break
+                        case 'Identifier':          args.push(argz[arg].name); break
+                    }
+                }
+                return this.node.callee.name+'('+args.join(',')+')'
+
             default:            return ''
         }
     }
 }
 
 
+var uniqueId = 1
 
-function compile(tokens) {
+function reset() {
+    uniqueId = 1
+}
+
+function transpile(tokens) {
 
     var p = 0
     var out = {}
@@ -35,7 +54,6 @@ function compile(tokens) {
     var prev = ''
     var stack = []
     var nodes = []
-    var uniqueId = 1
 
     traverse(tokens)
     nodes = nodes.reverse()
@@ -45,13 +63,14 @@ function compile(tokens) {
         switch (node.type) {
             case 'Literal':
             case 'Identifier':
+            case 'CallExpression':
                 stack.push(new Token(node))
                 break
             case 'Operator':
                 createVar()
                 let op1 = stack.pop()
                 let op2 = stack.pop()
-                out[curr] = `${curr} = ${op2.toString()} ${node.op} ${op1.toString()}`
+                out[curr] = `${op2.toString()} ${node.op} ${op1.toString()}`
                 switch (node.op) {
                     case '|':
                     case '&':
@@ -60,26 +79,20 @@ function compile(tokens) {
                     case '^':
                         break
                     default: out[curr] += '|0'
-
                 }
                 stack.push(new Token({type: 'Identifier', name: curr})) 
                 if (node.array) {
                     createVar()
-                    out[curr] = `${curr} = ${prev} << 2`
+                    out[curr] = `${prev} << 2`
                     createVar()
-                    out[curr] = `${curr} = HEAP[${prev}>>2]|0`
+                    out[curr] = `HEAP[${prev}>>2]|0`
                     stack.pop() //# pop off the prev, replace with curr
                     stack.push(new Token({type: 'Identifier', name: curr})) 
                 }
         }
         p++
     }
-    let str = ''
-    for (var line in out) {
-        str += out[line]+'\n'
-    }
-    
-    return str
+    return out
 
     function createVar() {
         prev = curr
@@ -102,6 +115,7 @@ function compile(tokens) {
                 break
             case 'Identifier':
             case 'Literal':
+            case 'CallExpression':
                 nodes.push(node)
                 break
         }
