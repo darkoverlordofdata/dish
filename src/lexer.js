@@ -56,6 +56,7 @@ function Tokenizer(source) {
 
     function isWhitespace(ch) { return /\s/.test(ch) }
     function isDigit(ch)      { return /[0-9]/.test(ch) }
+    function isHex(ch)        { return /[0-9a-fA-FxX]/.test(ch) }
     function isIdStart(ch)    { return /[a-z_]/i.test(ch) }
     function isId(ch)         { return /[a-z_0-9]/i.test(ch) }
     function isDelim(ch)      { return /[,;(){}[\]:]/.test(ch) }
@@ -122,17 +123,38 @@ function Tokenizer(source) {
     */
     function readNumber() {
         let has_dot = false
+        let is_hex = false
 
-        return parseFloat(readWhile(function(ch) {
+        let input = readWhile(function(ch) {
             if (ch === '.') {
+                if (has_dot) {
+                    return false
+                }
+                has_dot = true
+                return true
+            }
+            if (ch === 'x') {
+                if (is_hex) {
+                    return false
+                }
+                is_hex = true
+            }
+            if (is_hex)
+                return isHex(ch)
+            else
+                return isDigit(ch)
+        })
+        if (is_hex) {
+            return parseInt(input, 16)
+        }
+        else {
             if (has_dot) {
-                return false
+                return parseFloat(input)
+            } 
+            else {
+                return parseInt(input, 10)
             }
-            has_dot = true
-            return true
-            }
-            return isDigit(ch)
-        }))
+        }
     }
 
     /*

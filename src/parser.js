@@ -286,7 +286,10 @@ function parse(input) {
                     return parseCall()
                 case '=':  
                     input.putBack()
-                    return parseMultiAssignment(body)
+                    return parseVarAssignment(body)
+                case '[':
+                    input.putBack()
+                    return parseVarAssignment(body)
             }
         }
         //=================================
@@ -322,9 +325,12 @@ function parse(input) {
      * 
      * @param body     
      */
-    function parseMultiAssignment(body) {
+    function parseVarAssignment(body) {
         let name = ''
         let tokens = []
+        let index = []
+        let indexer = false
+
         while (!match(';')) {
             if (name === '') { /* next token MUST be the lhs, therefore it's the name */
                 if (input.peek().type === Token.Variable) {
@@ -335,18 +341,21 @@ function parse(input) {
                 }
             } else if (match('=')) { /** eat the equal operator */
                 expect('=')
-            } else if (match('++')) { /** expand the ++ operator */
-                expect('++') 
-                tokens.push('(')
-                tokens.push(name)
-                tokens.push('+')
-                tokens.push('1')
-                tokens.push(')')
-                tokens.push('|')
-                tokens.push('0')
+            } else if (match('[')) {
+                expect('[')
+                indexer = true
+            } else if (match(']')) {
+                expect(']')
+                indexer = false
             } else { /** just copy the token to the output stack */
-                tokens.push(input.next().value)
+                if (indexer)
+                    index.push(input.next().value)
+                else
+                    tokens.push(input.next().value)
             }
+        }
+        if (index.length>0) {
+            console.log('Index ', index)
         }
         let ast = jsep(tokens.join(' '))
         if (ast.type === 'BinaryExpression') {
@@ -541,6 +550,8 @@ function parse(input) {
         return f;
         
     }
+
+    //TODO: Should allow literal values for top level declarations
     function parseInteger(scope) {
         scope = scope || 'global'
         expectKeyword('int')
@@ -555,8 +566,17 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
+            console.log(tokens.join(' '))
             symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:tokens.join(' ') }
-            return factory.IntDeclaration(name.value)
+            if (scope === 'global') {
+                return factory.IntDeclaration(name.value, {
+                    "type": "Literal",
+                    "value": parseInt(tokens.join(''), 10),
+                    "raw": parseInt(tokens.join(''), 10)
+                })
+            } else  {
+                return factory.IntDeclaration(name.value) 
+            }
 
         } else {
             symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:'' }

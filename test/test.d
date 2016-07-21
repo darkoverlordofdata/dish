@@ -2,35 +2,35 @@ import exp from Math;
 import log from Math;
 import now from usrlib;
 
-export int myFunc() {
+int N = 624;
+int M = 397;
+int MATRIX_A    = 0x9908b0df; /* constant vector a */
+int UPPER_MASK  = 0x80000000; /* most significant w-r bits */
+int LOWER_MASK  = 0x7fffffff; /* least significant r bits */
 
-    int i;
+int mt = 0;     /* ptr -> the array for the state vector  */
+int mti = 625;  /* mti==N+1 means mt[N] is not initialized */
 
-    i = (3*42^7)&21;
 
-    return i;
-}
-export double logSum(int start, int end) {
-    
-    double sum;
-    int p;
-    int q;
-    int i;
-    int count = end - start;
-    int k = start;
-    double z;
-    z = (42 + 13/27) / 3;
-    x = 21.0;
+export int init_genrand(int s)
+{
+    int t2;
 
-    k = k+1;
-    p=2;
-    for (k=start; i<end; k++) {
-        i = k;
-    }
-    for (i = start, k = 0; i < count; i++, k++) {
-        for (p = start, q = end; p < q; p++) {
-            sum = sum + 1; //HEAPF64[p];
-        }
-    }
-    return sum;
+    t2 = 0xffffffff;
+    //mt[0] = s & 0xffffffff;
+    // for (mti=1; mti<N; mti++) {
+    //     // // mt[mti] = 
+    //     // // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+    //     // t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
+    //     // mt[mti] = (1812433253 * t2 + mti); 
+    //     // //if (T++<5) console.log(t2, (1812433253 * t2 + mti)&0xffffffff) ;
+    //     // /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+    //     // /* In the previous versions, MSBs of the seed affect   */
+    //     // /* only MSBs of the array mt[].                        */
+    //     // /* 2002/01/09 modified by Makoto Matsumoto             */
+    //     // mt[mti] = mt[mti] & 0xffffffff;
+    //     // /* for >32 bit machines */
+        
+    // }
+    return 0;
 }

@@ -28,7 +28,6 @@ The goal of dish is to insulate me from the twiddly syntax of asm.js.
 * use the type information to add type coercions to generated code.
 * generate import/export bindings.
 * generate the module header
-* ?? no algorythmic optimization. produce idiomatic code so that OdinMonkey or TurboFan will optimize. ??
 
 Grammer
 
