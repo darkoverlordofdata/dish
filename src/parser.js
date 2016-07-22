@@ -4,7 +4,7 @@
  * - Blit Twiddlefast
  * 
  * Parses the statements and builds infrastructure requirements
- * expression parsing is handed off to jsep.
+ * expression parsing is handed off to parseExp.
  */
 'use strict'
 
@@ -18,7 +18,7 @@ function parse(input) {
     const codegen = require('escodegen')
     const esprima = require('esprima')
     const Token = require('./Token')
-    const jsep0 = require('jsep')
+    const jsep = require('jsep')
     const PRECEDENCE = {
         ')': 0, ';': 0, ',': 0, '=': 0, ']': 0,
         '||': 1,
@@ -32,7 +32,7 @@ function parse(input) {
         '+': 9, '-': 9,
         '*': 11, '/': 11, '%': 11
     }
-    const block = [] // current output block
+    var block = [] // current output block
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
     const exporting = {}
@@ -83,7 +83,7 @@ function parse(input) {
      *   skip processing inside of [...]
      * 
      */
-    function jsep(tokens, conditional) {
+    function parseExp(tokens, conditional) {
         if (Array.isArray(tokens)) {
             if (conditional) {
                 // coerce each term individually
@@ -125,7 +125,7 @@ function parse(input) {
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
-                return jsep0(str.join(' '))
+                return jsep(str.join(' '))
             } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
                 let temp = []
                 temp.push(tokens[0])
@@ -141,7 +141,7 @@ function parse(input) {
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
-                return jsep0(str.join(' '))
+                return jsep(str.join(' '))
 
 
             }
@@ -150,10 +150,10 @@ function parse(input) {
                 for (let i=0; i<tokens.length; i++) {
                     str.push(tokens[i].value)
                 }
-                return jsep0(str.join(' '))
+                return jsep(str.join(' '))
             }
         } else {
-            return jsep0(tokens)
+            return jsep(tokens)
         }
     }
 
@@ -225,7 +225,7 @@ function parse(input) {
         }
         expect(')')
 
-        const body = []
+        const body = block = []
         expect('{')
         for (let i=0; i<args.length; i++) {
             const size = args[i].type.value === 'double' ? 3 : 2;
@@ -255,7 +255,7 @@ function parse(input) {
      * Everything except import, export, function
      */
     function parseStatement(body) {
-        if (body) { /** only in top level of function */
+        // if (body) { /** only in top level of function */
             if (matchKeyword('double')) return parseDouble(currentScope)
             if (matchKeyword('float'))  return parseFloat(currentScope)
             if (matchKeyword('int'))    return parseInteger(currentScope)
@@ -265,11 +265,11 @@ function parse(input) {
                 for (let name in symtbl[currentScope]) {
                     let sym = symtbl[currentScope][name]
                     if (sym.init) {
-                        body.push(factory.AssignmentStatement(sym.name, jsep(sym.init)))
+                        body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init)))
                     }
                 }
             }
-        }
+        // }
         //=================================
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('continue'))   return parseContinue()
@@ -317,7 +317,7 @@ function parse(input) {
         expect(')')
         const params = []
         for (let i=0; i<arg.length; i++) {
-            params.push(jsep(arg[i]))
+            params.push(parseExp(arg[i]))
         }
         return factory.CallExpression(name, params)
     }
@@ -391,18 +391,18 @@ function parse(input) {
                     tokens.push(input.next().value)
             }
         }
-        let ast = jsep(tokens.join(' '))
+        let ast = parseExp(tokens.join(' '))
         if (ast.type === 'BinaryExpression') {
             let sym = symtbl[currentScope][name]||symtbl['global'][name]
-            let lines = expression.transpile(ast, sym, index.length===0?null:jsep(index.join(' ')))
+            let lines = expression.transpile(ast, sym, index.length===0?null:parseExp(index.join(' ')))
             for (let l in lines) {
                 let line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
                     createTemp(body, line.name, 'int', 0)
-                    return factory.AssignmentStatement(line.name, jsep(line.code))
+                    return factory.AssignmentStatement(line.name, parseExp(line.code))
                 } else {
                     createTemp(body, line.name, 'int', 0)
-                    body.push(factory.AssignmentStatement(line.name, jsep(line.code)))
+                    body.push(factory.AssignmentStatement(line.name, parseExp(line.code)))
                 }
 
             }
@@ -416,7 +416,7 @@ function parse(input) {
         console.log('createTemp', name)
         if (!symtbl[currentScope][name]) {
             symtbl[currentScope][name] = { name:name, type:type, size: (type==='double'?3:2), func:false, init:'' }
-            body.vars.declarations.push({
+            block.vars.declarations.push({
                 "type": "VariableDeclarator",
                 "id": {
                     "type": "Identifier",
@@ -461,16 +461,16 @@ function parse(input) {
             } else if (match(',')) { /** a sequence of assignments */
                 expect(',')
                 names.push(name)
-                inits.push(jsep(tokens.join(' ')))
+                inits.push(parseExp(tokens.join(' ')))
                 name = ''
             } else { /** just copy the token to the output stack */
                 tokens.push(input.next().value)
             }
         }
         names.push(name)
-        inits.push(jsep(tokens.join(' ')))
+        inits.push(parseExp(tokens.join(' ')))
         if (names.length === 1) {
-            return factory.AssignmentStatement(names[0], jsep(tokens.join(' ')))
+            return factory.AssignmentStatement(names[0], parseExp(tokens.join(' ')))
         } else {
             return factory.AssignmentStatement(names, inits)
         }
@@ -584,7 +584,7 @@ function parse(input) {
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
-        var f = factory.ForStatement(init, jsep(tokens, true), update, body)
+        var f = factory.ForStatement(init, parseExp(tokens, true), update, body)
         return f;
         
     }
@@ -651,7 +651,7 @@ function parse(input) {
             }
             expect('}')
         }
-        return factory.IfStatement(jsep(tokens, true), consequent, alternate)
+        return factory.IfStatement(parseExp(tokens, true), consequent, alternate)
     }
     /**
      * import func from lib:
@@ -686,7 +686,7 @@ function parse(input) {
                 case 'double':  castExpression = '+('+tokens.join(' ')+')'; break
                 case 'float':   castExpression = 'fround('+tokens.join(' ')+')'; break
             }
-            value = factory.Return(jsep(castExpression))
+            value = factory.Return(parseExp(castExpression))
         }
         return value
     }
@@ -716,7 +716,7 @@ function parse(input) {
             }
         }
         expect('}')
-        return factory.SwitchStatement(jsep(tokens), cases)
+        return factory.SwitchStatement(parseExp(tokens), cases)
     }
 
     function parseWhile() {
@@ -734,7 +734,7 @@ function parse(input) {
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
-        return factory.WhileStatement(jsep(tokens, true), body)
+        return factory.WhileStatement(parseExp(tokens, true), body)
     }
 
     

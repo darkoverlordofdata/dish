@@ -20,6 +20,9 @@ function init_genrand(s) {
     $03 = mt + $02 | 0;
     $04 = $03 << 2;
     HEAP[$04>>2] = 4294967295 & s;
+    for (mti = 1; mti < N; mti = mti + 1 | 0) {
+        t2 = 4294967295 & 42;
+    }
     return 0 | 0;
 }    
 return { 

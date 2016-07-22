@@ -22,7 +22,8 @@ export int init_genrand(int s)
 
     t2 = 42 & 0xffffffff;
     mt[3+1] = s & 0xffffffff;
-    // for (mti=1; mti<N; mti++) {
+    for (mti=1; mti<N; mti++) {
+        t2 = 42  & 0xffffffff;
     //     // // mt[mti] = 
     //     // // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
     //     // t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
@@ -35,6 +36,6 @@ export int init_genrand(int s)
     //     // mt[mti] = mt[mti] & 0xffffffff;
     //     // /* for >32 bit machines */
         
-    // }
+    }
     return 0;
 }
