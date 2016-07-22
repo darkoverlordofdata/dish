@@ -1,7 +1,5 @@
 var test = function(stdlib, foreign, heap) {
 "use asm";
-var HEAPU32 = new stdlib.Uint32Array(heap);
-var malloc = foreign.malloc;
 var exp = stdlib.Math.exp;
 var log = stdlib.Math.log;
 var now = foreign.usrlib.now;
@@ -15,11 +13,13 @@ var mt = 0;
 var mti = 625;
 function init_genrand(s) {
     s = s | 0;
-    var $00 = 0, mt = 0;
+    var $00 = 0, $02 = 0, $03 = 0, $04 = 0;
     var t2 = 0;
-    mt = malloc(N << 2) >> 2;
-    t2 = 4294967295;
-    mt = 4294967295 & s;
+    t2 = 4294967295 & 42;
+    $02 = 1 + 3 | 0;
+    $03 = mt + $02 | 0;
+    $04 = $03 << 2;
+    HEAP[$04>>2] = 4294967295 & s;
     return 0 | 0;
 }    
 return { 

@@ -18,10 +18,10 @@ export int init_genrand(int s)
 {
     int t2;
 
-    mt = new int[N]
+    //mt = new int[N]
 
-    t2 = 0xffffffff;
-    mt[0] = s & 0xffffffff;
+    t2 = 42 & 0xffffffff;
+    mt[3+1] = s & 0xffffffff;
     // for (mti=1; mti<N; mti++) {
     //     // // mt[mti] = 
     //     // // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 

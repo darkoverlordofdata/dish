@@ -393,16 +393,18 @@ function parse(input) {
         }
         let ast = jsep(tokens.join(' '))
         if (ast.type === 'BinaryExpression') {
-            let lines = expression.transpile(ast)
-            let names = Object.keys(lines)
-            for (let index in names) {
-                if (parseInt(index, 10) === names.length-1) {
-                    createTemp(body, name, 'int', 0)
-                    return factory.AssignmentStatement(name, jsep(lines[names[index]]))
+            let sym = symtbl[currentScope][name]||symtbl['global'][name]
+            let lines = expression.transpile(ast, sym, index.length===0?null:jsep(index.join(' ')))
+            for (let l in lines) {
+                let line = lines[l]
+                if (parseInt(l, 10) === lines.length-1) {
+                    createTemp(body, line.name, 'int', 0)
+                    return factory.AssignmentStatement(line.name, jsep(line.code))
                 } else {
-                    createTemp(body, names[index], 'int', 0)
-                    body.push(factory.AssignmentStatement(names[index], jsep(lines[names[index]])))
+                    createTemp(body, line.name, 'int', 0)
+                    body.push(factory.AssignmentStatement(line.name, jsep(line.code)))
                 }
+
             }
         } else {
             return factory.AssignmentStatement(name, ast)
@@ -410,6 +412,8 @@ function parse(input) {
     }
 
     function createTemp(body, name, type, value) {
+        if (name[0] !== '$') return
+        console.log('createTemp', name)
         if (!symtbl[currentScope][name]) {
             symtbl[currentScope][name] = { name:name, type:type, size: (type==='double'?3:2), func:false, init:'' }
             body.vars.declarations.push({
