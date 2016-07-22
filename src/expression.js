@@ -64,62 +64,15 @@ function transpile(tokens, symbol, index) {
     var nodes = []
 
     let name = symbol.name
-
     if (index != null) {
         traverse(index)
         nodes = nodes.reverse()
-        while (p<nodes.length) {
-            let node = nodes[p]
-            switch (node.type) {
-                case 'Literal':
-                case 'Identifier':
-                case 'CallExpression':
-                    stack.push(new Token(node))
-                    break
-                case 'Operator':
-                    createVar()
-                    let op1 = stack.pop()
-                    let op2 = stack.pop()
-                    let line = {name:curr, code:`${op2.toString()} ${node.op} ${op1.toString()}`}
-                    out.push({name:curr, code:`${op2.toString()} ${node.op} ${op1.toString()}`})
-                    switch (node.op) {
-                        case '|':
-                        case '&':
-                        case '>>':
-                        case '<<':
-                        case '^':
-                            break
-                        default: 
-                            out[out.length-1].code += '|0'
-                    }
-                    stack.push(new Token({type: 'Identifier', name: curr})) 
-                    if (node.array) {
-                        createVar()
-                        out.push({name:curr, code:`${prev} << 2`})
-                        createVar()
-                        out.push({name:curr, code:`HEAP[${prev}>>2]|0`})
-                        stack.pop() //# pop off the prev, replace with curr
-                        stack.push(new Token({type: 'Identifier', name: curr})) 
-                    }
-            }
-            p++
-        }
-
-    }
-
-    if (index !== null) {
-
-        console.log(JSON.stringify(out, null, 2))
-
+        codegen()
         createVar()
         out.push({name:curr, code:`${name} + ${prev}|0`})
         createVar()
         out.push({name:curr, code:`${prev} << 2`})
         name = `HEAP[${curr}>>2]`
-        // let n = `HEAP[${curr}>>2]`
-        // out.push(name:n, code: '')
-        
-
     }
 
     p = 0
@@ -127,47 +80,8 @@ function transpile(tokens, symbol, index) {
     stack = []
     traverse(tokens)
     nodes = nodes.reverse()
-
-    /**
-     * first set up destination
-     */
-    while (p<nodes.length) {
-        let node = nodes[p]
-        switch (node.type) {
-            case 'Literal':
-            case 'Identifier':
-            case 'CallExpression':
-                stack.push(new Token(node))
-                break
-            case 'Operator':
-                createVar()
-                let op1 = stack.pop()
-                let op2 = stack.pop()
-                out.push({name:curr, code:`${op2.toString()} ${node.op} ${op1.toString()}`})
-                switch (node.op) {
-                    case '|':
-                    case '&':
-                    case '>>':
-                    case '<<':
-                    case '^':
-                        break
-                    default: out[out.length-1] += '|0'
-                }
-                stack.push(new Token({type: 'Identifier', name: curr})) 
-                if (node.array) {
-                    createVar()
-                    out.push({name:curr, code:`${prev} << 2`})
-                    createVar()
-                    out.push({name:curr, code:`HEAP[${prev}>>2]|0`})
-                    stack.pop() //# pop off the prev, replace with curr
-                    stack.push(new Token({type: 'Identifier', name: curr})) 
-                }
-        }
-        p++
-    }
-    // if (index == null) {
-        out[out.length-1].name = name
-    // }
+    codegen()
+    out[out.length-1].name = name
 
     return out
 
@@ -196,6 +110,44 @@ function transpile(tokens, symbol, index) {
                 nodes.push(node)
                 break
         }
+    }
+
+    function codegen() {
+        while (p<nodes.length) {
+            let node = nodes[p]
+            switch (node.type) {
+                case 'Literal':
+                case 'Identifier':
+                case 'CallExpression':
+                    stack.push(new Token(node))
+                    break
+                case 'Operator':
+                    createVar()
+                    let op1 = stack.pop()
+                    let op2 = stack.pop()
+                    out.push({name:curr, code:`${op2.toString()} ${node.op} ${op1.toString()}`})
+                    switch (node.op) {
+                        case '|':
+                        case '&':
+                        case '>>':
+                        case '<<':
+                        case '^':
+                            break
+                        default: out[out.length-1].code += '|0'
+                    }
+                    stack.push(new Token({type: 'Identifier', name: curr})) 
+                    if (node.array) {
+                        createVar()
+                        out.push({name:curr, code:`${prev} << 2`})
+                        createVar()
+                        out.push({name:curr, code:`HEAP[${prev}>>2]|0`})
+                        stack.pop() //# pop off the prev, replace with curr
+                        stack.push(new Token({type: 'Identifier', name: curr})) 
+                    }
+            }
+            p++
+        }
+
     }
 
     
