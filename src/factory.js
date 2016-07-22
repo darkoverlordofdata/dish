@@ -26,11 +26,58 @@ module.exports = {
     ForStatement: ForStatement,
     SequenceExpression: SequenceExpression,
     AssignmentExpression: AssignmentExpression,
-    Return: Return
+    Return: Return,
+    New: New
 }
 
 function clone(obj) {
     return JSON.parse(JSON.stringify(obj))
+}
+
+
+function New(name, size, type, id) {
+    return {
+        "type": "ExpressionStatement",
+        "expression": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+                "type": "Identifier",
+                "name": name
+            },
+            "right": {
+                "type": "BinaryExpression",
+                "operator": ">>",
+                "left": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": "malloc"
+                    },
+                    "arguments": [
+                        {
+                            "type": "BinaryExpression",
+                            "operator": "<<",
+                            "left": {
+                                "type": id,
+                                "name": size
+                            },
+                            "right": {
+                                "type": "Literal",
+                                "value": type,
+                                "raw": ""+type
+                            }
+                        }
+                    ]
+                },
+                "right": {
+                    "type": "Literal",
+                    "value": type,
+                    "raw": ""+type
+                }
+            }
+        }
+    }
 }
 /** the init of a for statement */
 function SequenceExpression(assignmentExpressions) {

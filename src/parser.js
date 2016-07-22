@@ -51,6 +51,7 @@ function parse(input) {
     let heapu32 = false
     let heapf32 = false
     let heapf64 = false
+    let usemalloc = false
 
     parseMain()
 
@@ -65,6 +66,7 @@ function parse(input) {
         heapu32: heapu32,
         heapf32: heapf32,
         heapf64: heapf64,
+        usemalloc: usemalloc,
         exports: exporting
     }
 
@@ -126,7 +128,6 @@ function parse(input) {
                 return jsep0(str.join(' '))
             } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
                 let temp = []
-                console.log('do I get here?')
                 temp.push(tokens[0])
                 temp.push(new Token(Token.Delimiter, '='))
                 temp.push(new Token(Token.Delimiter, '('))
@@ -227,7 +228,8 @@ function parse(input) {
         const body = []
         expect('{')
         for (let i=0; i<args.length; i++) {
-            symtbl[name.value][args[i].name.value] = { name:args[i].name.value, type:args[i].type.value, func:false }
+            const size = args[i].type.value === 'double' ? 3 : 2;
+            symtbl[name.value][args[i].name.value] = { name:args[i].name.value, type:args[i].type.value, size: size, func:false }
 
             switch(args[i].type.value) {
                 case 'int':     body.push(factory.IntParameter(args[i].name)); break
@@ -330,6 +332,8 @@ function parse(input) {
         let tokens = []
         let index = []
         let indexer = false
+        let heapname = ''
+        let code = []
 
         while (!match(';')) {
             if (name === '') { /* next token MUST be the lhs, therefore it's the name */
@@ -347,15 +351,45 @@ function parse(input) {
             } else if (match(']')) {
                 expect(']')
                 indexer = false
+            } else if (matchKeyword('new')) {
+                expectKeyword('new') // = new int[N]
+                let size = 0
+                let tokens = []
+                let token = null
+                if (matchKeyword('int')) {
+                    expectKeyword('int')
+                    size = 2
+                    heapu32 = true
+                } else if (matchKeyword('float')) {
+                    expectKeyword('float')
+                    size = 2
+                    heapf32 = true
+                } else if (matchKeyword('double')) {
+                    expectKeyword('double')
+                    size = 3
+                    heapf64 = true
+                } else {
+                    input.raise('Expecting type: [int|float|double]')
+                }
+                expect('[')
+                while (!match(']')) {
+                    //tokens.push(input.next().value)
+                    token = input.next();
+                }
+                expect(']')
+                usemalloc = true
+                switch (token.type) {
+                    case Token.Number:      return factory.New(name, token.value, size, "Literal")
+                    case Token.Variable:    return factory.New(name, token.value, size, "Identifier")
+                }
+                input.raise('Expecting [Literal|Identifier]')
+
             } else { /** just copy the token to the output stack */
-                if (indexer)
+                if (indexer) 
                     index.push(input.next().value)
                 else
                     tokens.push(input.next().value)
             }
-        }
-        if (index.length>0) {
-            console.log('Index ', index)
         }
         let ast = jsep(tokens.join(' '))
         if (ast.type === 'BinaryExpression') {
@@ -377,7 +411,7 @@ function parse(input) {
 
     function createTemp(body, name, type, value) {
         if (!symtbl[currentScope][name]) {
-            symtbl[currentScope][name] = { name:name, type:type, func:false, init:'' }
+            symtbl[currentScope][name] = { name:name, type:type, size: (type==='double'?3:2), func:false, init:'' }
             body.vars.declarations.push({
                 "type": "VariableDeclarator",
                 "id": {
@@ -456,7 +490,7 @@ function parse(input) {
         expectKeyword('double')
         const name = input.next()
         if (input.peek().value === '(') {
-            symtbl[scope][name.value] = { name:name.value, type:'double', func:true, init:'' }
+            symtbl[scope][name.value] = { name:name.value, type:'double', size: 3, func:true, init:'' }
             return parseFunction(scope, 'double', name)
 
         } else if (match('=')) { /** initialization */
@@ -465,11 +499,11 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:tokens.join(' ') }
+            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, init:tokens.join(' ') }
             return factory.DoubleDeclaration(name.value)
 
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'double', func:false, init:'' }
+            symtbl[scope][name.value] = { name:name.value, type:'double', size: 3, func:false, init:'' }
             return factory.DoubleDeclaration(name.value)
         }
     }
@@ -503,7 +537,7 @@ function parse(input) {
         float = true
         const name = input.next()
         if (input.peek().value === '(') {
-            symtbl[scope][name.value] = { name:name.value, type:'float', func:true, init:'' }
+            symtbl[scope][name.value] = { name:name.value, type:'float', size: 2, func:true, init:'' }
             return parseFunction(scope, 'float', name)
 
         } else if (match('=')) { /** initialization */
@@ -512,11 +546,11 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:tokens.join(' ') }
+            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, init:tokens.join(' ') }
             return factory.FloatDeclaration(name.value)
 
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'float', func:false, init:'' }
+            symtbl[scope][name.value] = { name:name.value, type:'float', size: 2, func:false, init:'' }
             return factory.FloatDeclaration(name.value)
         }
     }
@@ -551,13 +585,19 @@ function parse(input) {
         
     }
 
-    //TODO: Should allow literal values for top level declarations
     function parseInteger(scope) {
         scope = scope || 'global'
+        let isArray = false
         expectKeyword('int')
+        if (match('[')) {
+            expect('[')
+            expect(']')
+            isArray = true
+        }
         const name = input.next()
         if (input.peek().value === '(') { /** function definition */
-            symtbl[scope][name.value] = { name:name.value, type:'int', func:true, init:'' }
+            if (isArray) throw new Error('Syntax Error')
+            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:true, array:false,  init:'' }
             return parseFunction(scope, 'int', name)
 
         } else if (match('=')) { /** initialization */
@@ -566,8 +606,8 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            console.log(tokens.join(' '))
-            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:tokens.join(' ') }
+            //TODO:Double and Float, also 
+            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, array: isArray, init:tokens.join(' ') }
             if (scope === 'global') {
                 return factory.IntDeclaration(name.value, {
                     "type": "Literal",
@@ -579,7 +619,7 @@ function parse(input) {
             }
 
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'int', func:false, init:'' }
+            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, array: isArray, init:'' }
             return factory.IntDeclaration(name.value)
         }
     }
@@ -610,16 +650,21 @@ function parse(input) {
         return factory.IfStatement(jsep(tokens, true), consequent, alternate)
     }
     /**
-     * import func from lib
+     * import func from lib:
+     * 
+     * import method = lib.method;
      */
     function parseImport() {
         expectKeyword('import')
         const name = input.next()
-        expectKeyword('from')
-        const source = input.next()
-        const libname = source.value === 'Math' ? 'stdlib' : 'foreign'
-        return factory.ImportDeclaration(libname, source.value, name.value);
+        expect('=')
+        const libname = input.next()
+        const source = libname.value === 'Math' ? 'stdlib' : 'foreign'
+        expect('.')
+        const method = input.next()
+        return factory.ImportDeclaration(source, libname.value, name.value)
     }
+
     function parseReturn() {
         let value
         expectKeyword('return')

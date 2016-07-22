@@ -56,6 +56,7 @@ out = tpl.render
     heapu32:    parsed.heapu32
     heapf32:    parsed.heapf32
     heapf64:    parsed.heapf64
+    usemalloc:  parsed.usemalloc
 
 out = out.replace(/\n\n/mg, '\n') while /\n\n/.test(out) # fix-up empty lines
      

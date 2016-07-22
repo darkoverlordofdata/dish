@@ -68,7 +68,8 @@ out = tpl.render({
   heapi32: parsed.heapi32,
   heapu32: parsed.heapu32,
   heapf32: parsed.heapf32,
-  heapf64: parsed.heapf64
+  heapf64: parsed.heapf64,
+  usemalloc: parsed.usemalloc
 });
 
 while (/\n\n/.test(out)) {
