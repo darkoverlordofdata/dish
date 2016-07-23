@@ -125,7 +125,7 @@ function transpile(tokens, symbol, index) {
                     createVar()
                     let op1 = stack.pop()
                     let op2 = stack.pop()
-                    out.push({name:curr, code:`${op2.toString()} ${node.op} ${op1.toString()}`})
+                    out.push({name:curr, code:`${op1.toString()} ${node.op} ${op2.toString()}`})
                     switch (node.op) {
                         case '|':
                         case '&':

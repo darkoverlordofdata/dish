@@ -20,14 +20,16 @@ export int init_genrand(int s)
 
     //mt = new int[N]
 
-    t2 = 42 & 0xffffffff;
+    t2 = 42 * 3 & 0xffffffff;
     mt[3+1] = s & 0xffffffff;
     for (mti=1; mti<N; mti++) {
-        t2 = 42  & 0xffffffff;
+        t2 = 42 * 3 & 0xffffffff;
     //     // // mt[mti] = 
     //     // // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
-    //     // t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
-    //     // mt[mti] = (1812433253 * t2 + mti); 
+        //t2 = ((mt[mti-1] >> 30));
+        t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
+        mt[3+1] = 1;
+        // mt[mti] = (1812433253 * t2 + mti); 
     //     // //if (T++<5) console.log(t2, (1812433253 * t2 + mti)&0xffffffff) ;
     //     // /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
     //     // /* In the previous versions, MSBs of the seed affect   */

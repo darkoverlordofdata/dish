@@ -12,6 +12,23 @@ module.exports = {
     parse: parse
 }
 
+class Sym {
+    constructor(name, type, func, init, array) {
+        this.name = name
+        this.type = type
+        this.func = func || false
+        this.init = init || ''
+        this.array = array || false
+        switch(type) {
+            case 'int': this.size = 2; break
+            case 'float': this.size = 2; break
+            case 'double': this.size = 3; break
+        }
+
+    }
+
+//    { name:name, type:type, size: (type==='double'?3:2), func:false, init:'' }
+}
 function parse(input) {
     const expression = require('./expression')
     const factory = require('./factory')
@@ -229,7 +246,8 @@ function parse(input) {
         expect('{')
         for (let i=0; i<args.length; i++) {
             const size = args[i].type.value === 'double' ? 3 : 2;
-            symtbl[name.value][args[i].name.value] = { name:args[i].name.value, type:args[i].type.value, size: size, func:false }
+            //symtbl[name.value][args[i].name.value] = { name:args[i].name.value, type:args[i].type.value, size: size, func:false }
+            symtbl[name.value][args[i].name.value] = new Sym(args[i].name.value, args[i].type.value)
 
             switch(args[i].type.value) {
                 case 'int':     body.push(factory.IntParameter(args[i].name)); break
@@ -331,6 +349,7 @@ function parse(input) {
         let name = ''
         let tokens = []
         let index = []
+        let lhs = true
         let indexer = false
         let heapname = ''
         let code = []
@@ -345,10 +364,11 @@ function parse(input) {
                 }
             } else if (match('=')) { /** eat the equal operator */
                 expect('=')
-            } else if (match('[')) {
+                lhs = false
+            } else if (lhs && match('[')) {
                 expect('[')
                 indexer = true
-            } else if (match(']')) {
+            } else if (lhs && match(']')) {
                 expect(']')
                 indexer = false
             } else if (matchKeyword('new')) {
@@ -391,10 +411,12 @@ function parse(input) {
                     tokens.push(input.next().value)
             }
         }
+
         let ast = parseExp(tokens.join(' '))
-        if (ast.type === 'BinaryExpression') {
+        if (ast.type === 'BinaryExpression' || index.length>0) {
             let sym = symtbl[currentScope][name]||symtbl['global'][name]
-            let lines = expression.transpile(ast, sym, index.length===0?null:parseExp(index.join(' ')))
+            let lhs = index.length===0?null:parseExp(index.join(' '))
+            let lines = expression.transpile(ast, sym, lhs)
             for (let l in lines) {
                 let line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
@@ -413,9 +435,9 @@ function parse(input) {
 
     function createTemp(body, name, type, value) {
         if (name[0] !== '$') return
-        console.log('createTemp', name)
         if (!symtbl[currentScope][name]) {
-            symtbl[currentScope][name] = { name:name, type:type, size: (type==='double'?3:2), func:false, init:'' }
+            //symtbl[currentScope][name] = { name:name, type:type, size: (type==='double'?3:2), func:false, init:'' }
+            symtbl[currentScope][name] = new Sym(name, type)
             block.vars.declarations.push({
                 "type": "VariableDeclarator",
                 "id": {
@@ -494,7 +516,8 @@ function parse(input) {
         expectKeyword('double')
         const name = input.next()
         if (input.peek().value === '(') {
-            symtbl[scope][name.value] = { name:name.value, type:'double', size: 3, func:true, init:'' }
+            //symtbl[scope][name.value] = { name:name.value, type:'double', size: 3, func:true, init:'' }
+            symtbl[scope][name.value] = new Sym(name.value, 'double', true)
             return parseFunction(scope, 'double', name)
 
         } else if (match('=')) { /** initialization */
@@ -503,11 +526,13 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, init:tokens.join(' ') }
+            //symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, init:tokens.join(' ') }
+            symtbl[scope][name.value] = new Sym(name.value, 'int', false, tokens.join(' '))
             return factory.DoubleDeclaration(name.value)
 
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'double', size: 3, func:false, init:'' }
+            //symtbl[scope][name.value] = { name:name.value, type:'double', size: 3, func:false, init:'' }
+            symtbl[scope][name.value] = new Sym(name.value, 'double')
             return factory.DoubleDeclaration(name.value)
         }
     }
@@ -541,7 +566,8 @@ function parse(input) {
         float = true
         const name = input.next()
         if (input.peek().value === '(') {
-            symtbl[scope][name.value] = { name:name.value, type:'float', size: 2, func:true, init:'' }
+            //symtbl[scope][name.value] = { name:name.value, type:'float', size: 2, func:true, init:'' }
+            symtbl[scope][name.value] = new Sym(name.value, 'float', true)
             return parseFunction(scope, 'float', name)
 
         } else if (match('=')) { /** initialization */
@@ -550,11 +576,13 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, init:tokens.join(' ') }
+            //symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, init:tokens.join(' ') }
+            symtbl[scope][name.value] = new Sym(name.value, 'int', false, tokens.join(' '))
             return factory.FloatDeclaration(name.value)
 
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'float', size: 2, func:false, init:'' }
+            //symtbl[scope][name.value] = { name:name.value, type:'float', size: 2, func:false, init:'' }
+            symtbl[scope][name.value] = new Sym(name.value, 'float')
             return factory.FloatDeclaration(name.value)
         }
     }
@@ -580,7 +608,7 @@ function parse(input) {
         expect(')')
         expect('{')
         while (!match('}')) { // Block
-            body.push(parseStatement())
+            body.push(parseStatement(body))
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
@@ -601,7 +629,8 @@ function parse(input) {
         const name = input.next()
         if (input.peek().value === '(') { /** function definition */
             if (isArray) throw new Error('Syntax Error')
-            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:true, array:false,  init:'' }
+            //symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:true, array:false,  init:'' }
+            symtbl[scope][name.value] = new Sym(name.value, 'int', true)
             return parseFunction(scope, 'int', name)
 
         } else if (match('=')) { /** initialization */
@@ -611,7 +640,8 @@ function parse(input) {
                 tokens.push(input.next().value)
             }
             //TODO:Double and Float, also 
-            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, array: isArray, init:tokens.join(' ') }
+            //symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, array: isArray, init:tokens.join(' ') }
+            symtbl[scope][name.value] = new Sym(name.value, 'int', false, tokens.join(' '), isArray)
             if (scope === 'global') {
                 return factory.IntDeclaration(name.value, {
                     "type": "Literal",
@@ -623,7 +653,8 @@ function parse(input) {
             }
 
         } else {
-            symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, array: isArray, init:'' }
+            //symtbl[scope][name.value] = { name:name.value, type:'int', size: 2, func:false, array: isArray, init:'' }
+            symtbl[scope][name.value] = new Sym(name.value, 'int', false, '', isArray)
             return factory.IntDeclaration(name.value)
         }
     }
