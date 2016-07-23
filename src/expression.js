@@ -12,7 +12,7 @@ module.exports = {
     transpile: transpile,
     reset: reset
 }
-class Token {
+class Node {
     constructor(node) {
         this.node = node
     }
@@ -50,8 +50,8 @@ function reset() {
  * transpile an expression
  * 
  * @param tokens input ast
- * @param symbol destination symbol being assigned to
- * @param index optional ast of index in symbol[]
+ * @param symbol lhs symbol being assigned to
+ * @param index optional ast of index for lhs
  * @returns array of output lines
  */
 function transpile(tokens, symbol, index) {
@@ -64,15 +64,34 @@ function transpile(tokens, symbol, index) {
     var nodes = []
 
     let name = symbol.name
+    let heap = symbol.heap
+    let size = symbol.size
     if (index != null) {
-        traverse(index)
-        nodes = nodes.reverse()
-        codegen()
-        createVar()
-        out.push({name:curr, code:`${name} + ${prev}|0`})
-        createVar()
-        out.push({name:curr, code:`${prev} << 2`})
-        name = `HEAP[${curr}>>2]`
+        switch (index.type) {
+            case 'Literal':
+                createVar()
+                out.push({name:curr, code:`${name} + ${index.value}|0`})
+                createVar()
+                out.push({name:curr, code:`${prev} << 2`})
+                break
+            case 'Identifier':
+                createVar()
+                out.push({name:curr, code:`${name} + ${index.name}|0`})
+                createVar()
+                out.push({name:curr, code:`${prev} << 2`})
+                break
+            case 'BinaryExpression':
+                traverse(index)
+                nodes = nodes.reverse()
+                codegen()
+                createVar()
+                out.push({name:curr, code:`${name} + ${prev}|0`})
+                createVar()
+                out.push({name:curr, code:`${prev} << 2`})
+                break
+
+        }
+        name = `${heap}[${curr}>>${size}]`
     }
 
     p = 0
@@ -80,9 +99,27 @@ function transpile(tokens, symbol, index) {
     stack = []
     traverse(tokens)
     nodes = nodes.reverse()
-    codegen()
-    out[out.length-1].name = name
+    //codegen()
+    if (index != null) {
+        switch (nodes[0].type) {
+            case 'Literal':
+                out.push({name:name, code:`${nodes[0].value}|0`})
+                break
+            case 'Identifier':
+                out.push({name:name, code:`${nodes[0].name}|0`})
+                break
+            case 'BinaryExpression':
+                codegen()
+                out.push({name:name, code:`${prev}|0`})
+                break
+                
+        }
+    } else {
+        codegen()
+        out[out.length-1].name = name
+    }
 
+    //console.log(out)
     return out
 
     function createVar() {
@@ -119,7 +156,7 @@ function transpile(tokens, symbol, index) {
                 case 'Literal':
                 case 'Identifier':
                 case 'CallExpression':
-                    stack.push(new Token(node))
+                    stack.push(new Node(node))
                     break
                 case 'Operator':
                     createVar()
@@ -135,14 +172,14 @@ function transpile(tokens, symbol, index) {
                             break
                         default: out[out.length-1].code += '|0'
                     }
-                    stack.push(new Token({type: 'Identifier', name: curr})) 
+                    stack.push(new Node({type: 'Identifier', name: curr})) 
                     if (node.array) {
                         createVar()
                         out.push({name:curr, code:`${prev} << 2`})
                         createVar()
                         out.push({name:curr, code:`HEAP[${prev}>>2]|0`})
                         stack.pop() //# pop off the prev, replace with curr
-                        stack.push(new Token({type: 'Identifier', name: curr})) 
+                        stack.push(new Node({type: 'Identifier', name: curr})) 
                     }
             }
             p++
