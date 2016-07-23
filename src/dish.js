@@ -54,7 +54,7 @@ code = codegen.generate(parsed.ast, {
 }).replace(/\('0.0'\)/g, '0.0');
 
 out = tpl.render({
-  name: path.basename(source, '.d'),
+  name: parsed.name,
   version: manifest.version,
   source: source,
   code: code,

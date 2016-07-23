@@ -1,3 +1,7 @@
+/**
+ * Test.dish
+ */
+module tester;
 import exp = Math.exp;
 import log = Math.log;
 import now = usrlib.now;
@@ -18,7 +22,7 @@ export int init_genrand(int s)
 {
     int t2;
 
-    // mt = new int[N];
+    mt = new int[N];
     mt[1] = 42;
 
     for (mti=1; mti<N; mti++) {

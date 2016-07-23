@@ -22,8 +22,8 @@ class Node {
             case 'Literal':     return this.node.value
             case 'Operator':    return this.node.op
             case 'CallExpression': 
-                let args = []
-                let argz = this.node.arguments
+                const args = []
+                const argz = this.node.arguments
                 for (let arg in argz) {
                     switch(argz[arg].type) {
                         case 'CallExpression':      console.log('Not Supported'); process.exit(0) 
@@ -56,16 +56,16 @@ function reset() {
  */
 function transpile(tokens, symbol, index) {
 
-    var p = 0
-    var out = []
-    var curr = ''
-    var prev = ''
-    var stack = []
-    var nodes = []
+    let ptr = 0
+    let curr = ''
+    let prev = ''
+    let stack = []
+    let nodes = []
+    const out = []
 
     let name = symbol.name
-    let heap = symbol.heap
-    let size = symbol.size
+    const heap = symbol.heap
+    const size = symbol.size
     if (index != null) {
         switch (index.type) {
             case 'Literal':
@@ -94,7 +94,7 @@ function transpile(tokens, symbol, index) {
         name = `${heap}[${curr}>>${size}]`
     }
 
-    p = 0
+    ptr = 0
     nodes = []
     stack = []
     traverse(tokens)
@@ -150,8 +150,8 @@ function transpile(tokens, symbol, index) {
     }
 
     function codegen() {
-        while (p<nodes.length) {
-            let node = nodes[p]
+        while (ptr<nodes.length) {
+            const node = nodes[ptr]
             switch (node.type) {
                 case 'Literal':
                 case 'Identifier':
@@ -160,8 +160,8 @@ function transpile(tokens, symbol, index) {
                     break
                 case 'Operator':
                     createVar()
-                    let op1 = stack.pop()
-                    let op2 = stack.pop()
+                    const op1 = stack.pop()
+                    const op2 = stack.pop()
                     out.push({name:curr, code:`${op1.toString()} ${node.op} ${op2.toString()}`})
                     switch (node.op) {
                         case '|':
@@ -182,7 +182,7 @@ function transpile(tokens, symbol, index) {
                         stack.push(new Node({type: 'Identifier', name: curr})) 
                     }
             }
-            p++
+            ptr++
         }
 
     }

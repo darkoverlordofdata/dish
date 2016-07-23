@@ -39,7 +39,7 @@ Grammer
 
 Todo: 
 
-* add sugar for heap management and pointer types
+* add sugar for heap management and pointer types (in progress)
 * char type as int. So 'a' is the same as 97|0
 
 ### example

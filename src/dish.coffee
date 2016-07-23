@@ -41,7 +41,7 @@ code = codegen.generate(parsed.ast, verbatim: 'verbatim')
     .replace(/\('0.0'\)/g, '0.0') # reverse verbatim option
 
 out = tpl.render
-    name:       path.basename(source, '.d')
+    name:       parsed.name
     version:    manifest.version
     source:     source
     code:       code

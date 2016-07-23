@@ -29,7 +29,6 @@ class Symbol {
             case 'float': this.heap = 'HEAPF32'; break
             case 'double': this.heap = 'HEAPF64'; break
         }
-
     }
 }
 
@@ -61,8 +60,6 @@ function parse(input) {
     let currentScope = ''
     let priorScope = ''
     let injectInit = false
-
-
     let float = false
     let heapi8 = false
     let heapu8 = false
@@ -72,14 +69,23 @@ function parse(input) {
     let heapu32 = false
     let heapf32 = false
     let heapf64 = false
-    let usemalloc = false
+    let malloc = false
 
-    parseMain()
+    expectKeyword('module') //  first keyword is required
+    const name = input.next().value
+    expect(';')
+
+    while (!input.eof()) {
+        ast.body.push(parseGlobal())
+        if (!input.eof()) if (match(';')) expect(';')
+    }
 
     return {
         ast: ast,           //  main code body ast
-        float: float,       //  floats?
-        heapi8: heapi8,     //  heap useage flags
+        name: name,         //  module name
+        float: float,       //  uses floats?
+        malloc: malloc,     //  heap usage flags
+        heapi8: heapi8,     
         heapu8: heapu8,
         heapi16: heapi16,
         heapu16: heapu16,
@@ -87,9 +93,102 @@ function parse(input) {
         heapu32: heapu32,
         heapf32: heapf32,
         heapf64: heapf64,
-        usemalloc: usemalloc,
-        exports: exporting
+        exports: exporting  //  exported API
     }
+
+    function match(ch) {
+        const tok = input.peek()
+        return tok.type === Token.Delimiter && tok.value === ch
+    }
+    function matchKeyword(kw) {
+        const tok = input.peek()
+        return tok.type === Token.Keyword && tok.value === kw
+    }
+
+    function expect(ch) {
+        if (match(ch)) input.next()
+        else input.raise(`Expecting delimiter: [${ch}]`)
+    }
+    function expectKeyword(kw) {
+        if (matchKeyword(kw)) input.next()
+        else input.raise(`Expecting keyword: [${kw}]`)
+    }
+
+    /**
+     * Parse Global Scope
+     * 
+     * No executable code in the global scope
+     * Only declarative statements, imports and exports:
+     * 
+     * import
+     * export
+     * int
+     * float
+     * double
+     */
+    function parseGlobal() {
+        //=================================
+        if (matchKeyword('double')) return parseDouble()
+        if (matchKeyword('export')) return parseExport()
+        if (matchKeyword('float'))  return parseFloat()
+        if (matchKeyword('import')) return parseImport()
+        if (matchKeyword('int'))    return parseInteger()
+        //=================================
+        input.raise('Unexpected token: ')
+        process.exit(0)
+    }
+
+
+    /**
+     * Parse Procedure Scope
+     * 
+     * Everything except import, export, function can be
+     * defined in procedure scope. 
+     */
+    function parseStatement(body) {
+        // if (body) { /** only in top level of function */
+            if (matchKeyword('double')) return parseDouble(currentScope)
+            if (matchKeyword('float'))  return parseFloat(currentScope)
+            if (matchKeyword('int'))    return parseInteger(currentScope)
+            if (currentScope !== priorScope) {
+                expression.reset()
+                priorScope = currentScope
+                for (let name in symtbl[currentScope]) {
+                    let sym = symtbl[currentScope][name]
+                    if (sym.init) {
+                        body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init)))
+                    }
+                }
+            }
+        // }
+        //=================================
+        if (matchKeyword('break'))      return parseBreak()
+        if (matchKeyword('continue'))   return parseContinue()
+        if (matchKeyword('do'))         return parseDo()
+        if (matchKeyword('for'))        return parseFor()
+        if (matchKeyword('if'))         return parsIf()
+        if (matchKeyword('return'))     return parseReturn()
+        if (matchKeyword('switch'))     return parseSwitch()
+        if (matchKeyword('while'))      return parseWhile()
+        //=================================
+        if (input.peek().type === Token.Variable) {
+            input.next()
+            switch (input.peek().value) {
+                case '(':
+                    input.putBack()
+                    return parseCall()
+                case '=':  
+                    input.putBack()
+                    return parseVarAssignment(body)
+                case '[':
+                    input.putBack()
+                    return parseVarAssignment(body)
+            }
+        }
+        //=================================
+        input.raise('Unexpected token: ')
+        process.exit(0)
+    }    
 
     /**
      * Process an expression
@@ -97,23 +196,16 @@ function parse(input) {
      * @param conditional bool hint conditional or arithmetic
      * @returns esprima schema ast
      */
-
-    /**
-     * todo:
-     * 
-     *   skip processing inside of [...]
-     * 
-     */
     function parseExp(tokens, conditional) {
         if ('string' === typeof tokens) {
             return jsep(tokens)
         } else {
             if (conditional) {
                 // coerce each term individually
-                let scope = currentScope === '' ? 'global' : currentScope
-                let temp = []
+                const scope = currentScope === '' ? 'global' : currentScope
+                const temp = []
                 for (let i=0; i<tokens.length; i++) {
-                    let token = tokens[i]
+                    const token = tokens[i]
                     if (token.type === Token.Variable) {
                         if (!symtbl[scope][token.value])  {
                             temp.push(token)
@@ -144,13 +236,13 @@ function parse(input) {
                         temp.push(token)
                     }
                 }
-                let str = []
+                const str = []
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
                 return jsep(str.join(' '))
             } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
-                let temp = []
+                const temp = []
                 temp.push(tokens[0])
                 temp.push(new Token(Token.Delimiter, '='))
                 temp.push(new Token(Token.Delimiter, '('))
@@ -160,7 +252,7 @@ function parse(input) {
                 temp.push(new Token(Token.Delimiter, ')'))
                 temp.push(new Token(Token.Delimiter, '|'))
                 temp.push(new Token(Token.Number, '0'))
-                let str = []
+                const str = []
                 for (let i=0; i<temp.length; i++) {
                     str.push(temp[i].value)
                 }
@@ -169,65 +261,13 @@ function parse(input) {
 
             }
             else {
-                let str = []
+                const str = []
                 for (let i=0; i<tokens.length; i++) {
                     str.push(tokens[i].value)
                 }
                 return jsep(str.join(' '))
             }
         }
-    }
-
-    function match(ch) {
-        const tok = input.peek()
-        return tok.type === Token.Delimiter && tok.value === ch
-    }
-    function matchKeyword(kw) {
-        const tok = input.peek()
-        return tok.type === Token.Keyword && tok.value === kw
-    }
-
-    function expect(ch) {
-        if (match(ch)) input.next()
-        else input.raise(`Expecting delimiter: [${ch}]`)
-    }
-    function expectKeyword(kw) {
-        if (matchKeyword(kw)) input.next()
-        else input.raise(`Expecting keyword: [${kw}]`)
-    }
-
-    function unexpected() {
-        input.raise('Unexpected token: ')
-    }
-
-    function parseMain() {
-        while (!input.eof()) {
-            ast.body.push(parseGlobal())
-            if (!input.eof()) if (match(';')) expect(';')
-        }
-    }
-
-
-    /**
-     * No executable code in the global scope
-     * Only declarative statements, imports and exports:
-     * 
-     * import
-     * export
-     * int
-     * float
-     * double
-     */
-    function parseGlobal() {
-        //=================================
-        if (matchKeyword('double')) return parseDouble()
-        if (matchKeyword('export')) return parseExport()
-        if (matchKeyword('float'))  return parseFloat()
-        if (matchKeyword('import')) return parseImport()
-        if (matchKeyword('int'))    return parseInteger()
-        //=================================
-        unexpected()
-        process.exit(0)
     }
 
     function parseFunction(scope, type, name) {
@@ -272,54 +312,6 @@ function parse(input) {
         return factory.FunctionDeclaration(name, args, body)
     }
 
-    /**
-     * Everything except import, export, function
-     */
-    function parseStatement(body) {
-        // if (body) { /** only in top level of function */
-            if (matchKeyword('double')) return parseDouble(currentScope)
-            if (matchKeyword('float'))  return parseFloat(currentScope)
-            if (matchKeyword('int'))    return parseInteger(currentScope)
-            if (currentScope !== priorScope) {
-                expression.reset()
-                priorScope = currentScope
-                for (let name in symtbl[currentScope]) {
-                    let sym = symtbl[currentScope][name]
-                    if (sym.init) {
-                        body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init)))
-                    }
-                }
-            }
-        // }
-        //=================================
-        if (matchKeyword('break'))      return parseBreak()
-        if (matchKeyword('continue'))   return parseContinue()
-        if (matchKeyword('do'))         return parseDo()
-        if (matchKeyword('for'))        return parseFor()
-        if (matchKeyword('if'))         return parsIf()
-        if (matchKeyword('return'))     return parseReturn()
-        if (matchKeyword('switch'))     return parseSwitch()
-        if (matchKeyword('while'))      return parseWhile()
-        //=================================
-        if (input.peek().type === Token.Variable) {
-            input.next()
-            switch (input.peek().value) {
-                case '(':
-                    input.putBack()
-                    return parseCall()
-                case '=':  
-                    input.putBack()
-                    return parseVarAssignment(body)
-                case '[':
-                    input.putBack()
-                    return parseVarAssignment(body)
-            }
-        }
-        //=================================
-        unexpected()
-        process.exit(0)
-    }    
-
     function parseCall() {
         let name = input.next();
         const arg = []
@@ -351,7 +343,7 @@ function parse(input) {
     function parseVarAssignment(body) {
         let name = ''
         let tokens = []
-        let index = []
+        const index = []
         let lhs = true
         let indexer = false
         let heapname = ''
@@ -399,7 +391,7 @@ function parse(input) {
                     token = input.next();
                 }
                 expect(']')
-                usemalloc = true
+                malloc = true
                 switch (token.type) {
                     case Token.Number:      return factory.New(name, token.value, size, "Literal")
                     case Token.Variable:    return factory.New(name, token.value, size, "Identifier")
@@ -414,13 +406,13 @@ function parse(input) {
             }
         }
 
-        let ast = parseExp(tokens.join(' '))
+        const ast = parseExp(tokens.join(' '))
         if (ast.type === 'BinaryExpression' || index.length>0) {
-            let sym = symtbl[currentScope][name]||symtbl['global'][name]
-            let lhs = index.length===0?null:parseExp(index.join(' '))
-            let lines = expression.transpile(ast, sym, lhs)
+            const sym = symtbl[currentScope][name]||symtbl['global'][name]
+            const lhs = index.length===0?null:parseExp(index.join(' '))
+            const lines = expression.transpile(ast, sym, lhs)
             for (let l in lines) {
-                let line = lines[l]
+                const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
                     createTemp(body, line.name, 'int', 0)
                     return factory.AssignmentStatement(line.name, parseExp(line.code))
@@ -582,11 +574,11 @@ function parse(input) {
         }
     }
     function parseFor() {
+        const init = []
+        const tokens = []
+        const update = []
+        const body = []
         expectKeyword('for')
-        let init = []
-        let tokens = []
-        let update = []
-        let body = []
         expect('(')
 
         while (!match(';')) { // Initialize
@@ -607,8 +599,7 @@ function parse(input) {
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
-        var f = factory.ForStatement(init, parseExp(tokens, true), update, body)
-        return f;
+        return factory.ForStatement(init, parseExp(tokens, true), update, body)
         
     }
 
@@ -698,7 +689,7 @@ function parse(input) {
         if (match(';')) {
             value = factory.Return()
         } else {
-            let tokens = []
+            const tokens = []
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
@@ -717,9 +708,9 @@ function parse(input) {
     function parseSwitch() {
         expectKeyword('switch')
         expect('(')
-        let tokens = []
-        let cases = []
-        let this_case = null;
+        const tokens = []
+        const cases = []
+        const this_case = null;
         while (!match(')')) {
             tokens.push(input.next())
         }
@@ -745,7 +736,7 @@ function parse(input) {
     function parseWhile() {
         expectKeyword('while')
         expect('(')
-        let tokens = []
+        const tokens = []
         while (!match(')')) {
             tokens.push(input.next())
         }
@@ -759,6 +750,4 @@ function parse(input) {
         expect('}')
         return factory.WhileStatement(parseExp(tokens, true), body)
     }
-
-    
 }
