@@ -1,6 +1,6 @@
 var tester = function(stdlib, foreign, heap) {
 "use asm";
-var HEAPU32 = new stdlib.Uint32Array(heap);
+var HEAPI32 = new stdlib.Int32Array(heap);
 var exp = stdlib.Math.exp;
 var log = stdlib.Math.log;
 var now = foreign.usrlib.now;
@@ -41,8 +41,24 @@ function init_genrand(s) {
         HEAPI32[$18>>2] = 4294967295 | 0;
     }
     return 0 | 0;
+}
+function genrand_int32() {
+    var $00 = 0, $01 = 0;
+    var y = 0;
+    var mag01 = 0;
+    mag01 = malloc(2 << 2) >> 2;
+    if (mti >= N) {
+        var kk = 0;
+        if (mti == N + 1) {
+            init_genrand(5489);
+        }
+        mti = 0;
+    }
+    $01 = y >> 11;
+    y = y ^ $01;
+    return y | 0;
 }    
 return { 
-    init_genrand:init_genrand, 
+    genrand_int32:genrand_int32, 
 };
 }(stdlib || window, usrlib, heap || new ArrayBuffer(16384));

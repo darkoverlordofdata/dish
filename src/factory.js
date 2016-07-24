@@ -35,7 +35,8 @@ function clone(obj) {
 }
 
 
-function New(name, size, type, id) {
+// function New(name, size, type, id) {
+function New(name, size, alloc) {
     return {
         "type": "ExpressionStatement",
         "expression": {
@@ -58,22 +59,19 @@ function New(name, size, type, id) {
                         {
                             "type": "BinaryExpression",
                             "operator": "<<",
-                            "left": {
-                                "type": id,
-                                "name": size
-                            },
+                            "left": alloc,
                             "right": {
                                 "type": "Literal",
-                                "value": type,
-                                "raw": ""+type
+                                "value": size,
+                                "raw": ""+size
                             }
                         }
                     ]
                 },
                 "right": {
                     "type": "Literal",
-                    "value": type,
-                    "raw": ""+type
+                    "value": size,
+                    "raw": ""+size
                 }
             }
         }

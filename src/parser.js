@@ -1,10 +1,11 @@
 /**
  * parse.js
  * 
- * - Blit Twiddlefast
- * 
+ * Recursive Descent Parser for D`ish
  * Parses the statements and builds infrastructure requirements
  * expression parsing is handed off to parseExp.
+ * 
+ * - Blit Twiddlefast
  */
 'use strict'
 
@@ -13,12 +14,13 @@ module.exports = {
 }
 
 class Symbol {
-    constructor(name, type, func, init, array) {
+    constructor(name, type, func, init, array, immutable) {
         this.name = name
         this.type = type
         this.func = func || false
         this.init = init || ''
         this.array = array || false
+        this.immutable = immutable || false
         switch(type) {
             case 'int': this.size = 2; break
             case 'float': this.size = 2; break
@@ -32,6 +34,15 @@ class Symbol {
     }
 }
 
+function isFloat(n)         { return n === +n && n !== (n|0); }
+function isInteger(n)       { return n === +n && n === (n|0); }
+
+/**
+ * Parse tokens from the input lexer
+ * 
+ * @param input lexer
+ * @returns parsed document and flags
+ */
 function parse(input) {
     const expression = require('./expression')
     const factory = require('./factory')
@@ -39,19 +50,6 @@ function parse(input) {
     const esprima = require('esprima')
     const Token = require('./Token')
     const jsep = require('jsep')
-    const PRECEDENCE = {
-        ')': 0, ';': 0, ',': 0, '=': 0, ']': 0,
-        '||': 1,
-        '&&': 2,
-        '|': 3,
-        '^': 4,
-        '&': 5,
-        '==': 6, '!=': 6, '===': 6, '!==': 6,
-        '<': 7, '>': 7, '<=': 7, '>=': 7,
-        '<<': 8, '>>': 8, '>>>': 8,
-        '+': 9, '-': 9,
-        '*': 11, '/': 11, '%': 11
-    }
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
     const exporting = {}
@@ -71,44 +69,66 @@ function parse(input) {
     let heapf64 = false
     let malloc = false
 
-    expectKeyword('module') //  first keyword is required
-    const name = input.next().value
-    expect(';')
+    try {
 
-    while (!input.eof()) {
-        ast.body.push(parseGlobal())
-        if (!input.eof()) if (match(';')) expect(';')
+        expectKeyword('module') //  first keyword is required
+        const name = input.next().value
+        expect(';')
+
+        while (!input.eof()) {
+            ast.body.push(parseGlobal())
+            if (!input.eof()) if (match(';')) expect(';')
+        }
+        return {
+            ast: ast,           //  main code body ast
+            name: name,         //  module name
+            float: float,       //  uses floats?
+            malloc: malloc,     //  heap usage flags
+            heapi8: heapi8,     
+            heapu8: heapu8,
+            heapi16: heapi16,
+            heapu16: heapu16,
+            heapi32: heapi32,
+            heapu32: heapu32,
+            heapf32: heapf32,
+            heapf64: heapf64,
+            exports: exporting  //  exported API
+        }
+        
+    } catch (ex) {
+        console.log(ex.message)
+        console.log(ex.stack)
+        process.exit(0)
     }
 
-    return {
-        ast: ast,           //  main code body ast
-        name: name,         //  module name
-        float: float,       //  uses floats?
-        malloc: malloc,     //  heap usage flags
-        heapi8: heapi8,     
-        heapu8: heapu8,
-        heapi16: heapi16,
-        heapu16: heapu16,
-        heapi32: heapi32,
-        heapu32: heapu32,
-        heapf32: heapf32,
-        heapf64: heapf64,
-        exports: exporting  //  exported API
-    }
 
+    /**
+     * test if the token is a delimiter  
+     */
     function match(ch) {
         const tok = input.peek()
         return tok.type === Token.Delimiter && tok.value === ch
     }
+
+    /**
+     * test if the token is a keyword  
+     */
     function matchKeyword(kw) {
         const tok = input.peek()
         return tok.type === Token.Keyword && tok.value === kw
     }
 
+    /**
+     * Token MUST match the delimiter
+     */
     function expect(ch) {
         if (match(ch)) input.next()
         else input.raise(`Expecting delimiter: [${ch}]`)
     }
+
+    /**
+     * Token MUST match the keyword
+     */
     function expectKeyword(kw) {
         if (matchKeyword(kw)) input.next()
         else input.raise(`Expecting keyword: [${kw}]`)
@@ -128,6 +148,7 @@ function parse(input) {
      */
     function parseGlobal() {
         //=================================
+        if (matchKeyword('const'))  return parseConst()
         if (matchKeyword('double')) return parseDouble()
         if (matchKeyword('export')) return parseExport()
         if (matchKeyword('float'))  return parseFloat()
@@ -146,27 +167,26 @@ function parse(input) {
      * defined in procedure scope. 
      */
     function parseStatement(body) {
-        // if (body) { /** only in top level of function */
-            if (matchKeyword('double')) return parseDouble(currentScope)
-            if (matchKeyword('float'))  return parseFloat(currentScope)
-            if (matchKeyword('int'))    return parseInteger(currentScope)
-            if (currentScope !== priorScope) {
-                expression.reset()
-                priorScope = currentScope
-                for (let name in symtbl[currentScope]) {
-                    let sym = symtbl[currentScope][name]
-                    if (sym.init) {
-                        body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init)))
-                    }
+        if (matchKeyword('const'))  return parseConst(currentScope)
+        if (matchKeyword('double')) return parseDouble(currentScope)
+        if (matchKeyword('float'))  return parseFloat(currentScope)
+        if (matchKeyword('int'))    return parseInteger(currentScope)
+        if (currentScope !== priorScope) {
+            expression.reset()
+            priorScope = currentScope
+            for (let name in symtbl[currentScope]) {
+                let sym = symtbl[currentScope][name]
+                if (sym.init) {
+                    body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init)))
                 }
             }
-        // }
+        }
         //=================================
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('continue'))   return parseContinue()
         if (matchKeyword('do'))         return parseDo()
         if (matchKeyword('for'))        return parseFor()
-        if (matchKeyword('if'))         return parsIf()
+        if (matchKeyword('if'))         return parseIf()
         if (matchKeyword('return'))     return parseReturn()
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
@@ -191,8 +211,22 @@ function parse(input) {
     }    
 
     /**
-     * Process an expression
-     * @param tokens the expression as an array of tokens
+     * Constant 
+     */
+    function parseConst(scope) {
+
+        expectKeyword('const')
+        if (matchKeyword('double'))     return parseDouble(scope)
+        if (matchKeyword('float'))      return parseFloat(scope)
+        if (matchKeyword('int'))        return parseInteger(scope)
+        input.raise('Unexpected token: ')
+        process.exit(0)
+        
+    }
+
+    /**
+     * Parse an expression
+     * @param tokens the expression as string or as an array of tokens
      * @param conditional bool hint conditional or arithmetic
      * @returns esprima schema ast
      */
@@ -209,7 +243,7 @@ function parse(input) {
                     if (token.type === Token.Variable) {
                         if (!symtbl[scope][token.value])  {
                             temp.push(token)
-                            continue // todo: finish this
+                            continue // todo?: finish this
                         }
                         switch(symtbl[scope][token.value].type) {
                             case 'int':    
@@ -257,8 +291,6 @@ function parse(input) {
                     str.push(temp[i].value)
                 }
                 return jsep(str.join(' '))
-
-
             }
             else {
                 const str = []
@@ -271,10 +303,15 @@ function parse(input) {
     }
 
     function parseFunction(scope, type, name) {
+        if (scope !== 'global')  {
+            input.raise('Unsupported: nested functions')
+            process.exit(0)
+        }
         if (symtbl[name.value] == null) {
             symtbl[name.value] = {}
         } else {
-            throw new Exception(`Function ${name.value} already defined.`)
+            input.raise(`Function ${name.value} already defined.`)
+            process.exit(0)
         }
         currentScope = name.value
         
@@ -336,9 +373,11 @@ function parse(input) {
     }
 
     /**
-     * parse complex assignment statements
+     * parse complex assignment statement
+     * including array indexing and new operator
      * 
-     * @param body     
+     * @param body   
+     * @returns ast node  
      */
     function parseVarAssignment(body) {
         let name = ''
@@ -373,7 +412,7 @@ function parse(input) {
                 if (matchKeyword('int')) {
                     expectKeyword('int')
                     size = 2
-                    heapu32 = true
+                    heapi32 = true
                 } else if (matchKeyword('float')) {
                     expectKeyword('float')
                     size = 2
@@ -387,16 +426,19 @@ function parse(input) {
                 }
                 expect('[')
                 while (!match(']')) {
-                    //tokens.push(input.next().value)
                     token = input.next();
                 }
                 expect(']')
                 malloc = true
                 switch (token.type) {
-                    case Token.Number:      return factory.New(name, token.value, size, "Literal")
-                    case Token.Variable:    return factory.New(name, token.value, size, "Identifier")
+                    case Token.Variable:
+                        return factory.New(name, size, { "type": 'Identifier', "name": token.value })
+                    case Token.Number:
+                        return factory.New(name, size, { "type": "Literal", "value": token.value }) //, "raw": ""+token.value })
+                    default:
+                        input.raise('Expecting [Literal|Identifier]')
+                        process.exit(0)
                 }
-                input.raise('Expecting [Literal|Identifier]')
 
             } else { /** just copy the token to the output stack */
                 if (indexer) 
@@ -414,10 +456,10 @@ function parse(input) {
             for (let l in lines) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
-                    createTemp(body, line.name, 'int', 0)
+                    createVar(body, line.name, 'int', 0)
                     return factory.AssignmentStatement(line.name, parseExp(line.code))
                 } else {
-                    createTemp(body, line.name, 'int', 0)
+                    createVar(body, line.name, 'int', 0)
                     body.push(factory.AssignmentStatement(line.name, parseExp(line.code)))
                 }
 
@@ -427,7 +469,15 @@ function parse(input) {
         }
     }
 
-    function createTemp(body, name, type, value) {
+    /**
+     * Create Variable
+     * 
+     * @param body block to create variable in
+     * @param name name of the variable
+     * @param type type of the variable
+     * @param value value of the variable
+     */
+    function createVar(body, name, type, value) {
         if (name[0] !== '$') return
         if (!symtbl[currentScope][name]) {
             symtbl[currentScope][name] = new Symbol(name, type)
@@ -440,7 +490,7 @@ function parse(input) {
                 "init": {
                     "type": "Literal",
                     "value": value,
-                    "raw": "0"
+                    "raw": String(value)
                 }
             })
         }
@@ -526,6 +576,7 @@ function parse(input) {
             return factory.DoubleDeclaration(name.value)
         }
     }
+
     function parseExport() {
         expectKeyword('export')
         if (matchKeyword('int')) {
@@ -550,6 +601,7 @@ function parse(input) {
             return parseFloat()
         }
     }
+
     function parseFloat(scope) {
         scope = scope || 'global'
         expectKeyword('float')
@@ -573,6 +625,7 @@ function parse(input) {
             return factory.FloatDeclaration(name.value)
         }
     }
+
     function parseFor() {
         const init = []
         const tokens = []
@@ -614,7 +667,10 @@ function parse(input) {
         }
         const name = input.next()
         if (input.peek().value === '(') { /** function definition */
-            if (isArray) throw new Error('Syntax Error')
+            if (isArray) {
+                input.raise('Syntax Error: array found')
+                process.exit(0)
+            }
             symtbl[scope][name.value] = new Symbol(name.value, 'int', true)
             return parseFunction(scope, 'int', name)
 
@@ -641,6 +697,7 @@ function parse(input) {
             return factory.IntDeclaration(name.value)
         }
     }
+
     function parseIf() {
         expectKeyword('if')
         expect('(')
@@ -665,7 +722,11 @@ function parse(input) {
             }
             expect('}')
         }
-        return factory.IfStatement(parseExp(tokens, true), consequent, alternate)
+
+        const _then = consequent.length === 0 ? null :  { "type": "BlockStatement", "body": consequent }
+        const _else = alternate.length === 0 ? null : { "type": "BlockStatement", "body": alternate }
+
+        return factory.IfStatement(parseExp(tokens, true), _then, _else)
     }
     /**
      * import func from lib:
