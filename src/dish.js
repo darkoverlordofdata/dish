@@ -4,11 +4,11 @@
  * d?ish compiler
  * 
  * usage:
- *      coffee ./src/dish src/test.d
+ *      node ./src/dish.js test/test.d -m -w --output test/test.js
  *
  */
 'use strict';
-var args, code, codegen, fs, lexer, liquid, manifest, out, output, parsed, parser, path, source, template, tpl, usage, util;
+var args, code, codegen, esmangle, flags, fs, lexer, liquid, mangle, manifest, out, output, parsed, parser, path, ref, source, template, tpl, usage, util, whitespace;
 
 fs = require('fs');
 
@@ -16,7 +16,7 @@ path = require('path');
 
 util = require("util");
 
-args = require('./args');
+ref = require('./args'), args = ref.args, flags = ref.flags;
 
 lexer = require('./lexer');
 
@@ -24,11 +24,13 @@ parser = require('./parser');
 
 codegen = require('escodegen');
 
+esmangle = require('esmangle');
+
 liquid = require('liquid.coffee');
 
 manifest = require('../package.json');
 
-usage = "Usage: dish <filename>\n    -o --output        output file name\n    -t --template      template file name";
+usage = "Usage: dish <filename>\n    -o --output        output file name\n    -t --template      template file name\n    -m --mangle        mangle output\n    -w --whitespace    remove whitespace";
 
 if (args.count < 3) {
   console.log(usage);
@@ -41,6 +43,10 @@ template = args('-t', '--template', './src/asm.tpl.js');
 
 output = args('-o', '--output');
 
+mangle = flags('-m', '--mangle');
+
+whitespace = flags('-w', '--whitespace');
+
 console.log("*** dish " + manifest.version + " ***");
 
 console.log("*** " + source + " ***");
@@ -49,9 +55,21 @@ parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')));
 
 tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'));
 
-code = codegen.generate(parsed.ast, {
-  verbatim: 'verbatim'
-}).replace(/\('0.0'\)/g, '0.0');
+if (mangle) {
+  code = codegen.generate(esmangle.mangle(parsed.ast), {
+    verbatim: 'verbatim',
+    format: {
+      compact: whitespace
+    }
+  });
+} else {
+  code = codegen.generate(parsed.ast, {
+    verbatim: 'verbatim',
+    format: {
+      compact: whitespace
+    }
+  }).replace(/\('0.0'\)/g, '0.0');
+}
 
 out = tpl.render({
   name: parsed.name,
@@ -69,7 +87,7 @@ out = tpl.render({
   heapu32: parsed.heapu32,
   heapf32: parsed.heapf32,
   heapf64: parsed.heapf64,
-  usemalloc: parsed.usemalloc
+  malloc: parsed.malloc
 });
 
 while (/\n\n/.test(out)) {

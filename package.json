@@ -31,6 +31,7 @@
   "homepage": "https://github.com/darkoverlordofdata/dish",
   "dependencies": {
     "escodegen": "^1.8.0",
+    "esmangle": "^1.0.1",
     "esprima": "^2.7.2",
     "esrecurse": "^4.1.0",
     "jsep": "^0.3.0",

@@ -183,9 +183,10 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var t2 = 0;
                     var t3 = 0;
                     var $00 = 0, $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0.0, $07 = 0.0, $08 = 0.0, $09 = 0;
-                    mt = malloc(N << 2) >> 2; //|0 // malloc(N*sizeof(int))
+                    mt = malloc(N << 2) | 0; // malloc(N*sizeof(int))
+                    mt = mt >> 2;
                     // following line prevents full aot compilation for performanace testing.
-                    var flawed_mode = 0;
+                    //var flawed_mode = 0
                     // comment the previuos line to run in unflawed mode.
                     $00 = mt | 0;
                     $00 = $00 << 2;
@@ -195,7 +196,8 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
                         $01 = mt + mti | 0;
                         $02 = $01 - 1 | 0;
                         $03 = $02 << 2;
-                        $04 = HEAP[$03 >> 2] | 0;
+                        // $04 = HEAP[$03>>2]|0
+                        $04 = HEAP[$02 << 2 >> 2] | 0;
                         $05 = $04 >> 30;
                         $06 = +($04 ^ $05);
                         $07 = $06 * 1812433253.0;
@@ -209,8 +211,7 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
                         $09 = $01 << 2;
                         HEAP[$09 >> 2] = ~~($08) & 0xffffffff;
                     }
-                    for (var x = 0; x < 20; x++)
-                        console.log(HEAP[mt + x]);
+                    //for (var x=0; x<20; x++) console.log(HEAP[mt+x])
                 }
                 /* generates a random number on [0,0xffffffff]-interval */
                 function genrand_int32() {
@@ -222,7 +223,8 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var $00 = 0, $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0, $07 = 0, $08 = 0;
                     var $09 = 0, $10 = 0, $11 = 0, $12 = 0, $13 = 0, $14 = 0, $15 = 0, $16 = 0, $17 = 0;
                     var $18 = 0, $19 = 0, $20 = 0, $21 = 0, $22 = 0;
-                    mag01 = malloc(2 << 2) >> 2; //|0;
+                    mag01 = malloc(2 << 2) | 0;
+                    mag01 = mag01 >> 2;
                     $00 = (mag01 + 0 | 0) << 2;
                     HEAP[$00 >> 2] = 0;
                     $00 = (mag01 + 1 | 0) << 2;
@@ -233,7 +235,8 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
                         for (kk = 0; (kk | 0) < (N - M | 0); kk = kk + 1 | 0) {
                             $01 = mt + kk | 0;
                             $02 = $01 << 2;
-                            $03 = HEAP[$02 >> 2] | 0;
+                            // $03 = HEAP[$02>>2]|0
+                            $03 = HEAP[$01 << 2 >> 2] | 0;
                             $04 = $03 & UPPER_MASK;
                             $05 = ($01 + 1 | 0);
                             $06 = $05 << 2;

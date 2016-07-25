@@ -18,9 +18,9 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Status - happy path only
+Status - very alpha
 
-		node ./src/dish.js test/test.d > test/test.js
+        node ./src/dish.js test/test.d --output test/test.js
 
 
 The goal of dish is to insulate me from the twiddly syntax of asm.js. 
@@ -31,7 +31,7 @@ The goal of dish is to insulate me from the twiddly syntax of asm.js.
 
 Grammer
 
-* similar restrictions as asm.js
+* similar restrictions as asm.js - no strings, etc.
 * module level only allows declarations - import, export, int, float, double. 
 * one level of nesting - functions can only be declared at the module level.
 * import/export can only be used at the module level.
@@ -46,14 +46,17 @@ Todo:
 
 #### test.d
 ```d
-import log from Math;
-import now from usrlib;
+module frodo;
+import log = Math.log;
+import now = usrlib.now;
+
+const int ANSWER = 42;
 
 export int logSum(int start, int end) {
-    int z=42;
+    int z=ANSWER;
     int k;
     for (k=start; k<end; k++) {
-        z = z+k;
+        z = z+k/3;
     }
     return z;
 }
@@ -62,18 +65,21 @@ export int logSum(int start, int end) {
 
 #### test.js
 ```javascript
-var test = function(stdlib, foreign, heap) {
+var frodo = function(stdlib, foreign, heap) {
 "use asm";
 var log = stdlib.Math.log;
 var now = foreign.usrlib.now;
+var ANSWER = 42;
 function logSum(start, end) {
     start = start | 0;
     end = end | 0;
+    var $00 = 0, $01 = 0;
     var z = 0;
     var k = 0;
-    z = 42;
+    z = ANSWER;
     for (k = start; (k | 0) < (end | 0); k = k + 1 | 0) {
-        z = z + k;
+        $01 = k / 3 | 0;
+        z = z + $01 | 0;
     }
     return z | 0;
 }    

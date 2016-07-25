@@ -11,8 +11,9 @@ function args(short, long, def) {
     if (short) {
         /** look for -o or --option */
         for (let i=3; i<process.argv.length; i++) {
-            if (process.argv[i] === short || process.argv[i] === long) 
+            if (process.argv[i] === short || process.argv[i] === long) {
                 return process.argv[i+1]
+            }
         }
         return def
     } else {
@@ -25,6 +26,19 @@ function args(short, long, def) {
         return ''
     }
 }
+
+function flags(short, long, def) {
+    for (let i=3; i<process.argv.length; i++) {
+        if (process.argv[i] === short || process.argv[i] === long) {
+            return true
+        }
+    }
+    return false
+
+}
 args.count = process.argv.length
 
-module.exports = args
+module.exports = {
+    args: args,
+    flags: flags
+} 

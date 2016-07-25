@@ -59,6 +59,7 @@ function parse(input) {
     let priorScope = ''
     let injectInit = false
     let float = false
+    let malloc = false
     let heapi8 = false
     let heapu8 = false
     let heapi16 = false
@@ -67,7 +68,6 @@ function parse(input) {
     let heapu32 = false
     let heapf32 = false
     let heapf64 = false
-    let malloc = false
 
     try {
 
@@ -83,8 +83,8 @@ function parse(input) {
             ast: ast,           //  main code body ast
             name: name,         //  module name
             float: float,       //  uses floats?
-            malloc: malloc,     //  heap usage flags
-            heapi8: heapi8,     
+            malloc: malloc,     //  use heap?
+            heapi8: heapi8,     //  heap views:
             heapu8: heapu8,
             heapi16: heapi16,
             heapu16: heapu16,
@@ -156,7 +156,6 @@ function parse(input) {
         if (matchKeyword('int'))    return parseInteger()
         //=================================
         input.raise('Unexpected token: ')
-        process.exit(0)
     }
 
 
@@ -177,7 +176,18 @@ function parse(input) {
             for (let name in symtbl[currentScope]) {
                 let sym = symtbl[currentScope][name]
                 if (sym.init) {
-                    body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init)))
+                    if (sym.array) {
+                        malloc = true
+                        const tokens = tokens2Array(sym.init)
+                        body.push(factory.New(name, sym.size, { "type": "Literal", "value": tokens.length }))
+                        for (let t in tokens) {
+                            let sname = `${sym.heap}[(${name}+${t})<<2>>2]`
+                            let value = parseExp(''+tokens[t])
+                            body.push(factory.AssignmentStatement(sname, value))
+                        }
+                    } else {
+                        body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init.join(' '))))
+                    }
                 }
             }
         }
@@ -207,7 +217,6 @@ function parse(input) {
         }
         //=================================
         input.raise('Unexpected token: ')
-        process.exit(0)
     }    
 
     /**
@@ -220,8 +229,6 @@ function parse(input) {
         if (matchKeyword('float'))      return parseFloat(scope)
         if (matchKeyword('int'))        return parseInteger(scope)
         input.raise('Unexpected token: ')
-        process.exit(0)
-        
     }
 
     /**
@@ -305,13 +312,11 @@ function parse(input) {
     function parseFunction(scope, type, name) {
         if (scope !== 'global')  {
             input.raise('Unsupported: nested functions')
-            process.exit(0)
         }
         if (symtbl[name.value] == null) {
             symtbl[name.value] = {}
         } else {
             input.raise(`Function ${name.value} already defined.`)
-            process.exit(0)
         }
         currentScope = name.value
         
@@ -336,16 +341,11 @@ function parse(input) {
             }
         }
         body.push(body.vars = factory.IntDeclaration('$00'))
-
-
         while (!match('}')) {
-            
             body.push(parseStatement(body))
             if (!input.eof()) if (match(';')) expect(';')
-
         }
         expect('}')
-        
         return factory.FunctionDeclaration(name, args, body)
     }
 
@@ -437,7 +437,6 @@ function parse(input) {
                         return factory.New(name, size, { "type": "Literal", "value": token.value }) //, "raw": ""+token.value })
                     default:
                         input.raise('Expecting [Literal|Identifier]')
-                        process.exit(0)
                 }
 
             } else { /** just copy the token to the output stack */
@@ -481,6 +480,24 @@ function parse(input) {
         if (name[0] !== '$') return
         if (!symtbl[currentScope][name]) {
             symtbl[currentScope][name] = new Symbol(name, type)
+            // if (!block.vars) {
+            //     body.push(body.vars = factory.IntDeclaration('$00'))
+            // }
+            if (name === '$01' && block.vars.declarations[0].id.name === '$00') {
+                block.vars.declarations[0] = {
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": name
+                    },
+                    "init": {
+                        "type": "Literal",
+                        "value": value,
+                        "raw": String(value)
+                    }
+                }
+                return
+            }
             block.vars.declarations.push({
                 "type": "VariableDeclarator",
                 "id": {
@@ -553,6 +570,25 @@ function parse(input) {
     }
     function parseDo() {
         expectKeyword('do')
+
+        const body = []
+        expect('{')
+        while (!match('}')) {
+            body.push(parseStatement(body))
+            if (!input.eof()) if (match(';')) expect(';')
+        }
+        expect('}')
+
+        expectKeyword('while')
+        expect('(')
+        const tokens = []
+        while (!match(')')) {
+            tokens.push(input.next())
+        }
+        expect(')')
+
+        return factory.DoWhileStatement(parseExp(tokens, true), body)
+        
     }
     function parseDouble(scope) {
         scope = scope || 'global'
@@ -652,7 +688,11 @@ function parse(input) {
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
-        return factory.ForStatement(init, parseExp(tokens, true), update, body)
+
+        const _init = init.length>0?init[0].expression:null
+        const _update = update.length>0?update[0].expression:null
+
+        return factory.ForStatement(_init, parseExp(tokens, true), _update, body)
         
     }
 
@@ -669,7 +709,6 @@ function parse(input) {
         if (input.peek().value === '(') { /** function definition */
             if (isArray) {
                 input.raise('Syntax Error: array found')
-                process.exit(0)
             }
             symtbl[scope][name.value] = new Symbol(name.value, 'int', true)
             return parseFunction(scope, 'int', name)
@@ -681,12 +720,12 @@ function parse(input) {
                 tokens.push(input.next().value)
             }
             //TODO:Double and Float, also 
-            symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens.join(' '), isArray)
+            symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens, isArray)
             if (scope === 'global') {
                 return factory.IntDeclaration(name.value, {
-                    "type": "Literal",
-                    "value": parseInt(tokens.join(''), 10),
-                    "raw": parseInt(tokens.join(''), 10)
+                    "type":     "Literal",
+                    "value":    parseInt(tokens.join(''), 10),
+                    "raw":      parseInt(tokens.join(''), 10)
                 })
             } else  {
                 return factory.IntDeclaration(name.value) 
@@ -709,7 +748,7 @@ function parse(input) {
         const consequent = []
         expect('{')
         while (!match('}')) {
-            consequent.push(parseStatement())
+            consequent.push(parseStatement(consequent))
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
@@ -717,7 +756,7 @@ function parse(input) {
         if (matchKeyword('else')) {
             expect('{')
             while (!match('}')) {
-                alternate.push(parseStatement())
+                alternate.push(parseStatement(alternate))
                 if (!input.eof()) if (match(';')) expect(';')
             }
             expect('}')
@@ -805,10 +844,20 @@ function parse(input) {
         const body = []
         expect('{')
         while (!match('}')) {
-            body.push(parseStatement())
+            body.push(parseStatement(body))
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
         return factory.WhileStatement(parseExp(tokens, true), body)
+    }
+
+    function tokens2Array(tokens) {
+        let out = []
+
+        tokens = tokens.slice(1, tokens.length-1)
+        for (let t in tokens) {
+            if ((t & 1) !== 1) out.push(tokens[t])
+        }
+        return out
     }
 }

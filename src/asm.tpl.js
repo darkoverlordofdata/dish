@@ -10,7 +10,7 @@ var {{ name }} = function(stdlib, foreign, heap) {
 {% if heapu32 %}var HEAPU32 = new stdlib.Uint32Array(heap);{% endif %}
 {% if heapf32 %}var HEAPF32 = new stdlib.Float32Array(heap);{% endif %}
 {% if heapf64 %}var HEAPF64 = new stdlib.Float32Array(heap);{% endif %}
-{% if usemalloc %}var malloc = foreign.malloc;{% endif %}
+{% if malloc %}var malloc = foreign.malloc;{% endif %}
 {{ code }}    
 return { {% for func in exports %}
     {{ func.key }}:{{ func.value }},{% endfor %} 

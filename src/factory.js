@@ -21,6 +21,7 @@ module.exports = {
     BreakStatement: BreakStatement,
     ContinueStatement: ContinueStatement,
     WhileStatement: WhileStatement,
+    DoWhileStatement: DoWhileStatement,
     IfStatement: IfStatement,
     SwitchStatement: SwitchStatement,
     ForStatement: ForStatement,
@@ -88,9 +89,9 @@ function SequenceExpression(assignmentExpressions) {
 function ForStatement(init, test, update, body) {
     return {
         "type": "ForStatement",
-        "init": init[0].expression,
+        "init": init,
         "test": test,
-        "update": update[0].expression,
+        "update": update,
         "body": {
             "type": "BlockStatement",
             "body": body
@@ -111,6 +112,17 @@ function IfStatement(test, consequent, alternate) {
         "test": test,
         "consequent": consequent,
         "alternate": alternate
+    }
+}
+
+function DoWhileStatement(cond, body) {
+    return {
+        "type": "DoWhileStatement",
+        "test": cond,
+        "body": {
+            "type": "BlockStatement",
+            "body": body
+        }
     }
 }
 

@@ -26,6 +26,7 @@ module.exports = function(source) {
     function raise(msg) {
         let t = tokens[index];
         console.log(`${msg} found ${Token[t.type]} '${t.value}' at line ${t.line}, col ${t.col}`)
+        process.exit(0)
     }
 
     return {
@@ -62,7 +63,7 @@ function Tokenizer(source) {
     function isDelim(ch)        { return /[.,;(){}[\]:]/.test(ch) }
     function isOperator(ch)     { return /[+\-*\/%=&|<>!^]/.test(ch) }
     function isKeyword(wd)      {
-        return /break|case|continue|const|do|double|else|export|float|for|from|if|import|int|module|new|return|switch|while/.test(wd);
+        return /break|case|continue|const|do|double|else|export|float|for|if|import|int|module|new|return|switch|while/.test(wd);
     }
 
     /*

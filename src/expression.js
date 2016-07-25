@@ -99,7 +99,7 @@ function transpile(tokens, symbol, index) {
     stack = []
     traverse(tokens)
     nodes = nodes.reverse()
-    //codegen()
+    codegen()
     if (index != null) {
         switch (nodes[0].type) {
             case 'Literal':
@@ -109,13 +109,13 @@ function transpile(tokens, symbol, index) {
                 out.push({name:name, code:`${nodes[0].name}|0`})
                 break
             case 'BinaryExpression':
-                codegen()
+                //codegen()
                 out.push({name:name, code:`${prev}|0`})
                 break
                 
         }
     } else {
-        codegen()
+        //codegen()
         out[out.length-1].name = name
     }
 
@@ -177,7 +177,7 @@ function transpile(tokens, symbol, index) {
                         createVar()
                         out.push({name:curr, code:`${prev} << 2`})
                         createVar()
-                        out.push({name:curr, code:`HEAP[${prev}>>2]|0`})
+                        out.push({name:curr, code:`${heap}[${prev}>>2]|0`})
                         stack.pop() //# pop off the prev, replace with curr
                         stack.push(new Node({type: 'Identifier', name: curr})) 
                     }
