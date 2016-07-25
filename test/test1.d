@@ -1,36 +1,35 @@
-import exp from Math;
-import log from Math;
-import now from usrlib;
+/**
+ * Test1.dish
+ */
+module test1;
 
-export int myFunc() {
+int[] buf;
 
+export int factorial(int p) {
     int i;
+    int result = 0;
 
-    i = (3*42^7)&21;
-
-    return i;
+    for (i=0; i<p; i++) {
+       result = result + i; 
+    }
+    return result;
 }
-export double logSum(int start, int end) {
-    
-    double sum;
-    int p;
-    int q;
-    int i;
-    int count = end - start;
-    int k = start;
-    double z;
-    z = (42 + 13/27) / 3;
-    x = 21.0;
 
-    k = k+1;
-    p=2;
-    for (k=start; i<end; k++) {
-        i = k;
-    }
-    for (i = start, k = 0; i < count; i++, k++) {
-        for (p = start, q = end; p < q; p++) {
-            sum = sum + 1; //HEAPF64[p];
-        }
-    }
-    return sum;
+export int alloc(int n) {
+
+    buf = new int[n];
+    return buf;
+}
+
+export int index(int i) {
+    int[] value = [42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
+    
+    int k;
+    int result;
+
+    //TODO: wrong result without the +0
+    result = value[i]+0;
+    return result;
+
+
 }

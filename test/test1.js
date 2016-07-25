@@ -1,41 +1,54 @@
-var test1 = function(stdlib, foreign, heap) {
+import Ffi from 'ffi'
+import {buffer} from 'ffi'
+import Stdlib from 'stdlib'
+export const test1 = (function(stdlib, foreign, heap) {
 "use asm";
-var exp = stdlib.Math.exp;
-var log = stdlib.Math.log;
-var now = foreign.usrlib.now;
-function logSum(start, end) {
-    start = start | 0;
-    end = end | 0;
-    var sum = 0.0;
-    var p = 0;
-    var q = 0;
+var HEAPI32 = new stdlib.Int32Array(heap);
+var malloc = foreign.malloc;
+var buf = 0;
+function factorial(p) {
+    p = p | 0;
+    var $00 = 0;
     var i = 0;
-    var count = 0;
+    var result = 0;
+    result = 0;
+    for (i = 0; (i | 0) < (p | 0); i = i + 1 | 0) {
+        result = result + i | 0;
+    }
+    return result | 0;
+}
+function alloc(n) {
+    n = n | 0;
+    var $00 = 0;
+    buf = (malloc(n << 2) | 0) >> 2;
+    return buf | 0;
+}
+function index(i) {
+    i = i | 0;
+    var $01 = 0, $02 = 0, $03 = 0;
+    var value = 0;
     var k = 0;
-    count =     $01 = start - end | 0;;
-    k = ;
-    k =     $01 = 1 + k | 0;, p = ;
-    for (k = ;         $01 = 0 | end;
-        $02 = 0 | i;
-        $03 = $01 < $02 | 0;; k =         $01 = 1 + k | 0;
-        $02 = 0 | $01;) {
-        i = ;
-    }
-    for (i = , k = ;         $01 = 0 | count;
-        $02 = 0 | i;
-        $03 = $01 < $02 | 0;; i =         $01 = 1 + i | 0;
-        $02 = 0 | $01;, k =         $01 = 1 + k | 0;
-        $02 = 0 | $01;) {
-        for (p = , q = ;             $01 = 0 | q;
-            $02 = 0 | p;
-            $03 = $01 < $02 | 0;; p =             $01 = 1 + p | 0;
-            $02 = 0 | $01;) {
-            sum =             $01 = 1 + sum | 0;;
-        }
-    }
-    return;
+    var result = 0;
+    value = (malloc(10 << 2) | 0) >> 2;
+    HEAPI32[(value+0)<<2>>2] = 42;
+    HEAPI32[(value+1)<<2>>2] = 43;
+    HEAPI32[(value+2)<<2>>2] = 44;
+    HEAPI32[(value+3)<<2>>2] = 45;
+    HEAPI32[(value+4)<<2>>2] = 46;
+    HEAPI32[(value+5)<<2>>2] = 47;
+    HEAPI32[(value+6)<<2>>2] = 48;
+    HEAPI32[(value+7)<<2>>2] = 49;
+    HEAPI32[(value+8)<<2>>2] = 50;
+    HEAPI32[(value+9)<<2>>2] = 51;
+    $01 = value + i | 0;
+    $02 = $01 << 2;
+    $03 = HEAPI32[$02 >> 2] | 0;
+    result = $03 + 0 | 0;
+    return result | 0;
 }    
 return { 
-    logSum:logSum, 
+    factorial:factorial,
+    alloc:alloc,
+    index:index, 
 };
-}(stdlib || window, usrlib, heap || new ArrayBuffer(16384));
+}(Stdlib, Ffi, buffer))

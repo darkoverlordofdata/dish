@@ -1,10 +1,9 @@
-var tester = function(stdlib, foreign, heap) {
+var mersenne_twister = function(stdlib, foreign, heap) {
 "use asm";
 var HEAPI32 = new stdlib.Int32Array(heap);
 var malloc = foreign.malloc;
 var exp = stdlib.Math.exp;
 var log = stdlib.Math.log;
-var now = foreign.usrlib.now;
 var N = 624;
 var M = 397;
 var MATRIX_A = 2567483615;
@@ -16,8 +15,6 @@ var mti = 625;
 function init_genrand(s) {
     s = s | 0;
     var $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0, $07 = 0, $08 = 0, $09 = 0, $10 = 0, $11 = 0, $12 = 0, $13 = 0, $14 = 0, $15 = 0, $16 = 0, $17 = 0, $18 = 0, $19 = 0, $20 = 0, $21 = 0, $22 = 0, $23 = 0;
-    var t2 = 0;
-    var t3 = 0;
     mt = malloc(N << 2) >> 2;
     $01 = mt + 1 | 0;
     $02 = $01 << 2;

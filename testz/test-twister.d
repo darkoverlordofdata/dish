@@ -1,10 +1,10 @@
 /**
- * Test.dish
+ * MersenneTwister.dish
  */
-module tester;
+module mersenne_twister;
+
 import exp = Math.exp;
 import log = Math.log;
-import now = usrlib.now;
 
 const int N = 624;
 const int M = 397;
@@ -20,8 +20,6 @@ int mti = 625;  /* mti==N+1 means mt[N] is not initialized */
 
 int init_genrand(int s)
 {
-    int t2;
-    int t3;
 
     mt = new int[N];
     mt[1] = 42;

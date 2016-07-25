@@ -51,23 +51,32 @@ function New(name, size, alloc) {
                 "type": "BinaryExpression",
                 "operator": ">>",
                 "left": {
-                    "type": "CallExpression",
-                    "callee": {
-                        "type": "Identifier",
-                        "name": "malloc"
-                    },
-                    "arguments": [
-                        {
-                            "type": "BinaryExpression",
-                            "operator": "<<",
-                            "left": alloc,
-                            "right": {
-                                "type": "Literal",
-                                "value": size,
-                                "raw": ""+size
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "malloc"
+                        },
+                        "arguments": [
+                            {
+                                "type": "BinaryExpression",
+                                "operator": "<<",
+                                "left": alloc,
+                                "right": {
+                                    "type": "Literal",
+                                    "value": size,
+                                    "raw": ""+size
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    },
+                    "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                    }
                 },
                 "right": {
                     "type": "Literal",
@@ -78,6 +87,47 @@ function New(name, size, alloc) {
         }
     }
 }
+
+//     return {
+//         "type": "ExpressionStatement",
+//         "expression": {
+//             "type": "AssignmentExpression",
+//             "operator": "=",
+//             "left": {
+//                 "type": "Identifier",
+//                 "name": name
+//             },
+//             "right": {
+//                 "type": "BinaryExpression",
+//                 "operator": ">>",
+//                 "left": {
+//                     "type": "CallExpression",
+//                     "callee": {
+//                         "type": "Identifier",
+//                         "name": "malloc"
+//                     },
+//                     "arguments": [
+//                         {
+//                             "type": "BinaryExpression",
+//                             "operator": "<<",
+//                             "left": alloc,
+//                             "right": {
+//                                 "type": "Literal",
+//                                 "value": size,
+//                                 "raw": ""+size
+//                             }
+//                         }
+//                     ]
+//                 },
+//                 "right": {
+//                     "type": "Literal",
+//                     "value": size,
+//                     "raw": ""+size
+//                 }
+//             }
+//         }
+//     }
+// }
 /** the init of a for statement */
 function SequenceExpression(assignmentExpressions) {
     return {

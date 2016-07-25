@@ -32,13 +32,14 @@ System.register("stdlib", [], function(exports_1, context_1) {
 System.register("ffi", [], function(exports_2, context_2) {
     "use strict";
     var __moduleName = context_2 && context_2.id;
-    var Ffi, HEAP, buffer;
+    var Ffi, HEAP, HEAP_SIZE, buffer, bufferMax;
     return {
         setters:[],
         execute: function() {
             /*
             ## Foreign function interface
              */
+            HEAP_SIZE = 0x40000;
             Ffi = (function () {
                 function Ffi() { }
                 Ffi.now = function () {
@@ -46,6 +47,9 @@ System.register("ffi", [], function(exports_2, context_2) {
                 };
                 /*
                  * malloc
+                 *
+                 * this is a naive implementation of malloc.
+                 * memory is only allocated, never returned.
                  *
                  * @param nBytes number of bytes required
                  * @returns starting offset in the heap
@@ -59,17 +63,18 @@ System.register("ffi", [], function(exports_2, context_2) {
                 return Ffi;
             })();
             exports_2("default",Ffi);
-            exports_2("buffer", buffer = new ArrayBuffer(0x40000));
+            exports_2("buffer", buffer = new ArrayBuffer(HEAP_SIZE));
+            exports_2("bufferMax", bufferMax = HEAP_SIZE);
             HEAP = new Int32Array(buffer);
             HEAP[0] = 16;
         }
     }
 });
-System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
+System.register("test1", ["ffi", "stdlib"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var ffi_1, ffi_2, stdlib_1;
-    var SLOW_HEAP_SIZE, FAST_HEAP_SIZE, asm;
+    var test1;
     return {
         setters:[
             function (ffi_1_1) {
@@ -80,348 +85,57 @@ System.register("asm", ["ffi", "stdlib"], function(exports_3, context_3) {
                 stdlib_1 = stdlib_1_1;
             }],
         execute: function() {
-            SLOW_HEAP_SIZE = 0x10000; /* 64k Minimum heap size */
-            FAST_HEAP_SIZE = 0x40000; /* 256k for performance */
-            //export const buffer = new ArrayBuffer(FAST_HEAP_SIZE)
-            /**
-             * asm.js
-             *
-             * @param stdlib
-             * @param usrlib
-             * @param buffer
-             */
-            exports_3("asm", asm = (function (stdlib, usrlib, buffer) {
+            exports_3("test1", test1 = (function (stdlib, foreign, heap) {
                 "use asm";
-                var exp = stdlib.Math.exp;
-                var log = stdlib.Math.log;
-                var fround = stdlib.Math.fround;
-                var now = usrlib.now;
-                var malloc = usrlib.malloc;
-                var HEAP8 = new stdlib.Int8Array(buffer);
-                var HEAP16 = new stdlib.Int16Array(buffer);
-                var HEAP32 = new stdlib.Int32Array(buffer);
-                var HEAPU8 = new stdlib.Uint8Array(buffer);
-                var HEAPU16 = new stdlib.Uint16Array(buffer);
-                var HEAPU32 = new stdlib.Uint32Array(buffer);
-                var HEAPF32 = new stdlib.Float32Array(buffer);
-                var HEAPF64 = new stdlib.Float64Array(buffer);
-                var t1 = 0.0;
-                function logSum(start, end) {
-                    start = start | 0;
-                    end = end | 0;
-                    var sum = 0.0, p = 0, q = 0, i = 0, count = 0;
-                    count = 1000;
-                    for (i = start; (i | 0) < (count | 0); i = (i + 1) | 0) {
-                        // asm.js forces byte addressing of the heap by requiring shifting by 3
-                        for (p = start << 3, q = end << 3; (p | 0) < (q | 0); p = (p + 8) | 0) {
-                            sum = sum + +log(HEAPF64[p >> 3]);
-                        }
+                var HEAPI32 = new stdlib.Int32Array(heap);
+                var malloc = foreign.malloc;
+                var buf = 0;
+                function factorial(p) {
+                    p = p | 0;
+                    var $00 = 0;
+                    var i = 0;
+                    var result = 0;
+                    result = 0;
+                    for (i = 0; (i | 0) < (p | 0); i = i + 1 | 0) {
+                        result = result + i | 0;
                     }
-                    return +sum;
+                    return result | 0;
                 }
-                function geometricMean(start, end) {
-                    start = start | 0;
-                    end = end | 0;
-                    var t1 = 0.0;
-                    var t2 = 0.0;
-                    var xx = 0.0;
-                    xx = +logSum(1 | 0, 2 | 0);
-                    t1 = +now();
-                    +exp(+logSum(start, end) / +((end - start) | 0));
-                    t2 = +now();
-                    return +(t2 - t1);
-                }
-                function getTime() {
-                    t1 = +geometricMean(10 | 0, 20000 | 0);
-                    return +t1;
-                }
-                function test_malloc(n) {
+                function alloc(n) {
                     n = n | 0;
-                    var m = 0;
-                    m = malloc(n | 0) | 0;
-                    return m | 0;
+                    var $00 = 0;
+                    buf = (malloc(n << 2) | 0) >> 2;
+                    return buf | 0;
+                }
+                function index(i) {
+                    i = i | 0;
+                    var $01 = 0, $02 = 0, $03 = 0;
+                    var value = 0;
+                    var k = 0;
+                    var result = 0;
+                    value = (malloc(10 << 2) | 0) >> 2;
+                    HEAPI32[(value + 0) << 2 >> 2] = 42;
+                    HEAPI32[(value + 1) << 2 >> 2] = 43;
+                    HEAPI32[(value + 2) << 2 >> 2] = 44;
+                    HEAPI32[(value + 3) << 2 >> 2] = 45;
+                    HEAPI32[(value + 4) << 2 >> 2] = 46;
+                    HEAPI32[(value + 5) << 2 >> 2] = 47;
+                    HEAPI32[(value + 6) << 2 >> 2] = 48;
+                    HEAPI32[(value + 7) << 2 >> 2] = 49;
+                    HEAPI32[(value + 8) << 2 >> 2] = 50;
+                    HEAPI32[(value + 9) << 2 >> 2] = 51;
+                    $01 = value + i | 0;
+                    $02 = $01 << 2;
+                    $03 = HEAPI32[$02 >> 2] | 0;
+                    result = $03 + 0 | 0;
+                    return result | 0;
                 }
                 return {
-                    geometricMean: geometricMean,
-                    getTime: getTime,
-                    test_malloc: test_malloc
+                    factorial: factorial,
+                    alloc: alloc,
+                    index: index,
                 };
             }(stdlib_1.default, ffi_1.default, ffi_2.buffer)));
-        }
-    }
-});
-System.register("mt19937", ["ffi", "stdlib"], function(exports_4, context_4) {
-    "use strict";
-    var __moduleName = context_4 && context_4.id;
-    var ffi_3, ffi_4, stdlib_2;
-    var mt19937;
-    return {
-        setters:[
-            function (ffi_3_1) {
-                ffi_3 = ffi_3_1;
-                ffi_4 = ffi_3_1;
-            },
-            function (stdlib_2_1) {
-                stdlib_2 = stdlib_2_1;
-            }],
-        execute: function() {
-            exports_4("mt19937", mt19937 = (function (stdlib, foreign, heap) {
-                "use asm";
-                var HEAP = new stdlib.Uint32Array(heap);
-                var malloc = foreign.malloc;
-                var N = 624;
-                var M = 397;
-                var MATRIX_A = 0x9908b0df; /* constant vector a */
-                var UPPER_MASK = 0x80000000; /* most significant w-r bits */
-                var LOWER_MASK = 0x7fffffff; /* least significant r bits */
-                var mt = 0; /* ptr -> the array for the state vector  */
-                var mti = 625; /* mti==N+1 means mt[N] is not initialized */
-                /* initializes mt[N] with a seed */
-                function init_genrand(s) {
-                    s = s | 0;
-                    var t1 = 0;
-                    var t2 = 0;
-                    var t3 = 0;
-                    var $00 = 0, $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0.0, $07 = 0.0, $08 = 0.0, $09 = 0;
-                    mt = malloc(N << 2) | 0; // malloc(N*sizeof(int))
-                    mt = mt >> 2;
-                    // following line prevents full aot compilation for performanace testing.
-                    //var flawed_mode = 0
-                    // comment the previuos line to run in unflawed mode.
-                    $00 = mt | 0;
-                    $00 = $00 << 2;
-                    HEAP[$00 >> 2] = s & 0xffffffff;
-                    //mt[0]= s & 0xffffffffUL;
-                    for (mti = 1; (mti | 0) < (N | 0); mti = mti + 1 | 0) {
-                        $01 = mt + mti | 0;
-                        $02 = $01 - 1 | 0;
-                        $03 = $02 << 2;
-                        // $04 = HEAP[$03>>2]|0
-                        $04 = HEAP[$02 << 2 >> 2] | 0;
-                        $05 = $04 >> 30;
-                        $06 = +($04 ^ $05);
-                        $07 = $06 * 1812433253.0;
-                        $08 = $07 + +(mti | 0);
-                        // mt[mti] = 
-                        // (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
-                        /* See Knuth TAOCP Vol2. 3rd Ed. P.106x` for multiplier. */
-                        /* In the previous versions, MSBs of the seed affect   */
-                        /* only MSBs of the array mt[].                        */
-                        /* 2002/01/09 modified by Makoto Matsumoto             */
-                        $09 = $01 << 2;
-                        HEAP[$09 >> 2] = ~~($08) & 0xffffffff;
-                    }
-                    //for (var x=0; x<20; x++) console.log(HEAP[mt+x])
-                }
-                /* generates a random number on [0,0xffffffff]-interval */
-                function genrand_int32() {
-                    var y = 0;
-                    var y1 = 0;
-                    var y2 = 0;
-                    var mag01 = 0;
-                    var kk = 0;
-                    var $00 = 0, $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0, $07 = 0, $08 = 0;
-                    var $09 = 0, $10 = 0, $11 = 0, $12 = 0, $13 = 0, $14 = 0, $15 = 0, $16 = 0, $17 = 0;
-                    var $18 = 0, $19 = 0, $20 = 0, $21 = 0, $22 = 0;
-                    mag01 = malloc(2 << 2) | 0;
-                    mag01 = mag01 >> 2;
-                    $00 = (mag01 + 0 | 0) << 2;
-                    HEAP[$00 >> 2] = 0;
-                    $00 = (mag01 + 1 | 0) << 2;
-                    HEAP[$00 >> 2] = MATRIX_A;
-                    if ((mti | 0) >= (N | 0)) {
-                        if ((mti | 0) == (N + 1 | 0))
-                            init_genrand(5489); /* a default initial seed is used */
-                        for (kk = 0; (kk | 0) < (N - M | 0); kk = kk + 1 | 0) {
-                            $01 = mt + kk | 0;
-                            $02 = $01 << 2;
-                            // $03 = HEAP[$02>>2]|0
-                            $03 = HEAP[$01 << 2 >> 2] | 0;
-                            $04 = $03 & UPPER_MASK;
-                            $05 = ($01 + 1 | 0);
-                            $06 = $05 << 2;
-                            $07 = HEAP[$06 >> 2] | 0;
-                            $08 = $07 & LOWER_MASK;
-                            y = $08 | $04;
-                            // y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-                            $09 = $01 + M | 0;
-                            $10 = $09 << 2;
-                            $11 = HEAP[$10 >> 2] | 0;
-                            $12 = y >> 1;
-                            $13 = $11 ^ $12;
-                            $14 = y & 1;
-                            $15 = mag01 + $14 | 0;
-                            $16 = $15 << 2;
-                            $17 = HEAP[$16 >> 2] | 0;
-                            HEAP[$02 >> 2] = $17 ^ $13;
-                        }
-                        for (; (kk | 0) < (N - 1 | 0); kk = kk + 1 | 0) {
-                            $01 = mt + kk | 0;
-                            $02 = $01 << 2;
-                            $03 = HEAP[$02 >> 2] | 0;
-                            $04 = $03 & UPPER_MASK;
-                            $05 = $01 + 1 | 0;
-                            $06 = $05 << 2;
-                            $07 = HEAP[$06 >> 2] | 0;
-                            $08 = $07 & LOWER_MASK;
-                            y = $08 | $04;
-                            // y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-                            $09 = $01 + M | 0;
-                            $10 = $09 - N | 0;
-                            $11 = $10 << 2;
-                            $12 = HEAP[$11 >> 2] | 0;
-                            $13 = y >> 1;
-                            $14 = $12 ^ $13;
-                            $15 = y & 1;
-                            $16 = mag01 + $15 | 0;
-                            $17 = $16 << 2;
-                            $18 = HEAP[$17 >> 2] | 0;
-                            HEAP[$02 >> 2] = $18 ^ $14;
-                        }
-                        $01 = mt + N | 0;
-                        $02 = $01 - 1 | 0;
-                        $03 = $02 << 2;
-                        $04 = HEAP[$03 >> 2] | 0;
-                        $05 = $04 & UPPER_MASK;
-                        $06 = mt | 0;
-                        $07 = $06 << 2;
-                        $08 = HEAP[$07 >> 2] | 0;
-                        $09 = $08 & LOWER_MASK;
-                        y = $09 | $05;
-                        // y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
-                        $10 = mt + M | 0;
-                        $11 = $10 - 1 | 0;
-                        $12 = $11 << 2;
-                        $13 = HEAP[$12 >> 2] | 0;
-                        $14 = y >> 1;
-                        $15 = $14 ^ $13;
-                        $16 = y & 1;
-                        $17 = mag01 + $16 | 0;
-                        $18 = $17 << 2;
-                        $19 = HEAP[$18 >> 2] | 0;
-                        $20 = mt + N | 0;
-                        $21 = $20 - 1 | 0;
-                        $22 = $21 << 2;
-                        HEAP[$22 >> 2] = $19 ^ $15;
-                        // mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
-                        mti = 0;
-                    }
-                    $00 = (mt + mti) << 2;
-                    y = HEAP[$00 >> 2] | 0;
-                    // y = mt[mti++];
-                    mti = mti + 1 | 0;
-                    /* Tempering */
-                    $01 = y >> 11;
-                    $02 = y ^ $01;
-                    $03 = $02 << 7;
-                    $04 = $03 & 0x9d2c5680;
-                    $05 = $02 ^ $04;
-                    $06 = $05 << 15;
-                    $07 = $06 & 0xefc60000;
-                    $08 = $05 ^ $07;
-                    $09 = $08 >> 18;
-                    y = $08 ^ $09;
-                    // y ^= (y >> 11);
-                    // y ^= (y << 7) & 0x9d2c5680UL;
-                    // y ^= (y << 15) & 0xefc60000UL;
-                    // y ^= (y >> 18);
-                    return y | 0;
-                }
-                function test() {
-                    var i = 0;
-                    var MAX = 0;
-                    var t1 = 0.0;
-                    var t2 = 0.0;
-                    var t = 0;
-                    MAX = 10000;
-                    // t1 = +now();
-                    for (i = 0; (i | 0) < (MAX | 0); i = (i + 1) | 0) {
-                        t = genrand_int32() | 0;
-                    }
-                    // t2 = +now();
-                    return; // +(t2 - t1);
-                }
-                return {
-                    genrand_int32: genrand_int32,
-                    test: test
-                };
-            }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
-        }
-    }
-});
-System.register("mt19937ar", [], function(exports_5, context_5) {
-    "use strict";
-    var __moduleName = context_5 && context_5.id;
-    var mt19937ar;
-    return {
-        setters:[],
-        execute: function() {
-            exports_5("mt19937ar", mt19937ar = (function () {
-                'use strict';
-                /* Period parameters */
-                var N = 624;
-                var M = 397;
-                var MATRIX_A = 0x9908b0df; /* constant vector a */
-                var UPPER_MASK = 0x80000000; /* most significant w-r bits */
-                var LOWER_MASK = 0x7fffffff; /* least significant r bits */
-                var mt = Array(N); /* the array for the state vector  */
-                var mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
-                var T = 0;
-                var t2 = 0;
-                return {
-                    genrand_int32: genrand_int32
-                };
-                /* initializes mt[N] with a seed */
-                function init_genrand(s) {
-                    mt[0] = s & 0xffffffff;
-                    for (mti = 1; mti < N; mti++) {
-                        // mt[mti] = 
-                        // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
-                        t2 = (mt[mti - 1] ^ (mt[mti - 1] >> 30));
-                        mt[mti] = (1812433253 * t2 + mti);
-                        //if (T++<5) console.log(t2, (1812433253 * t2 + mti)&0xffffffff) ;
-                        /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
-                        /* In the previous versions, MSBs of the seed affect   */
-                        /* only MSBs of the array mt[].                        */
-                        /* 2002/01/09 modified by Makoto Matsumoto             */
-                        mt[mti] &= 0xffffffff;
-                    }
-                    for (var x = 0; x < 20; x++)
-                        console.log('ar', mt[x]);
-                }
-                /* generates a random number on [0,0xffffffff]-interval */
-                function genrand_int32() {
-                    var y;
-                    var mag01 = [0x0, MATRIX_A];
-                    /* mag01[x] = x * MATRIX_A  for x=0,1 */
-                    if (mti >= N) {
-                        var kk = void 0;
-                        if (mti == N + 1)
-                            init_genrand(5489); /* a default initial seed is used */
-                        //console.log('rand ', mt[1])
-                        T = 0;
-                        for (kk = 0; kk < N - M; kk++) {
-                            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-                            //if (T++<5) console.log('y', y, kk, mt[kk], mt[kk+1])
-                            mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1];
-                        }
-                        for (; kk < N - 1; kk++) {
-                            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-                            mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1];
-                        }
-                        y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
-                        mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1];
-                        mti = 0;
-                    }
-                    y = mt[mti++];
-                    /* Tempering */
-                    y ^= (y >> 11);
-                    y ^= (y << 7) & 0x9d2c5680;
-                    y ^= (y << 15) & 0xefc60000;
-                    y ^= (y >> 18);
-                    return y;
-                }
-            })());
         }
     }
 });
@@ -430,55 +144,21 @@ System.register("mt19937ar", [], function(exports_5, context_5) {
  * Run tests
  *
  */
-Promise.all(['asm', 'mt19937ar', 'mt19937'].map(function (x) {
+Promise.all(['test1'].map(function (x) {
     return System["import"](x);
 })).then(function (arg) {
-    var asm, mt19937, mt19937ar, ref, ref1, ref2;
-    (ref = arg[0], asm = ref.asm), (ref1 = arg[1], mt19937ar = ref1.mt19937ar), (ref2 = arg[2], mt19937 = ref2.mt19937);
-    var MAX = 10000;
-    return describe("mt19937 Mersenne Twister", function () {
-        it("asm calibration", function () {
-            expect(asm.getTime()).to.not.equal(200);
+    var test1;
+    test1 = arg[0].test1;
+    return describe('Basic Tests', function () {
+        it('Factorial', function () {
+            expect(test1.factorial(10)).to.equal(45);
         });
-        it("malloc should not return null", function () {
-            expect(asm.test_malloc(16)).to.not.equal(0);
-            expect(asm.test_malloc(16)).to.not.equal(0);
+        it('Alloc', function () {
+            expect(test1.alloc(10)).to.equal(4);
+            return expect(test1.alloc(10)).to.equal(14);
         });
-        it("asm.js results should match plain js", function () {
-            var i, j, r1, r2, ref3;
-            for (i = j = 0, ref3 = MAX; 0 <= ref3 ? j <= ref3 : j >= ref3; i = 0 <= ref3 ? ++j : --j) {
-                r1 = mt19937ar.genrand_int32();
-                r2 = mt19937.genrand_int32();
-                if (r1 !== r2) {
-                    break;
-                }
-                expect(r1).to.equal(r2);
-            }
-        });
-        it("time plain js " + MAX + " tries", function () {
-            var i, j, ref3, t1, t2;
-            t1 = performance.now();
-            for (i = j = 0, ref3 = MAX; 0 <= ref3 ? j <= ref3 : j >= ref3; i = 0 <= ref3 ? ++j : --j) {
-                mt19937ar.genrand_int32();
-            }
-            t2 = performance.now();
-            expect(t2 - t1).to.not.equal(0);
-        });
-        it("time interop " + MAX + " tries", function () {
-            var i, j, ref3, t1, t2;
-            t1 = performance.now();
-            for (i = j = 0, ref3 = MAX; 0 <= ref3 ? j <= ref3 : j >= ref3; i = 0 <= ref3 ? ++j : --j) {
-                mt19937.genrand_int32();
-            }
-            t2 = performance.now();
-            expect(t2 - t1).to.not.equal(0);
-        });
-        return it("time asmjs asm only " + MAX + " tries", function () {
-            var t1, t2;
-            t1 = performance.now();
-            mt19937.test();
-            t2 = performance.now();
-            expect(t2 - t1).to.not.equal(0);
+        return it('Index', function () {
+            return expect(test1.index(2)).to.equal(44);
         });
     });
 }, function (err) {
