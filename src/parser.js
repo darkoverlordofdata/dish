@@ -448,10 +448,10 @@ function parse(input) {
         }
 
         const ast = parseExp(tokens.join(' '))
-        if (ast.type === 'BinaryExpression' || index.length>0) {
+        if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const sym = symtbl[currentScope][name]||symtbl['global'][name]
-            const lhs = index.length===0?null:parseExp(index.join(' '))
-            const lines = expression.transpile(ast, sym, lhs)
+            const lhsvalue = index.length===0?null:parseExp(index.join(' '))
+            const lines = expression.transpile(ast, sym, lhsvalue)
             for (let l in lines) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
@@ -704,6 +704,8 @@ function parse(input) {
             expect('[')
             expect(']')
             isArray = true
+            malloc = true
+            heapi32 = true
         }
         const name = input.next()
         if (input.peek().value === '(') { /** function definition */

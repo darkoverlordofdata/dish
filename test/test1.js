@@ -6,13 +6,13 @@ export const test1 = (function(stdlib, foreign, heap) {
 var HEAPI32 = new stdlib.Int32Array(heap);
 var malloc = foreign.malloc;
 var buf = 0;
-function factorial(p) {
-    p = p | 0;
+function factorial(n) {
+    n = n | 0;
     var $00 = 0;
     var i = 0;
     var result = 0;
     result = 0;
-    for (i = 0; (i | 0) < (p | 0); i = i + 1 | 0) {
+    for (i = 0; (i | 0) < (n | 0); i = i + 1 | 0) {
         result = result + i | 0;
     }
     return result | 0;
@@ -25,7 +25,7 @@ function alloc(n) {
 }
 function index(i) {
     i = i | 0;
-    var $01 = 0, $02 = 0, $03 = 0;
+    var $01 = 0, $02 = 0;
     var value = 0;
     var k = 0;
     var result = 0;
@@ -42,8 +42,7 @@ function index(i) {
     HEAPI32[(value+9)<<2>>2] = 51;
     $01 = value + i | 0;
     $02 = $01 << 2;
-    $03 = HEAPI32[$02 >> 2] | 0;
-    result = $03 + 0 | 0;
+    result = HEAPI32[$02 >> 2] | 0;
     return result | 0;
 }    
 return { 

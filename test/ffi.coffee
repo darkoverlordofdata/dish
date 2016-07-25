@@ -21,7 +21,12 @@ class Ffi
         HEAP[0] = offset+nBytes
         offset
 
+    @dump:() ->
+        for i in [4..HEAP[0]+20]
+            console.log(i, HEAP[i])
+
 `export default Ffi`  
+`export const foreign = Ffi`  
 `export const buffer = new ArrayBuffer(HEAP_SIZE)`
 `export const bufferMax = HEAP_SIZE`
 HEAP = new Int32Array(buffer);

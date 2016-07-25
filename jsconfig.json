@@ -9,6 +9,7 @@
         "test/stdlib.js",
         "test/ffi.js",
         "test/test1.js",
+        "test/test2.js",
         "test/load.js"
     ]
 }

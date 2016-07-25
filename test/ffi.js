@@ -32,11 +32,22 @@ Ffi = (function() {
     return offset;
   };
 
+  Ffi.dump = function() {
+    var i, j, ref, results;
+    results = [];
+    for (i = j = 4, ref = HEAP[0] + 20; 4 <= ref ? j <= ref : j >= ref; i = 4 <= ref ? ++j : --j) {
+      results.push(console.log(i, HEAP[i]));
+    }
+    return results;
+  };
+
   return Ffi;
 
 })();
 
 export default Ffi;
+
+export const foreign = Ffi;
 
 export const buffer = new ArrayBuffer(HEAP_SIZE);
 

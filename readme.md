@@ -1,8 +1,7 @@
 
 # dee·ish
-
-
-### dish, or \dē-ˈiSH\,  is a d-like transpiler for asm.js
+## /dē-ish/ 
+#### a language that targets asm.js
 
 ## Why?
 Emscripten is great if you have an entire c++ application to port to the browser.
@@ -18,9 +17,7 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Status - very alpha
-
-        node ./src/dish.js test/test.d --output test/test.js
+Status - see ./test
 
 
 The goal of dish is to insulate me from the twiddly syntax of asm.js. 
@@ -36,57 +33,49 @@ Grammer
 * one level of nesting - functions can only be declared at the module level.
 * import/export can only be used at the module level.
 * within a function: break, case, continue, do, else, for, if, return, switch, while
+* added sugar for heap management and array types.
 
 Todo: 
 
-* add sugar for heap management and pointer types (in progress)
-* char type as int. So 'a' is the same as 97|0
+* char type as int, such that 'a' is the same as 97|0
 
 ### example
 
 #### test.d
 ```d
-module frodo;
-import log = Math.log;
-import now = usrlib.now;
+module demo;
 
-const int ANSWER = 42;
+export int factorial(int p) {
+    int i;
+    int result = 0;
 
-export int logSum(int start, int end) {
-    int z=ANSWER;
-    int k;
-    for (k=start; k<end; k++) {
-        z = z+k/3;
+    for (i=0; i<p; i++) {
+       result = result + i; 
     }
-    return z;
+    return result;
 }
 
 ```
 
 #### test.js
 ```javascript
-var frodo = function(stdlib, foreign, heap) {
+export const demo = (function(stdlib, foreign, heap) {
 "use asm";
-var log = stdlib.Math.log;
-var now = foreign.usrlib.now;
-var ANSWER = 42;
-function logSum(start, end) {
-    start = start | 0;
-    end = end | 0;
-    var $00 = 0, $01 = 0;
-    var z = 0;
-    var k = 0;
-    z = ANSWER;
-    for (k = start; (k | 0) < (end | 0); k = k + 1 | 0) {
-        $01 = k / 3 | 0;
-        z = z + $01 | 0;
+function factorial(p) {
+    p = p | 0;
+    var i = 0;
+    var result = 0;
+    result = 0;
+    for (i = 0; (i | 0) < (p | 0); i = i + 1 | 0) {
+        result = result + i | 0;
     }
-    return z | 0;
-}    
+    return result | 0;
+}
 return { 
-    logSum:logSum, 
+    factorial:factorial
 };
-}(stdlib || window, usrlib, heap || new ArrayBuffer(16384));
+}(stdlib, foreign, heap))
+
 ```
 
 

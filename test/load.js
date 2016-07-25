@@ -4,11 +4,11 @@
  * Run tests
  *
  */
-Promise.all(['test1'].map(function(x) {
+Promise.all(['test1', 'test2'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var test1;
-  test1 = arg[0].test1;
+  var ref, ref1, test1, test2;
+  (ref = arg[0], test1 = ref.test1), (ref1 = arg[1], test2 = ref1.test2);
   return describe('Basic Tests', function() {
     it('Factorial', function() {
       expect(test1.factorial(10)).to.equal(45);
@@ -18,7 +18,8 @@ Promise.all(['test1'].map(function(x) {
       return expect(test1.alloc(10)).to.equal(14);
     });
     return it('Index', function() {
-      return expect(test1.index(2)).to.equal(44);
+      expect(test1.index(2)).to.equal(44);
+      return expect(test2.index(2)).to.equal(44);
     });
   });
 }, function(err) {

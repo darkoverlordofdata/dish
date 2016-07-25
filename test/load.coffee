@@ -2,8 +2,8 @@
  * Run tests
  *
 ###
-Promise.all(['test1'].map((x) -> 
-  System.import(x))).then ([{test1}]) ->
+Promise.all(['test1', 'test2'].map((x) -> 
+  System.import(x))).then ([{test1}, {test2}]) ->
 
     describe 'Basic Tests', ->
     
@@ -18,6 +18,7 @@ Promise.all(['test1'].map((x) ->
 
       it 'Index', ->
         expect(test1.index(2)).to.equal(44)
+        expect(test2.index(2)).to.equal(44)
 
 
   , (err) -> console.log err
