@@ -11,12 +11,12 @@ module test2;
  *
  * The heap is shared between modules, so this finds values set from another module
  */
-export int index(int i) {
+export int index(int ptr, int i) {
     int[] value;
     
     int k;
     int result;
-    value = 24;
+    value = ptr;
 
     result = value[i];
     return result;

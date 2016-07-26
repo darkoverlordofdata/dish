@@ -9,7 +9,7 @@ Emscripten is great if you have an entire c++ application to port to the browser
 But what about creating a library to use with existing javascipt? Hand coding asm.js is not pleasant.
 
 ## About dish
-Dish transpiles d-like code to asm.js.
+Dish transpiles d-like code to asm.js. Code is generated from an ast using escodegen.
 
 Dish uses the *.d extension to leverage ide syntax hghlighting. 
 
@@ -22,18 +22,19 @@ Status - see ./test
 
 The goal of dish is to insulate me from the twiddly syntax of asm.js. 
 
-* use the type information to add type coercions to generated code.
-* generate import/export bindings.
-* generate the module header
+Features
 
-Grammer
-
+* uses type information to add type coercions to generated code.
+* generates import/export bindings.
+* generates a module header
+* multiple modules share 1 heap
 * similar restrictions as asm.js - no strings, etc.
 * module level only allows declarations - import, export, int, float, double. 
 * one level of nesting - functions can only be declared at the module level.
 * import/export can only be used at the module level.
 * within a function: break, case, continue, do, else, for, if, return, switch, while
 * added sugar for heap management and array types.
+* Built-in naive malloc, or codemix/malloc
 
 Todo: 
 
@@ -79,19 +80,6 @@ return {
 ```
 
 
-### resources
-
-http://mrale.ph/blog/2013/03/28/why-asmjs-bothers-me.html
-
-http://danluu.com/malloc-tutorial/
-
-http://www.2ality.com/2013/02/asm-js.html
-
-http://ejohn.org/blog/asmjs-javascript-compile-target/
-
-http://asmjs.org/spec/latest/
-
-
 ### notes
 
 I'm using esprima ast 'schema' as my target.  Then, escodegen is used to generate the final javascript code.
@@ -106,10 +94,16 @@ quoted literals don't exist in asm.js, with the sole exception of the 'use asm' 
 values I find are the floats that I've encoded. 
 
 
-### testing
+### asm.js resources
 
-compare run times with asmjs disabled
+http://mrale.ph/blog/2013/03/28/why-asmjs-bothers-me.html
 
-also implement merseene twister prng. http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
-Compare also to my mt19937.ts project
+http://danluu.com/malloc-tutorial/
+
+http://www.2ality.com/2013/02/asm-js.html
+
+http://ejohn.org/blog/asmjs-javascript-compile-target/
+
+http://asmjs.org/spec/latest/
+
 

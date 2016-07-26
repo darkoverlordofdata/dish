@@ -10,6 +10,8 @@
         "test/ffi.js",
         "test/test1.js",
         "test/test2.js",
+        "test/mt19937.js",
+        "test/test-twister.js",
         "test/load.js"
     ]
 }

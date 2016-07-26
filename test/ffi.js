@@ -3,9 +3,18 @@
 /*
 ## Foreign function interface
  */
-var Ffi, HEAP, HEAP_SIZE;
+var Ffi, HEAP, HEAP_SIZE, allocator;
 
 HEAP_SIZE = 0x40000;
+
+export const buffer = new ArrayBuffer(HEAP_SIZE);
+
+if (typeof malloc !== "undefined" && malloc !== null) {
+  allocator = new malloc.Allocator(buffer);
+} else {
+  HEAP = new Int32Array(buffer);
+  HEAP[0] = 16;
+}
 
 Ffi = (function() {
   function Ffi() {}
@@ -18,28 +27,13 @@ Ffi = (function() {
   /*
    * malloc
    *
-   * this is a naive implementation of malloc. 
-   * memory is only allocated, never returned.
-   *
    * @param nBytes number of bytes required
    * @returns starting offset in the heap
    */
 
-  Ffi.malloc = function(nBytes) {
-    var offset;
-    offset = HEAP[0];
-    HEAP[0] = offset + nBytes;
-    return offset;
-  };
+  Ffi.malloc = allocator.alloc;
 
-  Ffi.dump = function() {
-    var i, j, ref, results;
-    results = [];
-    for (i = j = 4, ref = HEAP[0] + 20; 4 <= ref ? j <= ref : j >= ref; i = 4 <= ref ? ++j : --j) {
-      results.push(console.log(i, HEAP[i]));
-    }
-    return results;
-  };
+  Ffi.free = allocator.free;
 
   return Ffi;
 
@@ -49,10 +43,4 @@ export default Ffi;
 
 export const foreign = Ffi;
 
-export const buffer = new ArrayBuffer(HEAP_SIZE);
-
 export const bufferMax = HEAP_SIZE;
-
-HEAP = new Int32Array(buffer);
-
-HEAP[0] = 16;

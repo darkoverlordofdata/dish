@@ -4,22 +4,29 @@
  * Run tests
  *
  */
-Promise.all(['test1', 'test2'].map(function(x) {
+Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var ref, ref1, test1, test2;
-  (ref = arg[0], test1 = ref.test1), (ref1 = arg[1], test2 = ref1.test2);
+  var MersenneTwister, mt19937, ref, ref1, ref2, ref3, test1, test2;
+  (ref = arg[0], test1 = ref.test1), (ref1 = arg[1], test2 = ref1.test2), (ref2 = arg[2], MersenneTwister = ref2.MersenneTwister), (ref3 = arg[3], mt19937 = ref3.mt19937);
   return describe('Basic Tests', function() {
     it('Factorial', function() {
       expect(test1.factorial(10)).to.equal(45);
     });
     it('Alloc', function() {
-      expect(test1.alloc(10)).to.equal(4);
-      return expect(test1.alloc(10)).to.equal(14);
+      expect(test1.alloc(10)).to.equal(typeof malloc !== "undefined" && malloc !== null ? 68 : 4);
+      expect(test1.alloc(10)).to.equal(typeof malloc !== "undefined" && malloc !== null ? 80 : 14);
     });
-    return it('Index', function() {
-      expect(test1.index(2)).to.equal(44);
-      return expect(test2.index(2)).to.equal(44);
+    it('List', function() {
+      expect(test1.values()).to.equal(typeof malloc !== "undefined" && malloc !== null ? 92 : 24);
+      expect(test2.index((typeof malloc !== "undefined" && malloc !== null ? 92 : 24), 2)).to.equal(44);
+    });
+    return it('Random', function() {
+      expect(mt19937.genrand_int32()).to.equal(testResults[0]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[1]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[2]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[3]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[4]);
     });
   });
 }, function(err) {

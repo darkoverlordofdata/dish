@@ -2,24 +2,34 @@
  * Run tests
  *
 ###
-Promise.all(['test1', 'test2'].map((x) -> 
-  System.import(x))).then ([{test1}, {test2}]) ->
+Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map((x) -> 
+  System.import(x))).then ([{test1}, {test2}, {MersenneTwister}, {mt19937}]) ->
 
     describe 'Basic Tests', ->
     
-
       it 'Factorial', ->
         expect(test1.factorial(10)).to.equal(45)
         return
 
       it 'Alloc', ->
-        expect(test1.alloc(10)).to.equal(4)
-        expect(test1.alloc(10)).to.equal(14)
+        # initial heap ptr is 16 >> 2
+        expect(test1.alloc(10)).to.equal(if malloc? then 68 else 4)
+        expect(test1.alloc(10)).to.equal(if malloc? then 80 else 14)
+        return
 
-      it 'Index', ->
-        expect(test1.index(2)).to.equal(44)
-        expect(test2.index(2)).to.equal(44)
+      it 'List', ->
+        expect(test1.values()).to.equal(if malloc? then 92 else 24)
+        expect(test2.index((if malloc? then 92 else 24), 2)).to.equal(44)
+        return
 
+      it 'Random', ->
+        # compare to testResults from mt18827ar.js
+        expect(mt19937.genrand_int32()).to.equal(testResults[0])
+        expect(mt19937.genrand_int32()).to.equal(testResults[1])
+        expect(mt19937.genrand_int32()).to.equal(testResults[2])
+        expect(mt19937.genrand_int32()).to.equal(testResults[3])
+        expect(mt19937.genrand_int32()).to.equal(testResults[4])
+        return
 
   , (err) -> console.log err
 

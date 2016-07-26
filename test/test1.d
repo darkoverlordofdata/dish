@@ -33,14 +33,13 @@ export int alloc(int n) {
  * Index
  * Test the heap values
  */
-export int index(int i) {
+export int values(int i) {
     int[] value = [42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
     
     int k;
     int result;
 
     result = value[i];
-    return result;
-
+    return value;
 
 }

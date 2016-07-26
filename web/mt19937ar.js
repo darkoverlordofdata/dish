@@ -76,17 +76,14 @@ function genrand_int32()
 
 console.log("mt19937ar!")
 
-window.testResults = [
-    [genrand_int32(), genrand_int32(), genrand_int32(), genrand_int32(), genrand_int32()],
-    [0,0,0,0,0]
+window.testResults = [genrand_int32(), genrand_int32(), genrand_int32(), genrand_int32(), genrand_int32()],
+console.log('testResults', testResults)
 
-]
+// var MAX = 10000
+// var t1 = performance.now()
+// for (var i=0; i<MAX; i++) {
+//     genrand_int32()
+// }
+// var t2 = performance.now()
 
-var MAX = 10000
-var t1 = performance.now()
-for (var i=0; i<MAX; i++) {
-    genrand_int32()
-}
-var t2 = performance.now()
-
-console.log("mt19937ar! "+(t2-t1))
+// console.log("mt19937ar! "+(t2-t1))
