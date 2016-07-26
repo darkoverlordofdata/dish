@@ -7,15 +7,6 @@ var Ffi, HEAP, HEAP_SIZE, allocator;
 
 HEAP_SIZE = 0x40000;
 
-export const buffer = new ArrayBuffer(HEAP_SIZE);
-
-if (typeof malloc !== "undefined" && malloc !== null) {
-  allocator = new malloc.Allocator(buffer);
-} else {
-  HEAP = new Int32Array(buffer);
-  HEAP[0] = 16;
-}
-
 Ffi = (function() {
   function Ffi() {}
 
@@ -31,9 +22,28 @@ Ffi = (function() {
    * @returns starting offset in the heap
    */
 
-  Ffi.malloc = allocator.alloc;
+  Ffi.malloc = function(nBytes) {
+    var offset;
+    if (typeof malloc !== "undefined" && malloc !== null) {
+      return allocator.alloc(nBytes);
+    } else {
 
-  Ffi.free = allocator.free;
+      /*
+      * Fallback:
+      * this is a naive implementation of malloc. 
+      * memory is only allocated, never returned.
+       */
+      offset = HEAP[0];
+      HEAP[0] = offset + nBytes;
+      return offset;
+    }
+  };
+
+  Ffi.free = function(addr) {
+    if (typeof malloc !== "undefined" && malloc !== null) {
+      return allocator.free(addr);
+    }
+  };
 
   return Ffi;
 
@@ -41,6 +51,15 @@ Ffi = (function() {
 
 export default Ffi;
 
+export const buffer = new ArrayBuffer(HEAP_SIZE);
+
 export const foreign = Ffi;
 
 export const bufferMax = HEAP_SIZE;
+
+if (typeof malloc !== "undefined" && malloc !== null) {
+  allocator = new malloc.Allocator(buffer);
+} else {
+  HEAP = new Int32Array(buffer);
+  HEAP[0] = 16;
+}

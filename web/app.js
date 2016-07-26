@@ -40,14 +40,6 @@ System.register("ffi", [], function(exports_2, context_2) {
             ## Foreign function interface
              */
             HEAP_SIZE = 0x40000;
-            exports_2("buffer", buffer = new ArrayBuffer(HEAP_SIZE));
-            if (typeof malloc !== "undefined" && malloc !== null) {
-                allocator = new malloc.Allocator(buffer);
-            }
-            else {
-                HEAP = new Int32Array(buffer);
-                HEAP[0] = 16;
-            }
             Ffi = (function () {
                 function Ffi() { }
                 Ffi.now = function () {
@@ -59,13 +51,40 @@ System.register("ffi", [], function(exports_2, context_2) {
                  * @param nBytes number of bytes required
                  * @returns starting offset in the heap
                  */
-                Ffi.malloc = allocator.alloc;
-                Ffi.free = allocator.free;
+                Ffi.malloc = function (nBytes) {
+                    var offset;
+                    if (typeof malloc !== "undefined" && malloc !== null) {
+                        return allocator.alloc(nBytes);
+                    }
+                    else {
+                        /*
+                        * Fallback:
+                        * this is a naive implementation of malloc.
+                        * memory is only allocated, never returned.
+                         */
+                        offset = HEAP[0];
+                        HEAP[0] = offset + nBytes;
+                        return offset;
+                    }
+                };
+                Ffi.free = function (addr) {
+                    if (typeof malloc !== "undefined" && malloc !== null) {
+                        return allocator.free(addr);
+                    }
+                };
                 return Ffi;
             })();
             exports_2("default",Ffi);
+            exports_2("buffer", buffer = new ArrayBuffer(HEAP_SIZE));
             exports_2("foreign", foreign = Ffi);
             exports_2("bufferMax", bufferMax = HEAP_SIZE);
+            if (typeof malloc !== "undefined" && malloc !== null) {
+                allocator = new malloc.Allocator(buffer);
+            }
+            else {
+                HEAP = new Int32Array(buffer);
+                HEAP[0] = 16;
+            }
         }
     }
 });

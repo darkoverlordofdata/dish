@@ -34,7 +34,6 @@ Features
 * import/export can only be used at the module level.
 * within a function: break, case, continue, do, else, for, if, return, switch, while
 * added sugar for heap management and array types.
-* Built-in naive malloc, or codemix/malloc
 
 Todo: 
 
