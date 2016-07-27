@@ -2,9 +2,6 @@
  * Test1.dish
  */
 module test2;
-
-
-
 /**
  * Index
  * Test the heap values
@@ -20,6 +17,16 @@ export int index(int ptr, int i) {
 
     result = value[i];
     return result;
+}
 
+export int and(int s) {
+    int[] m;
+    int x;
 
+    m = new int[10];
+    
+    m[0] = s & 0xffffffff;
+    x = m[0];
+    return x;
+    
 }

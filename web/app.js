@@ -60,7 +60,7 @@ System.register("ffi", [], function(exports_2, context_2) {
                         /*
                         * Fallback:
                         * this is a naive implementation of malloc.
-                        * memory is only allocated, never returned.
+                        * memory is only allocated, never freed.
                          */
                         offset = HEAP[0];
                         HEAP[0] = offset + nBytes;
@@ -188,8 +188,24 @@ System.register("test2", ["ffi", "stdlib"], function(exports_4, context_4) {
                     result = HEAPI32[$02 >> 2] | 0;
                     return result | 0;
                 }
+                function and(s) {
+                    s = s | 0;
+                    var $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0;
+                    var m = 0;
+                    var x = 0;
+                    m = (malloc(10 << 2) | 0) >> 2;
+                    $01 = m + 0 | 0;
+                    $02 = $01 << 2;
+                    $03 = s & 4294967295;
+                    HEAPI32[$02 >> 2] = $03 | 0;
+                    $04 = m + 0 | 0;
+                    $05 = $04 << 2;
+                    x = HEAPI32[$05 >> 2] | 0;
+                    return x | 0;
+                }
                 return {
                     index: index,
+                    and: and,
                 };
             }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
         }
@@ -311,8 +327,6 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                 "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
-                var exp = stdlib.Math.exp;
-                var log = stdlib.Math.log;
                 var N = 624;
                 var M = 397;
                 var MATRIX_A = 2567483615;
@@ -322,12 +336,14 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                 var mti = 625;
                 function init_genrand(s) {
                     s = s | 0;
-                    var $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0, $07 = 0, $08 = 0, $09 = 0, $10 = 0, $11 = 0, $12 = 0, $13 = 0, $14 = 0, $15 = 0, $16 = 0, $17 = 0, $18 = 0, $19 = 0, $20 = 0, $21 = 0, $22 = 0, $23 = 0, $24 = 0;
+                    var $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0, $07 = 0, $08 = 0, $09 = 0, $10 = 0, $11 = 0, $12 = 0, $13 = 0, $14 = 0, $15 = 0, $16 = 0, $17 = 0, $18 = 0, $19 = 0, $21 = 0, $22 = 0, $23 = 0, $24 = 0, $25 = 0, $26 = 0, $27 = 0;
+                    var n = 0;
+                    var z = 0;
                     mt = (malloc(N << 2) | 0) >> 2;
                     $01 = mt + 0 | 0;
                     $02 = $01 << 2;
                     $03 = s & 4294967295;
-                    HEAPI32[$02 >> 2] = 4294967295 | 0;
+                    HEAPI32[$02 >> 2] = $03 | 0;
                     for (mti = 1; mti < N; mti = mti + 1 | 0) {
                         $04 = mt + mti | 0;
                         $05 = $04 << 2;
@@ -343,15 +359,21 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                         $15 = $14 ^ $10;
                         $16 = 1812433253 * $15 | 0;
                         $17 = $16 + mti | 0;
-                        HEAPI32[$05 >> 2] = mti | 0;
-                        $18 = mt + mti | 0;
-                        $19 = $18 << 2;
-                        $20 = mti + 0 | 0;
-                        $21 = mt + $20 | 0;
+                        HEAPI32[$05 >> 2] = $17 | 0;
+                        if (mti < 6) {
+                            $18 = mt + mti | 0;
+                            $19 = $18 << 2;
+                            n = HEAPI32[$19 >> 2] | 0;
+                            console.log(mti, n);
+                        }
+                        $21 = mt + mti | 0;
                         $22 = $21 << 2;
-                        $23 = HEAPI32[$22 >> 2] | 0;
-                        $24 = $23 & 4294967295;
-                        HEAPI32[$19 >> 2] = 4294967295 | 0;
+                        $23 = mti + 0 | 0;
+                        $24 = mt + $23 | 0;
+                        $25 = $24 << 2;
+                        $26 = HEAPI32[$25 >> 2] | 0;
+                        $27 = $26 & 4294967295;
+                        HEAPI32[$22 >> 2] = $27 | 0;
                     }
                     return 0 | 0;
                 }
@@ -391,7 +413,7 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                             $21 = HEAPI32[$20 >> 2] | 0;
                             $22 = $21 ^ $17;
                             $23 = $22 ^ $16;
-                            HEAPI32[$12 >> 2] = 1 | 0;
+                            HEAPI32[$12 >> 2] = $23 | 0;
                         }
                         for (; (kk | 0) < N - 1; kk = kk + 1 | 0) {
                             $24 = kk + 1 | 0;
@@ -418,7 +440,7 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                             $45 = HEAPI32[$44 >> 2] | 0;
                             $46 = $45 ^ $40;
                             $47 = $46 ^ $39;
-                            HEAPI32[$35 >> 2] = 1 | 0;
+                            HEAPI32[$35 >> 2] = $47 | 0;
                         }
                         $48 = mt + 0 | 0;
                         $49 = $48 << 2;
@@ -444,7 +466,7 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                         $69 = HEAPI32[$68 >> 2] | 0;
                         $70 = $69 ^ $65;
                         $71 = $70 ^ $64;
-                        HEAPI32[$60 >> 2] = 1 | 0;
+                        HEAPI32[$60 >> 2] = $71 | 0;
                         mti = 0;
                     }
                     $72 = mt + mti | 0;
@@ -492,12 +514,11 @@ Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map(function (x) {
             expect(test1.values()).to.equal(typeof malloc !== "undefined" && malloc !== null ? 92 : 24);
             expect(test2.index((typeof malloc !== "undefined" && malloc !== null ? 92 : 24), 2)).to.equal(44);
         });
-        return it('Random', function () {
-            expect(mt19937.genrand_int32()).to.equal(testResults[0]);
-            expect(mt19937.genrand_int32()).to.equal(testResults[1]);
-            expect(mt19937.genrand_int32()).to.equal(testResults[2]);
-            expect(mt19937.genrand_int32()).to.equal(testResults[3]);
-            expect(mt19937.genrand_int32()).to.equal(testResults[4]);
+        it('And', function () {
+            return expect(test2.and(42)).to.equal(42);
+        });
+        return it('MersenneTwister', function () {
+            return expect(MersenneTwister.genrand_int32()).to.equal(testResults[0]);
         });
     });
 }, function (err) {

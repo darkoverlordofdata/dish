@@ -35,7 +35,7 @@ export int alloc(int n) {
  */
 export int values(int i) {
     int[] value = [42, 43, 44, 45, 46, 47, 48, 49, 50, 51];
-    
+
     int k;
     int result;
 

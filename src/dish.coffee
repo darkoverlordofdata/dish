@@ -1,6 +1,6 @@
 #!/usr/bin/env coffee
 ###
- * d?ish compiler
+ * dē-ish compiler
  * 
  * usage:
  *      node ./src/dish.js test/test.d -m -w --output test/test.js

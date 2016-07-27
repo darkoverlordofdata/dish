@@ -21,7 +21,7 @@ class Ffi
             ###
             * Fallback:
             * this is a naive implementation of malloc. 
-            * memory is only allocated, never returned.
+            * memory is only allocated, never freed.
             ###
             offset = HEAP[0]
             HEAP[0] = offset+nBytes

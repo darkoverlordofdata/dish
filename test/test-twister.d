@@ -3,30 +3,34 @@
  */
 module MersenneTwister;
 
-import exp = Math.exp;
-import log = Math.log;
-
 const int N = 624;
 const int M = 397;
 const int MATRIX_A    = 0x9908b0df; /* constant vector a */
 const int UPPER_MASK  = 0x80000000; /* most significant w-r bits */
 const int LOWER_MASK  = 0x7fffffff; /* least significant r bits */
 
-// int mt = 0;     /* ptr -> the array for the state vector  */
-
-int[] mt;
+int[] mt;       /* ptr -> the array for the state vector  */
 int mti = 625;  /* mti==N+1 means mt[N] is not initialized */
-
 
 int init_genrand(int s)
 {
+
+    int n;
+    int z;
 
     mt = new int[N];
     mt[0] = s & 0xffffffff;
 
     for (mti=1; mti<N; mti++) {
+
         mt[mti] = 
         (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+
+        if (mti < 6) {
+            n = mt[mti];
+            print(mti, n);
+
+        }
 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */

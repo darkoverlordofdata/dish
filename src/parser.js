@@ -197,6 +197,7 @@ function parse(input) {
         if (matchKeyword('do'))         return parseDo()
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parseIf()
+        if (matchKeyword('print'))      return parsePrint()
         if (matchKeyword('return'))     return parseReturn()
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
@@ -783,6 +784,33 @@ function parse(input) {
         expect('.')
         const method = input.next()
         return factory.ImportDeclaration(source, libname.value, name.value)
+    }
+
+    /**
+     * Print statement - wrapper for console.log
+     * 
+     * do not use in production:
+     *this construct will disable aot compilation
+     * 
+     */
+    function parsePrint() {
+        const args = []
+        expectKeyword('print')
+        expect('(')
+        while (!match(')')) {
+            let arg = input.next()
+            switch(arg.type) {
+                case Token.String: /** this is the only place where strings are allowed. */
+                case Token.Number:
+                    args.push({ type: 'Literal', value: arg.value, raw: `"${arg.value}"` })
+                    break
+                case Token.Variable:
+                    args.push({ type: 'Identifier', name: arg.value })
+                    break
+            }
+        }
+        expect(')')
+        return factory.Print(args)
     }
 
     function parseReturn() {

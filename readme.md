@@ -35,10 +35,6 @@ Features
 * within a function: break, case, continue, do, else, for, if, return, switch, while
 * added sugar for heap management and array types.
 
-Todo: 
-
-* char type as int, such that 'a' is the same as 97|0
-
 ### example
 
 #### test.d

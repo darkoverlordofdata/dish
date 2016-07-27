@@ -100,23 +100,10 @@ function transpile(tokens, symbol, index) {
     traverse(tokens)
     nodes = nodes.reverse()
     codegen()
-    if (index != null) {
-        switch (nodes[0].type) {
-            case 'Literal':
-                out.push({name:name, code:`${nodes[0].value}|0`})
-                break
-            case 'Identifier':
-                out.push({name:name, code:`${nodes[0].name}|0`})
-                break
-            case 'BinaryExpression':
-                //codegen()
-                out.push({name:name, code:`${prev}|0`})
-                break
-                
-        }
-    } else {
-        //codegen()
+    if (index == null) {
         out[out.length-1].name = name
+    } else {
+        out.push({name:name, code:`${curr}|0`})
     }
 
     //console.log(out)

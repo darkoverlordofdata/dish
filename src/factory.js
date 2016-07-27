@@ -28,11 +28,35 @@ module.exports = {
     SequenceExpression: SequenceExpression,
     AssignmentExpression: AssignmentExpression,
     Return: Return,
+    Print: Print,
     New: New
 }
 
 function clone(obj) {
     return JSON.parse(JSON.stringify(obj))
+}
+
+function Print(args) {
+    return {
+        "type": "ExpressionStatement",
+        "expression": {
+            "type": "CallExpression",
+            "callee": {
+                "type": "MemberExpression",
+                "computed": false,
+                "object": {
+                    "type": "Identifier",
+                    "name": "console"
+                },
+                "property": {
+                    "type": "Identifier",
+                    "name": "log"
+                }
+            },
+            "arguments": args
+        }        
+    }
+
 }
 
 

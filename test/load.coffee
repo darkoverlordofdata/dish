@@ -22,14 +22,20 @@ Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map((x) ->
         expect(test2.index((if malloc? then 92 else 24), 2)).to.equal(44)
         return
 
-      it 'Random', ->
-        # compare to testResults from mt18827ar.js
-        expect(mt19937.genrand_int32()).to.equal(testResults[0])
-        expect(mt19937.genrand_int32()).to.equal(testResults[1])
-        expect(mt19937.genrand_int32()).to.equal(testResults[2])
-        expect(mt19937.genrand_int32()).to.equal(testResults[3])
-        expect(mt19937.genrand_int32()).to.equal(testResults[4])
-        return
+      # it 'Random', ->
+      #   # compare to testResults from mt18827ar.js
+      #   expect(mt19937.genrand_int32()).to.equal(testResults[0])
+      #   expect(mt19937.genrand_int32()).to.equal(testResults[1])
+      #   expect(mt19937.genrand_int32()).to.equal(testResults[2])
+      #   expect(mt19937.genrand_int32()).to.equal(testResults[3])
+      #   expect(mt19937.genrand_int32()).to.equal(testResults[4])
+      #   return
+
+      it 'And', ->
+        expect(test2.and(42)).to.equal(42)
+
+      it 'MersenneTwister', ->
+        expect(MersenneTwister.genrand_int32()).to.equal(testResults[0])
 
   , (err) -> console.log err
 
