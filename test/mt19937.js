@@ -38,6 +38,7 @@ export const mt19937 = (function(stdlib, foreign, heap) {
 
             r2 = +(HEAP[mt+mti-1] ^ (HEAP[mt+mti-1] >> 30));
             t2 = ~~(r2);
+            if (mti<6) console.log('t2 = ', t2);
             r3 = r1 * r2;
             t3 = ~~(r3);
             HEAP[mt+mti] = (r3+mti)|0; //t3 + mti | 0;

@@ -151,9 +151,9 @@ function parse(input) {
         if (matchKeyword('const'))  return parseConst()
         if (matchKeyword('double')) return parseDouble()
         if (matchKeyword('export')) return parseExport()
-        if (matchKeyword('float'))  return parseFloat()
+        if (matchKeyword('float'))  return parseFloat32()
         if (matchKeyword('import')) return parseImport()
-        if (matchKeyword('int'))    return parseInteger()
+        if (matchKeyword('int'))    return parseInt32()
         //=================================
         input.raise('Unexpected token: ')
     }
@@ -168,8 +168,8 @@ function parse(input) {
     function parseStatement(body) {
         if (matchKeyword('const'))  return parseConst(currentScope)
         if (matchKeyword('double')) return parseDouble(currentScope)
-        if (matchKeyword('float'))  return parseFloat(currentScope)
-        if (matchKeyword('int'))    return parseInteger(currentScope)
+        if (matchKeyword('float'))  return parseFloat32(currentScope)
+        if (matchKeyword('int'))    return parseInt32(currentScope)
         if (currentScope !== priorScope) {
             expression.reset()
             priorScope = currentScope
@@ -227,8 +227,8 @@ function parse(input) {
 
         expectKeyword('const')
         if (matchKeyword('double'))     return parseDouble(scope)
-        if (matchKeyword('float'))      return parseFloat(scope)
-        if (matchKeyword('int'))        return parseInteger(scope)
+        if (matchKeyword('float'))      return parseFloat32(scope)
+        if (matchKeyword('int'))        return parseInt32(scope)
         input.raise('Unexpected token: ')
     }
 
@@ -448,6 +448,20 @@ function parse(input) {
             }
         }
 
+        for (let i in tokens) {
+            switch(tokens[i]) {
+                case 'to!double':
+                    tokens[i] = '__double__'
+                    break
+                case 'to!int':
+                    tokens[i] = '__int__'
+                    break
+                case 'to!float':
+                    tokens[i] = 'fround'
+                    fround = true
+                    break
+            }
+        }
         const ast = parseExp(tokens.join(' '))
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const sym = symtbl[currentScope][name]||symtbl['global'][name]
@@ -465,6 +479,7 @@ function parse(input) {
 
             }
         } else {
+            //console.log(ast)
             return factory.AssignmentStatement(name, ast)
         }
     }
@@ -593,9 +608,20 @@ function parse(input) {
     }
     function parseDouble(scope) {
         scope = scope || 'global'
+        let isArray = false
         expectKeyword('double')
+        if (match('[')) {
+            expect('[')
+            expect(']')
+            isArray = true
+            malloc = true
+            heapi32 = true
+        }
         const name = input.next()
-        if (input.peek().value === '(') {
+        if (input.peek().value === '(') { /** function definition */
+            if (isArray) {
+                input.raise('Syntax Error: array found')
+            }
             symtbl[scope][name.value] = new Symbol(name.value, 'double', true)
             return parseFunction(scope, 'double', name)
 
@@ -605,13 +631,42 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens.join(' '))
-            return factory.DoubleDeclaration(name.value)
+            //TODO:Double and Float, also 
+            symtbl[scope][name.value] = new Symbol(name.value, 'double', false, tokens, isArray)
+            if (scope === 'global') {
+                return factory.DoubleDeclaration(name.value, {
+                    "type":     "Literal",
+                    "value":    parseFloat(tokens.join('')),
+                    "raw":      parseFloat(tokens.join(''))
+                })
+            } else  {
+                return factory.DoubleDeclaration(name.value) 
+            }
 
         } else {
-            symtbl[scope][name.value] = new Symbol(name.value, 'double')
+            symtbl[scope][name.value] = new Symbol(name.value, 'double', false, '', isArray)
             return factory.DoubleDeclaration(name.value)
         }
+        // scope = scope || 'global'
+        // expectKeyword('double')
+        // const name = input.next()
+        // if (input.peek().value === '(') {
+        //     symtbl[scope][name.value] = new Symbol(name.value, 'double', true)
+        //     return parseFunction(scope, 'double', name)
+
+        // } else if (match('=')) { /** initialization */
+        //     expect('=')
+        //     let tokens = []
+        //     while (!match(';')) {
+        //         tokens.push(input.next().value)
+        //     }
+        //     symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens.join(' '))
+        //     return factory.DoubleDeclaration(name.value)
+
+        // } else {
+        //     symtbl[scope][name.value] = new Symbol(name.value, 'double')
+        //     return factory.DoubleDeclaration(name.value)
+        // }
     }
 
     function parseExport() {
@@ -621,7 +676,7 @@ function parse(input) {
             const name = input.peek()
             exporting[name.value] = name.value
             input.putBack()
-            return parseInteger()
+            return parseInt32()
         }
         if (matchKeyword('double')) {
             expectKeyword('double')
@@ -635,16 +690,26 @@ function parse(input) {
             const name = input.peek()
             exporting[name.value] = name.value
             input.putBack()
-            return parseFloat()
+            return parseFloat32()
         }
     }
 
-    function parseFloat(scope) {
+    function parseFloat32(scope) {
         scope = scope || 'global'
+        let isArray = false
         expectKeyword('float')
-        float = true
+        if (match('[')) {
+            expect('[')
+            expect(']')
+            isArray = true
+            malloc = true
+            heapi32 = true
+        }
         const name = input.next()
-        if (input.peek().value === '(') {
+        if (input.peek().value === '(') { /** function definition */
+            if (isArray) {
+                input.raise('Syntax Error: array found')
+            }
             symtbl[scope][name.value] = new Symbol(name.value, 'float', true)
             return parseFunction(scope, 'float', name)
 
@@ -654,13 +719,43 @@ function parse(input) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens.join(' '))
-            return factory.FloatDeclaration(name.value)
+            //TODO:Double and Float, also 
+            symtbl[scope][name.value] = new Symbol(name.value, 'float', false, tokens, isArray)
+            if (scope === 'global') {
+                return factory.FloatDeclaration(name.value, {
+                    "type":     "Literal",
+                    "value":    parseFloat(tokens.join('')),
+                    "raw":      parseFloat(tokens.join(''))
+                })
+            } else  {
+                return factory.FloatDeclaration(name.value) 
+            }
 
         } else {
-            symtbl[scope][name.value] = new Symbol(name.value, 'float')
+            symtbl[scope][name.value] = new Symbol(name.value, 'float', false, '', isArray)
             return factory.FloatDeclaration(name.value)
         }
+        // scope = scope || 'global'
+        // expectKeyword('float')
+        // float = true
+        // const name = input.next()
+        // if (input.peek().value === '(') {
+        //     symtbl[scope][name.value] = new Symbol(name.value, 'float', true)
+        //     return parseFunction(scope, 'float', name)
+
+        // } else if (match('=')) { /** initialization */
+        //     expect('=')
+        //     let tokens = []
+        //     while (!match(';')) {
+        //         tokens.push(input.next().value)
+        //     }
+        //     symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens.join(' '))
+        //     return factory.FloatDeclaration(name.value)
+
+        // } else {
+        //     symtbl[scope][name.value] = new Symbol(name.value, 'float')
+        //     return factory.FloatDeclaration(name.value)
+        // }
     }
 
     function parseFor() {
@@ -697,7 +792,7 @@ function parse(input) {
         
     }
 
-    function parseInteger(scope) {
+    function parseInt32(scope) {
         scope = scope || 'global'
         let isArray = false
         expectKeyword('int')

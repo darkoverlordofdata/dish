@@ -15,7 +15,7 @@ function index(ptr, i) {
     var result = 0;
     value = ptr;
     $01 = value + i | 0;
-    $02 = $01 << 2;
+    $02 = $01 << 2 | 0;
     result = HEAPI32[$02 >> 2] | 0;
     return result | 0;
 }
@@ -26,16 +26,23 @@ function and(s) {
     var x = 0;
     m = (malloc(10 << 2) | 0) >> 2;
     $01 = m + 0 | 0;
-    $02 = $01 << 2;
-    $03 = s & 4294967295;
+    $02 = $01 << 2 | 0;
+    $03 = s & 4294967295 | 0;
     HEAPI32[$02>>2] = $03 | 0;
     $04 = m + 0 | 0;
-    $05 = $04 << 2;
+    $05 = $04 << 2 | 0;
     x = HEAPI32[$05 >> 2] | 0;
     return x | 0;
+}
+function test() {
+    var $00 = 0;
+    var zz = 0;
+    zz = ~~(20);
+    return zz | 0;
 }    
 return { 
     index:index,
-    and:and, 
+    and:and,
+    test:test, 
 };
 }(Stdlib, Ffi, buffer))

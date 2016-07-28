@@ -25,7 +25,7 @@ Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map(function(x) {
       return expect(test2.and(42)).to.equal(42);
     });
     return it('MersenneTwister', function() {
-      return expect(MersenneTwister.genrand_int32()).to.equal(testResults[0]);
+      return expect(MersenneTwister.genrand_int32()).to.equal(192943570);
     });
   });
 }, function(err) {

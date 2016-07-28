@@ -3,6 +3,8 @@
  */
 module MersenneTwister;
 
+import imul = Math.imul;
+
 const int N = 624;
 const int M = 397;
 const int MATRIX_A    = 0x9908b0df; /* constant vector a */
@@ -16,19 +18,35 @@ int init_genrand(int s)
 {
 
     int n;
-    int z;
-
+    int t2;
+    int t3;
+    double r1 = +1812433253;
+    double r3;
+    
     mt = new int[N];
     mt[0] = s & 0xffffffff;
 
     for (mti=1; mti<N; mti++) {
 
-        mt[mti] = 
-        (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+        //mt[mti] = 
+        //(1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+
+
+        t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
+        r3 = r1 * to!double(t2);
+        t3 = to!int(r3)+mti;
+        //t3 = t3 & 0xffffffff;
+        mt[mti] = t3;
+
+            // r2 = +(HEAP[mt+mti-1] ^ (HEAP[mt+mti-1] >> 30));
+            // r3 = r1 * r2;
+            // t3 = ~~(r3);
+            // HEAP[mt+mti] = (r3+mti)|0; //t3 + mti | 0;
+            // r4 = HEAP[mt+mti];
+        
 
         if (mti < 6) {
-            n = mt[mti];
-            print(mti, n);
+            print('t2 = ', t2, t3, r3);
 
         }
 
@@ -36,7 +54,7 @@ int init_genrand(int s)
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
         /* 2002/01/09 modified by Makoto Matsumoto             */
-        mt[mti] = mt[mti+0] & 0xffffffff;
+        // mt[mti] &= 0xffffffff;
         /* for >32 bit machines */
         
     }

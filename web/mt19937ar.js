@@ -20,7 +20,8 @@ function init_genrand(s)
 	    // (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
         t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
         mt[mti] = (1812433253 * t2 + mti); 
-        // if (mti<6) console.log(t2, (1812433253 * t2 + mti)&0xffffffff) ;
+        if (mti<6) console.log('t2 = ', t2, mt[mti]);
+        
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */

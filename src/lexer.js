@@ -59,11 +59,11 @@ function Tokenizer(source) {
     function isDigit(ch)        { return /[0-9]/.test(ch) }
     function isHex(ch)          { return /[0-9a-fA-FxX]/.test(ch) }
     function isIdStart(ch)      { return /[a-z_]/i.test(ch) }
-    function isId(ch)           { return /[a-z_0-9]/i.test(ch) }
+    function isId(ch)           { return /[a-z_0-9!]/i.test(ch) }
     function isDelim(ch)        { return /[.,;(){}[\]:]/.test(ch) }
     function isOperator(ch)     { return /[+\-*\/%=&|<>!^]/.test(ch) }
     function isKeyword(wd)      {
-        return /break|case|continue|const|delete|do|double|else|export|float|for|if|import|int|module|new|print|return|switch|while/.test(wd);
+        return /break|case|continue|const|delete|do|double|else|export|float|for|if|import|int|module|new|print|return|switch|to!int|to!double|to!float|while/.test(wd);
     }
 
     /*

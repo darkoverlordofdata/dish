@@ -30,3 +30,12 @@ export int and(int s) {
     return x;
     
 }
+
+export int test() {
+
+    int zz;
+
+    zz = to!int(20.0);
+    return zz;
+
+}

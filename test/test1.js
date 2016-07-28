@@ -42,7 +42,7 @@ function values(i) {
     HEAPI32[(value+8)<<2>>2] = 50;
     HEAPI32[(value+9)<<2>>2] = 51;
     $01 = value + i | 0;
-    $02 = $01 << 2;
+    $02 = $01 << 2 | 0;
     result = HEAPI32[$02 >> 2] | 0;
     return value | 0;
 }    
