@@ -12,7 +12,15 @@ module.exports = {
     transpile: transpile,
     reset: reset
 }
-class Node {
+
+/**
+ * Term
+ * 
+ * Wraps a single term, managing the string interpretation
+ * 
+ * @param node  ast node
+ */
+class Term {
     constructor(node) {
         this.node = node
     }
@@ -39,22 +47,51 @@ class Node {
     }
 }
 
-class Codegen {
+/**
+ * Triad
+ * 
+ * Three Address Code (TAC) 
+ * 
+ *  rhs = left operator right
+ *  rhs = lhs
+ * 
+ * @param name lhs variable name
+ * @param type lhs variable type
+ * @param left
+ * @param op
+ * @param right
+ */
+class Triad {
     constructor(name, type, left, op, right) {
         this.name = name
         this.type = type
         this.left = left
         this.op = op
         this.right = right
-        if (this.op) {
-            this.code = this.cast(`${this.left} ${this.op} ${this.right}`)
-        } else {
-            this.code = `${this.cast(this.left)}`
+        switch(op) {
+            case undefined:
+                this.code = `${this.cast(type, left)}`
+                break
+
+            case '^':
+            case '|':
+            case '&':
+            case '>>':
+            case '<<':
+                if (type === 'int') /** logical operations are already cast to ints */
+                    this.code = `${left} ${op} ${right}`
+                else
+                    this.code = this.cast(type, `${left} ${op} ${right}`)
+                break
+
+            default:
+                this.code = this.cast(type, `${left} ${op} ${right}`)
+                break
         }
     }
 
-    cast(value) {
-        switch (this.type) {
+    cast(type, value) {
+        switch (type) {
             case 'int':     return '(('+value+')|0)'
             case 'double':  return '+('+value+')'
             case 'float':   return 'fround('+value+')'
@@ -93,24 +130,24 @@ function transpile(tokens, symbol, index) {
         switch (index.type) {
             case 'Literal':
                 createVar()
-                code.push(new Codegen(curr, type, name, '+', index.value))
+                code.push(new Triad(curr, type, name, '+', index.value))
                 createVar()
-                code.push(new Codegen(curr, type, prev, '<<', size))
+                code.push(new Triad(curr, type, prev, '<<', size))
                 break
             case 'Identifier':
                 createVar()
-                code.push(new Codegen(curr, type, name, '+', index.name))
+                code.push(new Triad(curr, type, name, '+', index.name))
                 createVar()
-                code.push(new Codegen(curr, type, prev, '<<', size))
+                code.push(new Triad(curr, type, prev, '<<', size))
                 break
             case 'BinaryExpression':
                 traverse(index)
                 nodes = nodes.reverse()
-                resolve()
+                codegen()
                 createVar()
-                code.push(new Codegen(curr, type, name, '+', prev))
+                code.push(new Triad(curr, type, name, '+', prev))
                 createVar()
-                code.push(new Codegen(curr, type, prev, '<<', size))
+                code.push(new Triad(curr, type, prev, '<<', size))
                 break
 
         }
@@ -122,11 +159,11 @@ function transpile(tokens, symbol, index) {
     stack = []
     traverse(tokens)
     nodes = nodes.reverse()
-    resolve()
+    codegen()
     if (index == null) {
         code[code.length-1].name = name
     } else {
-        code.push(new Codegen(name, type, curr))
+        code.push(new Triad(name, type, curr))
     }
 
     return code
@@ -136,8 +173,11 @@ function transpile(tokens, symbol, index) {
         curr = `$${uniqueId}`
         curr = curr.length === 2 ? `$0${uniqueId}` : curr
         uniqueId++
-        curr
     }
+
+    /**
+     * Put the ast nodes into an ordered list
+     */
     function traverse(node) {
         switch (node.type) {
             case 'BinaryExpression':
@@ -161,32 +201,33 @@ function transpile(tokens, symbol, index) {
         }
     }
 
-    function resolve() {
+    function codegen() {
         while (ptr<nodes.length) {
             const node = nodes[ptr]
             switch (node.type) {
                 case 'Literal':
                 case 'Identifier':
                 case 'CallExpression':
-                    stack.push(new Node(node))
+                    stack.push(new Term(node))
                     break
                 case 'Operator':
                     createVar()
                     const op1 = stack.pop()
                     const op2 = stack.pop()
-                    code.push(new Codegen(curr, type, op1.toString(), node.op, op2.toString()))
-                    stack.push(new Node({type: 'Identifier', name: curr})) 
+                    code.push(new Triad(curr, type, op1.toString(), node.op, op2.toString()))
+                    stack.push(new Term({type: 'Identifier', name: curr})) 
                     if (node.array) {
                         createVar()
-                        code.push(new Codegen(curr, type, prev, '<<', 2))
+                        code.push(new Triad(curr, type, prev, '<<', 2))
                         createVar()
-                        code.push(new Codegen(curr, type, `${heap}[${prev}>>2]`))
+                        code.push(new Triad(curr, type, `${heap}[${prev}>>2]`))
                         stack.pop() //# pop off the prev, replace with curr
-                        stack.push(new Node({type: 'Identifier', name: curr})) 
+                        stack.push(new Term({type: 'Identifier', name: curr})) 
                     }
             }
             ptr++
         }
 
     }
+    
 }
