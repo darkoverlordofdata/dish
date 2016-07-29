@@ -256,6 +256,7 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_5, context_5) {
                     var r4 = 0.0;
                     var t2 = 0;
                     var t3 = 0;
+                    var t4 = 0;
                     r1 = +1812433253;
                     mt = malloc(N << 3) | 0; // malloc(N*sizeof(int))
                     HEAP[mt + 0] = s & 0xffffffff;
@@ -267,7 +268,15 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_5, context_5) {
                         r3 = r1 * r2;
                         t3 = ~~(r3);
                         HEAP[mt + mti] = (r3 + mti) | 0; //t3 + mti | 0;
-                        r4 = HEAP[mt + mti];
+                        t4 = HEAP[mt + mti];
+                        // t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
+                        // r3 = r1 * to!double(t2);
+                        // t3 = to!int(r3)+mti;
+                        // t3 = t3 & 0xffffffff;
+                        // mt[mti] = t3;
+                        if (mti < 6) {
+                            console.log('mt19937: t2 = ', t2, t3, r3, t4);
+                        }
                     }
                 }
                 /* generates a random number on [0,0xffffffff]-interval */
@@ -346,10 +355,11 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                 var mti = 625;
                 function init_genrand(s) {
                     s = s | 0;
-                    var $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0, $07 = 0, $08 = 0, $09 = 0, $10 = 0, $11 = 0, $12 = 0, $16 = 0, $17 = 0;
+                    var $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0, $06 = 0, $07 = 0, $08 = 0, $09 = 0, $10 = 0, $11 = 0, $12 = 0, $16 = 0, $17 = 0, $18 = 0, $19 = 0, $20 = 0;
                     var n = 0;
                     var t2 = 0;
                     var t3 = 0;
+                    var t4 = 0;
                     var r1 = 0.0;
                     var r3 = 0.0;
                     r1 = +1812433253;
@@ -373,9 +383,13 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_6, context_6
                         t3 = ~~(r3) + mti | 0;
                         $16 = mt + mti | 0;
                         $17 = $16 << 2;
-                        HEAPI32[$17 >> 2] = $17 | 0;
+                        $18 = t3 & 4294967295;
+                        HEAPI32[$17 >> 2] = $18 | 0;
+                        $19 = mt + mti | 0;
+                        $20 = $19 << 2;
+                        t4 = HEAPI32[$20 >> 2] | 0;
                         if (mti < 6) {
-                            console.log('t2 = ', t2, t3, r3);
+                            console.log('test-twister: t2 = ', t2, t3, r3, t4);
                         }
                     }
                     return 0 | 0;
@@ -516,6 +530,13 @@ Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map(function (x) {
         it('List', function () {
             expect(test1.values()).to.equal(typeof malloc !== "undefined" && malloc !== null ? 92 : 24);
             expect(test2.index((typeof malloc !== "undefined" && malloc !== null ? 92 : 24), 2)).to.equal(44);
+        });
+        it('Random', function () {
+            expect(mt19937.genrand_int32()).to.equal(testResults[0]);
+            expect(mt19937.genrand_int32()).to.equal(testResults[1]);
+            expect(mt19937.genrand_int32()).to.equal(testResults[2]);
+            expect(mt19937.genrand_int32()).to.equal(testResults[3]);
+            expect(mt19937.genrand_int32()).to.equal(testResults[4]);
         });
         it('And', function () {
             return expect(test2.and(42)).to.equal(42);

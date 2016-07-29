@@ -21,6 +21,13 @@ Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map(function(x) {
       expect(test1.values()).to.equal(typeof malloc !== "undefined" && malloc !== null ? 92 : 24);
       expect(test2.index((typeof malloc !== "undefined" && malloc !== null ? 92 : 24), 2)).to.equal(44);
     });
+    it('Random', function() {
+      expect(mt19937.genrand_int32()).to.equal(testResults[0]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[1]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[2]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[3]);
+      expect(mt19937.genrand_int32()).to.equal(testResults[4]);
+    });
     it('And', function() {
       return expect(test2.and(42)).to.equal(42);
     });

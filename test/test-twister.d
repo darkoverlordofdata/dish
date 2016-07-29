@@ -20,6 +20,7 @@ int init_genrand(int s)
     int n;
     int t2;
     int t3;
+    int t4;
     double r1 = +1812433253;
     double r3;
     
@@ -35,19 +36,11 @@ int init_genrand(int s)
         t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
         r3 = r1 * to!double(t2);
         t3 = to!int(r3)+mti;
-        //t3 = t3 & 0xffffffff;
-        mt[mti] = t3;
-
-            // r2 = +(HEAP[mt+mti-1] ^ (HEAP[mt+mti-1] >> 30));
-            // r3 = r1 * r2;
-            // t3 = ~~(r3);
-            // HEAP[mt+mti] = (r3+mti)|0; //t3 + mti | 0;
-            // r4 = HEAP[mt+mti];
-        
+        mt[mti] = t3 & 0xffffffff;
+        t4 = mt[mti];
 
         if (mti < 6) {
-            print('t2 = ', t2, t3, r3);
-
+            print('test-twister: t2 = ', t2, t3, r3, t4);
         }
 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */

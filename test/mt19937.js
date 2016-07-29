@@ -30,6 +30,7 @@ export const mt19937 = (function(stdlib, foreign, heap) {
         var r4 = 0.0;
         var t2 = 0;
         var t3 = 0;
+        var t4 = 0;
 
         r1 = +1812433253;
         mt = malloc(N<<3)|0 // malloc(N*sizeof(int))
@@ -42,8 +43,16 @@ export const mt19937 = (function(stdlib, foreign, heap) {
             r3 = r1 * r2;
             t3 = ~~(r3);
             HEAP[mt+mti] = (r3+mti)|0; //t3 + mti | 0;
-            r4 = HEAP[mt+mti];
+            t4 = HEAP[mt+mti];
             
+            // t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
+            // r3 = r1 * to!double(t2);
+            // t3 = to!int(r3)+mti;
+            // t3 = t3 & 0xffffffff;
+            // mt[mti] = t3;
+            if (mti < 6) {
+                console.log('mt19937: t2 = ', t2, t3, r3, t4);
+            }
             /* See Knuth TAOCP Vol2. 3rd Ed. P.106x` for multiplier. */
             /* In the previous versions, MSBs of the seed affect   */
             /* only MSBs of the array mt[].                        */

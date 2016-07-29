@@ -13,6 +13,14 @@ module.exports = {
     reset: reset
 }
 
+class Ast {
+    constructor(type, value, array) {
+        this.type = type
+        this.op = value
+        this.array = array || false
+    }
+}
+
 /**
  * Term
  * 
@@ -160,10 +168,12 @@ function transpile(tokens, symbol, index) {
     traverse(tokens)
     nodes = nodes.reverse()
     codegen()
+
     if (index == null) {
         code[code.length-1].name = name
     } else {
-        code.push(new Triad(name, type, curr))
+        let result = stack.pop()
+        code.push(new Triad(name, type, result.node.name))
     }
 
     return code
@@ -181,26 +191,26 @@ function transpile(tokens, symbol, index) {
     function traverse(node) {
         switch (node.type) {
             case 'BinaryExpression':
-                nodes.push({type: 'Operator', op:node.operator})
+                nodes.push(new Ast('Operator', node.operator))
                 traverse(node.left)
                 traverse(node.right)
                 break
             case 'MemberExpression':
-                nodes.push({type: 'Operator', op:'+', array:true})
+                nodes.push(new Ast('Operator', '+', true))
                 traverse(node.object)
                 traverse(node.property)
                 break
             case 'Identifier':
             case 'Literal':
-                nodes.push(node)
-                break
             case 'CallExpression':
-                // console.log('CallExpression', node)
                 nodes.push(node)
                 break
         }
     }
 
+    /**
+     * iterate the ast node list
+     */
     function codegen() {
         while (ptr<nodes.length) {
             const node = nodes[ptr]

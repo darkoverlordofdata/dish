@@ -2,7 +2,7 @@
  * parse.js
  * 
  * Recursive Descent Parser for D`ish
- * Parses the statements and builds infrastructure requirements
+ * Parses the statements and builds linkage infrastructure 
  * expression parsing is handed off to parseExp.
  * 
  * - Blit Twiddlefast
