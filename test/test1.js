@@ -9,7 +9,7 @@ var malloc = foreign.malloc;
 var buf = 0;
 function factorial(n) {
     n = n | 0;
-    var $00 = 0;
+    var __00__ = 0;
     var i = 0;
     var result = 0;
     result = 0;
@@ -20,13 +20,13 @@ function factorial(n) {
 }
 function alloc(n) {
     n = n | 0;
-    var $00 = 0;
+    var __00__ = 0;
     buf = (malloc(n << 2) | 0) >> 2;
     return buf | 0;
 }
 function values(i) {
     i = i | 0;
-    var $01 = 0, $02 = 0;
+    var __01__ = 0, __02__ = 0;
     var value = 0;
     var k = 0;
     var result = 0;
@@ -41,9 +41,9 @@ function values(i) {
     HEAPI32[(value+7)<<2>>2] = 49;
     HEAPI32[(value+8)<<2>>2] = 50;
     HEAPI32[(value+9)<<2>>2] = 51;
-    $01 = value + i | 0;
-    $02 = $01 << 2;
-    result = HEAPI32[$02 >> 2] | 0;
+    __01__ = value + i | 0;
+    __02__ = __01__ << 2;
+    result = HEAPI32[__02__ >> 2] | 0;
     return value | 0;
 }    
 return { 

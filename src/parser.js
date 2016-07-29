@@ -43,7 +43,7 @@ function isInteger(n)       { return n === +n && n === (n|0); }
  * @param input lexer
  * @returns parsed document and flags
  */
-function parse(input) {
+function parse(input, mangle) {
     const expression = require('./expression')
     const factory = require('./factory')
     const codegen = require('escodegen')
@@ -341,7 +341,7 @@ function parse(input) {
                 case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
             }
         }
-        body.push(body.vars = factory.IntDeclaration('$00'))
+        body.push(body.vars = factory.IntDeclaration(mangle ? '$00' : '__00__'))
         while (!match('}')) {
             body.push(parseStatement(body))
             if (!input.eof()) if (match(';')) expect(';')
@@ -466,7 +466,7 @@ function parse(input) {
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const sym = symtbl[currentScope][name]||symtbl['global'][name]
             const lhsvalue = index.length===0?null:parseExp(index.join(' '))
-            const lines = expression.transpile(ast, sym, lhsvalue)
+            const lines = expression.transpile(ast, sym, lhsvalue, mangle)
             for (let l in lines) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
@@ -478,8 +478,7 @@ function parse(input) {
                 }
 
             }
-        } else {
-            //console.log(ast)
+        } else { /**  passthru simple assignment */
             return factory.AssignmentStatement(name, ast)
         }
     }
@@ -493,13 +492,14 @@ function parse(input) {
      * @param value value of the variable
      */
     function createVar(body, name, type, value) {
-        if (name[0] !== '$') return
+        if (name.substr(0,1) !== '$' && name.substr(0,2) !== '__') return
         if (!symtbl[currentScope][name]) {
             symtbl[currentScope][name] = new Symbol(name, type)
             // if (!block.vars) {
             //     body.push(body.vars = factory.IntDeclaration('$00'))
             // }
-            if (name === '$01' && block.vars.declarations[0].id.name === '$00') {
+            if ((name === '__01__' && block.vars.declarations[0].id.name === '__00__') 
+            || (name === '$01' && block.vars.declarations[0].id.name === '$00')) {
                 block.vars.declarations[0] = {
                     "type": "VariableDeclarator",
                     "id": {

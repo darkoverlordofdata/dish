@@ -9,33 +9,33 @@ var malloc = foreign.malloc;
 function index(ptr, i) {
     ptr = ptr | 0;
     i = i | 0;
-    var $01 = 0, $02 = 0;
+    var __01__ = 0, __02__ = 0;
     var value = 0;
     var k = 0;
     var result = 0;
     value = ptr;
-    $01 = value + i | 0;
-    $02 = $01 << 2;
-    result = HEAPI32[$02 >> 2] | 0;
+    __01__ = value + i | 0;
+    __02__ = __01__ << 2;
+    result = HEAPI32[__02__ >> 2] | 0;
     return result | 0;
 }
 function and(s) {
     s = s | 0;
-    var $01 = 0, $02 = 0, $03 = 0, $04 = 0, $05 = 0;
+    var __01__ = 0, __02__ = 0, __03__ = 0, __04__ = 0, __05__ = 0;
     var m = 0;
     var x = 0;
     m = (malloc(10 << 2) | 0) >> 2;
-    $01 = m + 0 | 0;
-    $02 = $01 << 2;
-    $03 = s & 4294967295;
-    HEAPI32[$02>>2] = $03 | 0;
-    $04 = m + 0 | 0;
-    $05 = $04 << 2;
-    x = HEAPI32[$05 >> 2] | 0;
+    __01__ = m + 0 | 0;
+    __02__ = __01__ << 2;
+    __03__ = s & 4294967295;
+    HEAPI32[__02__ >> 2] = __03__ | 0;
+    __04__ = m + 0 | 0;
+    __05__ = __04__ << 2;
+    x = HEAPI32[__05__ >> 2] | 0;
     return x | 0;
 }
 function test() {
-    var $00 = 0;
+    var __00__ = 0;
     var zz = 0;
     zz = ~~(20);
     return zz | 0;

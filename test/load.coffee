@@ -36,7 +36,7 @@ Promise.all(['test1', 'test2', 'test-twister', 'mt19937'].map((x) ->
         expect(test2.and(42)).to.equal(42)
 
       it 'MersenneTwister', ->
-        expect(MersenneTwister.genrand_int32()).to.equal(192943570) #testResults[0])
+        expect(MersenneTwister.genrand_int32()).to.equal(testResults[0]) #testResults[0])
 
   , (err) -> console.log err
 

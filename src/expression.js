@@ -7,7 +7,6 @@
  * return expanded to multiline, TAC style
  */
 'use strict'
-
 module.exports = {
     transpile: transpile,
     reset: reset
@@ -121,7 +120,7 @@ function reset() {
  * @param index optional ast of index for lhs
  * @returns array of output lines
  */
-function transpile(tokens, symbol, index) {
+function transpile(tokens, symbol, index, mangle) {
 
     let ptr = 0
     let curr = ''
@@ -157,9 +156,8 @@ function transpile(tokens, symbol, index) {
                 createVar()
                 code.push(new Triad(curr, type, prev, '<<', size))
                 break
-
         }
-        name = `${heap}[${curr}>>${size}]`
+        name = `${heap}[${curr} >> ${size}]`
     }
 
     ptr = 0
@@ -168,11 +166,11 @@ function transpile(tokens, symbol, index) {
     traverse(tokens)
     nodes = nodes.reverse()
     codegen()
+    let result = stack.pop()
 
     if (index == null) {
         code[code.length-1].name = name
     } else {
-        let result = stack.pop()
         code.push(new Triad(name, type, result.node.name))
     }
 
@@ -180,8 +178,13 @@ function transpile(tokens, symbol, index) {
 
     function createVar() {
         prev = curr
-        curr = `$${uniqueId}`
-        curr = curr.length === 2 ? `$0${uniqueId}` : curr
+        if (mangle) {
+            curr = `$${uniqueId}`
+            curr = curr.length === 2 ? `$0${uniqueId}` : curr
+        } else {
+            curr = `__${uniqueId}__`
+            curr = curr.length === 5 ? `__0${uniqueId}__` : curr
+        }
         uniqueId++
     }
 
@@ -230,7 +233,7 @@ function transpile(tokens, symbol, index) {
                         createVar()
                         code.push(new Triad(curr, type, prev, '<<', 2))
                         createVar()
-                        code.push(new Triad(curr, type, `${heap}[${prev}>>2]`))
+                        code.push(new Triad(curr, type, `${heap}[${prev} >> 2]`))
                         stack.pop() //# pop off the prev, replace with curr
                         stack.push(new Term({type: 'Identifier', name: curr})) 
                     }

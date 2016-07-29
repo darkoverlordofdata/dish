@@ -51,7 +51,7 @@ console.log("*** dish " + manifest.version + " ***");
 
 console.log("*** " + source + " ***");
 
-parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')));
+parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle);
 
 tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'));
 
