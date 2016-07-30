@@ -27,13 +27,14 @@ Features
 * uses type information to add type coercions to generated code.
 * generates import/export bindings.
 * generates a module header
-* multiple modules share 1 heap
 * similar restrictions as asm.js - no strings, etc.
 * module level only allows declarations - import, export, int, float, double. 
 * one level of nesting - functions can only be declared at the module level.
 * import/export can only be used at the module level.
 * within a function: break, case, continue, do, else, for, if, return, switch, while
 * added sugar for heap management and array types.
+* multiple modules share 1 heap
+* use 3rd party npm module 'malloc' for heap implementation. (patched to run in the browser)
 
 ### example
 
@@ -78,10 +79,7 @@ return {
 ### notes
 
 A custom recursive descent parser produces SpiderMonkey AST as output. Escodegen is then used to 
-generate the final javascript code. I started out using jsep for expressions, but I'm writing
-my own expression parser that decomposes more complex expressions into three address code style output.
-I'm still using jsep for expressions that are bound within a control concept, such as the 
-comditional expression in a while loop.
+generate the final javascript code. 
 
 Esprima has an issue - literal floats with a zero floating part are truncated to ints - but only as far as asm.js
 is concerned - in standard javascript there is no difference. To work around this, floats are encoded with qoute 

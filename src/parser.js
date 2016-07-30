@@ -406,7 +406,7 @@ function parse(input, mangle) {
                 expect(']')
                 indexer = false
             } else if (matchKeyword('new')) {
-                expectKeyword('new') // = new int[N]
+                expectKeyword('new') 
                 let size = 0
                 let tokens = []
                 let token = null
