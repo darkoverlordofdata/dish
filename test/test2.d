@@ -9,6 +9,7 @@ module test2;
  * The heap is shared between modules, so this finds values set from another module
  */
 export int index(int ptr, int i) {
+    double x;
     int[] value;
     
     int k;

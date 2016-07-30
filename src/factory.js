@@ -1,7 +1,7 @@
 /*
  * Factory
  * 
- *  Create output ast structures to be consumed by escodegen
+ *  Create constructs as ast structures 
  */
 "use strict"
 const Token = require('./Token')
@@ -56,7 +56,6 @@ function Print(args) {
             "arguments": args
         }        
     }
-
 }
 
 
@@ -112,46 +111,6 @@ function New(name, size, alloc) {
     }
 }
 
-//     return {
-//         "type": "ExpressionStatement",
-//         "expression": {
-//             "type": "AssignmentExpression",
-//             "operator": "=",
-//             "left": {
-//                 "type": "Identifier",
-//                 "name": name
-//             },
-//             "right": {
-//                 "type": "BinaryExpression",
-//                 "operator": ">>",
-//                 "left": {
-//                     "type": "CallExpression",
-//                     "callee": {
-//                         "type": "Identifier",
-//                         "name": "malloc"
-//                     },
-//                     "arguments": [
-//                         {
-//                             "type": "BinaryExpression",
-//                             "operator": "<<",
-//                             "left": alloc,
-//                             "right": {
-//                                 "type": "Literal",
-//                                 "value": size,
-//                                 "raw": ""+size
-//                             }
-//                         }
-//                     ]
-//                 },
-//                 "right": {
-//                     "type": "Literal",
-//                     "value": size,
-//                     "raw": ""+size
-//                 }
-//             }
-//         }
-//     }
-// }
 /** the init of a for statement */
 function SequenceExpression(assignmentExpressions) {
     return {

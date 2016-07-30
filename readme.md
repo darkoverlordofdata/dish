@@ -77,12 +77,13 @@ return {
 
 ### notes
 
-I'm using esprima ast 'schema' as my target.  Then, escodegen is used to generate the final javascript code.
-Code is parsed with recursive descent. My parser stops when it get's to an expression, and hands off to jsep, 
-which also generates esprima schema. I do some munging of the expression - adding type coercions - prior to
-the handoff. 
+A custom recursive descent parser produces SpiderMonkey AST as output. Escodegen is then used to 
+generate the final javascript code. I started out using jsep for expressions, but I'm writing
+my own expression parser that decomposes more complex expressions into three address code style output.
+I'm still using jsep for expressions that are bound within a control concept, such as the 
+comditional expression in a while loop.
 
-Esprima has 1 issue - literal floats with a zero floating part are truncated to ints - but only as far as asm.js
+Esprima has an issue - literal floats with a zero floating part are truncated to ints - but only as far as asm.js
 is concerned - in standard javascript there is no difference. To work around this, floats are encoded with qoute 
 wrapper - i.e. '0.0'. After the call to escodegen, these wrappers are removed using regexp. This works because
 quoted literals don't exist in asm.js, with the sole exception of the 'use asm' pragma, therefore any quoted

@@ -341,7 +341,7 @@ function parse(input, mangle) {
                 case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
             }
         }
-        body.push(body.vars = factory.IntDeclaration(mangle ? '$00' : '__00__'))
+        body.push(body.vars = factory.IntDeclaration(mangle?'$00':'__00__'))
         while (!match('}')) {
             body.push(parseStatement(body))
             if (!input.eof()) if (match(';')) expect(';')
@@ -492,14 +492,10 @@ function parse(input, mangle) {
      * @param value value of the variable
      */
     function createVar(body, name, type, value) {
-        if (name.substr(0,1) !== '$' && name.substr(0,2) !== '__') return
+        if (name.substr(0,(mangle?1:2)) !== (mangle?'$':'__')) return
         if (!symtbl[currentScope][name]) {
             symtbl[currentScope][name] = new Symbol(name, type)
-            // if (!block.vars) {
-            //     body.push(body.vars = factory.IntDeclaration('$00'))
-            // }
-            if ((name === '__01__' && block.vars.declarations[0].id.name === '__00__') 
-            || (name === '$01' && block.vars.declarations[0].id.name === '$00')) {
+            if (name === (mangle?'$01':'__01__') && block.vars.declarations[0].id.name === (mangle?'$00':'__00__')) { 
                 block.vars.declarations[0] = {
                     "type": "VariableDeclarator",
                     "id": {
@@ -647,26 +643,6 @@ function parse(input, mangle) {
             symtbl[scope][name.value] = new Symbol(name.value, 'double', false, '', isArray)
             return factory.DoubleDeclaration(name.value)
         }
-        // scope = scope || 'global'
-        // expectKeyword('double')
-        // const name = input.next()
-        // if (input.peek().value === '(') {
-        //     symtbl[scope][name.value] = new Symbol(name.value, 'double', true)
-        //     return parseFunction(scope, 'double', name)
-
-        // } else if (match('=')) { /** initialization */
-        //     expect('=')
-        //     let tokens = []
-        //     while (!match(';')) {
-        //         tokens.push(input.next().value)
-        //     }
-        //     symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens.join(' '))
-        //     return factory.DoubleDeclaration(name.value)
-
-        // } else {
-        //     symtbl[scope][name.value] = new Symbol(name.value, 'double')
-        //     return factory.DoubleDeclaration(name.value)
-        // }
     }
 
     function parseExport() {
@@ -735,27 +711,6 @@ function parse(input, mangle) {
             symtbl[scope][name.value] = new Symbol(name.value, 'float', false, '', isArray)
             return factory.FloatDeclaration(name.value)
         }
-        // scope = scope || 'global'
-        // expectKeyword('float')
-        // float = true
-        // const name = input.next()
-        // if (input.peek().value === '(') {
-        //     symtbl[scope][name.value] = new Symbol(name.value, 'float', true)
-        //     return parseFunction(scope, 'float', name)
-
-        // } else if (match('=')) { /** initialization */
-        //     expect('=')
-        //     let tokens = []
-        //     while (!match(';')) {
-        //         tokens.push(input.next().value)
-        //     }
-        //     symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens.join(' '))
-        //     return factory.FloatDeclaration(name.value)
-
-        // } else {
-        //     symtbl[scope][name.value] = new Symbol(name.value, 'float')
-        //     return factory.FloatDeclaration(name.value)
-        // }
     }
 
     function parseFor() {
@@ -817,7 +772,6 @@ function parse(input, mangle) {
             while (!match(';')) {
                 tokens.push(input.next().value)
             }
-            //TODO:Double and Float, also 
             symtbl[scope][name.value] = new Symbol(name.value, 'int', false, tokens, isArray)
             if (scope === 'global') {
                 return factory.IntDeclaration(name.value, {
