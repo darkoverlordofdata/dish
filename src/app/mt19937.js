@@ -17,6 +17,10 @@ export const mt19937 = (function(stdlib, foreign, heap) {
     var mt = 0;     /* ptr -> the array for the state vector  */
     var mti = 625;  /* mti==N+1 means mt[N] is not initialized */
                     
+    return { 
+        genrand_int32:genrand_int32, 
+        test: test
+    }
     /* initializes mt[N] with a seed */
     function init_genrand(s) {
         s = s | 0;
@@ -209,8 +213,4 @@ export const mt19937 = (function(stdlib, foreign, heap) {
 
     }
 
-    return { 
-        genrand_int32:genrand_int32, 
-        test: test
-    }
 }(Stdlib, Ffi, buffer))

@@ -22,11 +22,13 @@ class Symbol {
         this.array = array || false
         this.immutable = immutable || false
         switch(type) {
+            case 'uint': this.size = 2; break
             case 'int': this.size = 2; break
             case 'float': this.size = 2; break
             case 'double': this.size = 3; break
         }
         switch(type) {
+            case 'uint': this.heap = 'HEAPU32'; break
             case 'int': this.heap = 'HEAPI32'; break
             case 'float': this.heap = 'HEAPF32'; break
             case 'double': this.heap = 'HEAPF64'; break
@@ -143,6 +145,7 @@ function parse(input, mangle) {
      * import
      * export
      * int
+     * uint
      * float
      * double
      */
@@ -153,6 +156,7 @@ function parse(input, mangle) {
         if (matchKeyword('export')) return parseExport()
         if (matchKeyword('float'))  return parseFloat32()
         if (matchKeyword('import')) return parseImport()
+        if (matchKeyword('uint'))   return parseUint32()
         if (matchKeyword('int'))    return parseInt32()
         //=================================
         input.raise('Unexpected token: ')
@@ -170,6 +174,7 @@ function parse(input, mangle) {
         if (matchKeyword('double')) return parseDouble(currentScope)
         if (matchKeyword('float'))  return parseFloat32(currentScope)
         if (matchKeyword('int'))    return parseInt32(currentScope)
+        if (matchKeyword('uint'))   return parseUint32(currentScope)
         if (currentScope !== priorScope) {
             expression.reset()
             priorScope = currentScope
@@ -229,6 +234,7 @@ function parse(input, mangle) {
         if (matchKeyword('double'))     return parseDouble(scope)
         if (matchKeyword('float'))      return parseFloat32(scope)
         if (matchKeyword('int'))        return parseInt32(scope)
+        if (matchKeyword('uint'))       return parseUint32(scope)
         input.raise('Unexpected token: ')
     }
 
@@ -255,6 +261,7 @@ function parse(input, mangle) {
                         }
                         switch(symtbl[scope][token.value].type) {
                             case 'int':    
+                            case 'uint':    
                                 temp.push(new Token(Token.Delimiter, '('))
                                 temp.push(token)
                                 temp.push(new Token(Token.Delimiter, '|'))
@@ -336,6 +343,7 @@ function parse(input, mangle) {
             symtbl[name.value][args[i].name.value] = new Symbol(args[i].name.value, args[i].type.value)
 
             switch(args[i].type.value) {
+                case 'uint':    body.push(factory.IntParameter(args[i].name)); break
                 case 'int':     body.push(factory.IntParameter(args[i].name)); break
                 case 'float':   body.push(factory.FloatParameter(args[i].name)); break
                 case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
@@ -414,6 +422,10 @@ function parse(input, mangle) {
                     expectKeyword('int')
                     size = 2
                     heapi32 = true
+                } else if (matchKeyword('uint')) {
+                    expectKeyword('uint')
+                    size = 2
+                    heapu32 = true
                 } else if (matchKeyword('float')) {
                     expectKeyword('float')
                     size = 2
@@ -423,7 +435,7 @@ function parse(input, mangle) {
                     size = 3
                     heapf64 = true
                 } else {
-                    input.raise('Expecting type: [int|float|double]')
+                    input.raise('Expecting type: [int|uint|float|double]')
                 }
                 expect('[')
                 while (!match(']')) {
@@ -654,6 +666,13 @@ function parse(input, mangle) {
             input.putBack()
             return parseInt32()
         }
+        if (matchKeyword('uint')) {
+            expectKeyword('uint')
+            const name = input.peek()
+            exporting[name.value] = name.value
+            input.putBack()
+            return parseUint32()
+        }
         if (matchKeyword('double')) {
             expectKeyword('double')
             const name = input.peek()
@@ -875,6 +894,7 @@ function parse(input, mangle) {
 
             let castExpression = ''
             switch(symtbl.global[currentScope].type) {
+                case 'uint':    castExpression = '(('+tokens.join(' ')+')|0)'; break
                 case 'int':     castExpression = '(('+tokens.join(' ')+')|0)'; break
                 case 'double':  castExpression = '+('+tokens.join(' ')+')'; break
                 case 'float':   castExpression = 'fround('+tokens.join(' ')+')'; break
@@ -910,6 +930,48 @@ function parse(input, mangle) {
         }
         expect('}')
         return factory.SwitchStatement(parseExp(tokens), cases)
+    }
+
+    function parseUint32(scope) {
+        scope = scope || 'global'
+        let isArray = false
+        expectKeyword('uint')
+        if (match('[')) {
+            expect('[')
+            expect(']')
+            isArray = true
+            malloc = true
+            heapi32 = true
+        }
+        const name = input.next()
+        if (input.peek().value === '(') { /** function definition */
+            if (isArray) {
+                input.raise('Syntax Error: array found')
+            }
+            symtbl[scope][name.value] = new Symbol(name.value, 'uint', true)
+            return parseFunction(scope, 'uint', name)
+
+        } else if (match('=')) { /** initialization */
+            expect('=')
+            let tokens = []
+            while (!match(';')) {
+                tokens.push(input.next().value)
+            }
+            symtbl[scope][name.value] = new Symbol(name.value, 'uint', false, tokens, isArray)
+            if (scope === 'global') {
+                return factory.IntDeclaration(name.value, {
+                    "type":     "Literal",
+                    "value":    parseInt(tokens.join(''), 10),
+                    "raw":      parseInt(tokens.join(''), 10)
+                })
+            } else  {
+                return factory.IntDeclaration(name.value) 
+            }
+
+        } else {
+            symtbl[scope][name.value] = new Symbol(name.value, 'uint', false, '', isArray)
+            return factory.IntDeclaration(name.value)
+        }
     }
 
     function parseWhile() {

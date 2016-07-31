@@ -40,6 +40,18 @@ console.log "*** dish #{manifest.version} ***"
 console.log "*** #{source} ***"
 
 parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle)
+
+## todo: fix this bug
+parsed.heapi8 = true
+parsed.heapu8 = true
+parsed.heapi16 = true
+parsed.heapu16 = true
+parsed.heapi32 = true
+parsed.heapu32 = true
+parsed.heapf32 = true
+parsed.heapf64 = true
+
+
 tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
 
 if mangle

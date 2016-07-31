@@ -5,7 +5,6 @@ import Stdlib from 'stdlib'
 export const mt19937 = (function(stdlib, foreign, heap) {
     "use asm";
 
-    // var HEAP = new stdlib.Float64Array(heap);
     var HEAP = new stdlib.Uint32Array(heap);
     var malloc = foreign.malloc;
     var imul = stdlib.Math.imul;
@@ -20,6 +19,10 @@ export const mt19937 = (function(stdlib, foreign, heap) {
     var mti = 625;  /* mti==N+1 means mt[N] is not initialized */
                     
     var T = 0;
+    return { /** Export api */
+        genrand_int32:genrand_int32, 
+    };
+
     /* initializes mt[N] with a seed */
     function init_genrand(s) {
         s = s | 0;
@@ -114,7 +117,4 @@ export const mt19937 = (function(stdlib, foreign, heap) {
     }
 
 
-    return { 
-        genrand_int32:genrand_int32, 
-    }
 }(Stdlib, Ffi, buffer))

@@ -4,8 +4,16 @@ import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
 export const test2 = (function(stdlib, foreign, heap) {
 "use asm";
+var HEAPI8 = new stdlib.Int8Array(heap);
+var HEAPU8 = new stdlib.Uint8Array(heap);
+var HEAPI16 = new stdlib.Int16Array(heap);
+var HEAPU16 = new stdlib.Uint16Array(heap);
 var HEAPI32 = new stdlib.Int32Array(heap);
+var HEAPU32 = new stdlib.Uint32Array(heap);
+var HEAPF32 = new stdlib.Float32Array(heap);
+var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
+var ID = 0;
 function index(ptr, i) {
     ptr = ptr | 0;
     i = i | 0;

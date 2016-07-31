@@ -99,6 +99,7 @@ class Triad {
 
     cast(type, value) {
         switch (type) {
+            case 'uint':    return '(('+value+')|0)'
             case 'int':     return '(('+value+')|0)'
             case 'double':  return '+('+value+')'
             case 'float':   return 'fround('+value+')'
