@@ -458,7 +458,7 @@ function FloatDeclaration(name, init) {
  * 
  * <|> var <name> = stdlib.libname.source;
  */
-function ImportDeclaration(libname, source, name) {
+function ImportDeclaration(libname, name) {
     return {
         "type": "VariableDeclaration",
         "declarations": [
@@ -472,16 +472,8 @@ function ImportDeclaration(libname, source, name) {
                     "type": "MemberExpression",
                     "computed": false,
                     "object": {
-                        "type": "MemberExpression",
-                        "computed": false,
-                        "object": {
-                            "type": "Identifier",
-                            "name": libname
-                        },
-                        "property": {
-                            "type": "Identifier",
-                            "name": source
-                        }
+                        "type": "Identifier",
+                        "name": libname,
                     },
                     "property": {
                         "type": "Identifier",

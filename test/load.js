@@ -12,8 +12,12 @@ Promise.all(['entity', 'pool'].map(function(x) {
     it('Pool', function() {
       return expect(pool).to.not.equal(null);
     });
-    return it('Entity', function() {
+    it('Entity', function() {
       return expect(entity).to.not.equal(null);
+    });
+    return it('CreateEntity', function() {
+      entity = pool.createEntity();
+      return expect(pool.test(entity, 0)).to.equal(1);
     });
   });
 }, function(err) {

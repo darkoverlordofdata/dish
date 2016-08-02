@@ -3,16 +3,17 @@
  */
 module pool;
 
-import entity_getId = entity.getId;
-import entity_setId = entity.setId;
-import entity_getEnabled = entity.getEnabled;
-import entity_setEnabled = entity.setEnabled;
-import entity_getComponent = entity.getComponent
-import entity_setComponent = entity.setComponent
+import EntityIsNotEnabledException = EntityIsNotEnabledException;
+import EntityAlreadyHasComponentException = EntityAlreadyHasComponentException;
+
+import getId = entity.getId;
+import setId = entity.setId;
+import getEnabled = entity.getEnabled;
+import setEnabled = entity.setEnabled;
+import getComponent = entity.getComponent
+import setComponent = entity.setComponent
 
 
-import EntityIsNotEnabledException = exceptions.EntityIsNotEnabledException;
-import EntityAlreadyHasComponentException = exceptions.EntityAlreadyHasComponentException;
 
 const int POOL_SIZE = 0x1000;
 bool init = true;
@@ -38,10 +39,10 @@ export int test(int ptr, int i) {
 export int initialize(int count) {
     if (init) {
         totalComponents = count;
-        entitySize = count*4+COMPONENTS*4;
+        entitySize = count*4+4*4;
         uniqueId = 0;
         pool = new int[POOL_SIZE];
-        init = false;
+        init = 0;
     }
 }
 
@@ -54,21 +55,23 @@ export int getCount() {
 }
 
 export int createEntity() {
-    int[] entity = new int[entitySize];
+    int[] entity;
     int i;
+    entity = new int[entitySize];
+    //entity[0] = 42;
 
     uniqueId = uniqueId+1;
     entity_setId(entity, uniqueId);
-    entity_setEnabled(entity, true);
+    // setEnabled(entity, true);
 
-    for (i=0; i<totalComponents; i++) {
-        entity_setComponent(entity, i, 0);
-    }
+    // for (i=0; i<totalComponents; i++) {
+    //     setComponent(entity, i, 0);
+    // }
     return entity;
 }
 
 export int destroyEntity(int entity) {
-    free(entity);
+    //free(entity);
 }
 
 export int destroyAllEntities() {
@@ -101,14 +104,14 @@ export int onEntityReleased(int entity) {
 
 
 export int addComponent(int entity, int index, int component) {
-    // if (entity_getEnabled(entity) {
+    // if (getEnabled(entity) {
     //     EntityIsNotEnabledException();
     // }
-    // if (entity_getComponent(entity, index) {
+    // if (getComponent(entity, index) {
     //     EntityAlreadyHasComponentException(index);
     // }
-    entity_setComponent(entity, index, component);
-    onComponentAdded(entity, index, component);
+    // setComponent(entity, index, component);
+    // onComponentAdded(entity, index, component);
 
 }
 
@@ -119,9 +122,9 @@ export int removeComponent(int entity, int index) {
 export int replaceComponent(int entity, int index, int component) {
 }
 
-export int getComponent(int entity, int index) {
+// export int getComponent(int entity, int index) {
 
-}
+// }
 
 export bool hasComponent(int entity, int index) {
 

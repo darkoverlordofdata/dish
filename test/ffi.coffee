@@ -6,12 +6,11 @@ HEAP_SIZE = 0x40000
 
 class Ffi
 
-    @exceptions:
-        EntityIsNotEnabledException:() ->
-            throw new Error('EntityIsNotEnabledException')
-        EntityAlreadyHasComponentException:(index) ->
-            throw new Error("EntityAlreadyHasComponentException - #{index}")
-    
+    @EntityIsNotEnabledException:() ->
+        throw new Error('EntityIsNotEnabledException')
+    @EntityAlreadyHasComponentException:(index) ->
+        throw new Error("EntityAlreadyHasComponentException - #{index}")
+
 
     @now: -> performance.now()
     ###

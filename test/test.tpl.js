@@ -2,7 +2,7 @@ import Ffi from 'ffi'
 import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
 
-export const {{ name }} = Ffi["{{ name }}"] = (function(stdlib, foreign, heap) {
+export const {{ name }} = (function(stdlib, foreign, heap) {
 "use asm";
 
 {% if float %}var fround = stdlib.Math.fround;{% endif %}
@@ -20,3 +20,6 @@ return { {% for func in exports %}
     {{ func.key }}:{{ func.value }},{% endfor %} 
 };
 }(Stdlib, Ffi, buffer))
+for (let k in {{ name }}) { 
+    Ffi['{{ name }}_'+k] = {{ name }}[k] 
+}

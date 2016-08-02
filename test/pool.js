@@ -2,7 +2,7 @@
 import Ffi from 'ffi'
 import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
-export const pool = Ffi["pool"] = (function(stdlib, foreign, heap) {
+export const pool = (function(stdlib, foreign, heap) {
 "use asm";
 var HEAPI8 = new stdlib.Int8Array(heap);
 var HEAPU8 = new stdlib.Uint8Array(heap);
@@ -13,14 +13,14 @@ var HEAPU32 = new stdlib.Uint32Array(heap);
 var HEAPF32 = new stdlib.Float32Array(heap);
 var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
-var entity_getId = foreign.entity.entity_getId;
-var entity_setId = foreign.entity.entity_setId;
-var entity_getEnabled = foreign.entity.entity_getEnabled;
-var entity_setEnabled = foreign.entity.entity_setEnabled;
-var entity_getComponent = foreign.entity.entity_getComponent;
-var entity_setComponent = foreign.entity.entity_setComponent;
-var EntityIsNotEnabledException = foreign.exceptions.EntityIsNotEnabledException;
-var EntityAlreadyHasComponentException = foreign.exceptions.EntityAlreadyHasComponentException;
+var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
+var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
+var entity_getId = foreign.entity_getId;
+var entity_setId = foreign.entity_setId;
+var entity_getEnabled = foreign.entity_getEnabled;
+var entity_setEnabled = foreign.entity_setEnabled;
+var entity_getComponent = foreign.entity_getComponent;
+var entity_setComponent = foreign.entity_setComponent;
 var POOL_SIZE = 4096;
 var init = 1;
 var pool = 0;
@@ -48,12 +48,12 @@ function initialize(count) {
     var __01__ = 0, __02__ = 0;
     if (init) {
         totalComponents = count;
-        __01__ = COMPONENTS * 4 | 0;
+        __01__ = 4 * 4 | 0;
         __02__ = count * 4 | 0;
         entitySize = __02__ + __01__ | 0;
         uniqueId = 0;
         pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
-        init = false;
+        init = 0;
     }
 }
 function getTotalComponents() {
@@ -65,24 +65,20 @@ function getCount() {
     return count | 0;
 }
 function createEntity() {
-    var __00__ = 0;
+    var __01__ = 0, __02__ = 0;
     var entity = 0;
     var i = 0;
-    entity = (malloc(2 << 2) | 0) >> 2;
-    HEAPI32[(entity+0)<<2>>2] = int;
-    HEAPI32[(entity+1)<<2>>2] = entitySize;
+    entity = (malloc(entitySize << 2) | 0) >> 2;
+    __01__ = entity + 0 | 0;
+    __02__ = __01__ << 2;
+    HEAPI32[__02__ >> 2] = 42 | 0;
     uniqueId = uniqueId + 1 | 0;
     entity_setId(entity, uniqueId);
-    entity_setEnabled(entity, true);
-    for (i = 0; (i | 0) < totalComponents; i = i + 1 | 0) {
-        entity_setComponent(entity, i, 0);
-    }
     return entity | 0;
 }
 function destroyEntity(entity) {
     entity = entity | 0;
     var __00__ = 0;
-    free(entity);
 }
 function destroyAllEntities() {
     var __00__ = 0;
@@ -121,8 +117,6 @@ function addComponent(entity, index, component) {
     index = index | 0;
     component = component | 0;
     var __00__ = 0;
-    entity_setComponent(entity, index, component);
-    onComponentAdded(entity, index, component);
 }
 function removeComponent(entity, index) {
     entity = entity | 0;
@@ -133,11 +127,6 @@ function replaceComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    var __00__ = 0;
-}
-function getComponent(entity, index) {
-    entity = entity | 0;
-    index = index | 0;
     var __00__ = 0;
 }
 function hasComponent(entity, index) {
@@ -162,7 +151,9 @@ return {
     addComponent:addComponent,
     removeComponent:removeComponent,
     replaceComponent:replaceComponent,
-    getComponent:getComponent,
     hasComponent:hasComponent, 
 };
 }(Stdlib, Ffi, buffer))
+for (let k in pool) { 
+    Ffi['pool_'+k] = pool[k] 
+}

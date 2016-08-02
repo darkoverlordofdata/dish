@@ -12,13 +12,11 @@ System.register("ffi", [], function(exports_1, context_1) {
             HEAP_SIZE = 0x40000;
             Ffi = (function () {
                 function Ffi() { }
-                Ffi.exceptions = {
-                    EntityIsNotEnabledException: function () {
-                        throw new Error('EntityIsNotEnabledException');
-                    },
-                    EntityAlreadyHasComponentException: function () {
-                        throw new Error('EntityAlreadyHasComponentException');
-                    }
+                Ffi.EntityIsNotEnabledException = function () {
+                    throw new Error('EntityIsNotEnabledException');
+                };
+                Ffi.EntityAlreadyHasComponentException = function (index) {
+                    throw new Error("EntityAlreadyHasComponentException - " + index);
                 };
                 Ffi.now = function () {
                     return performance.now();
@@ -111,7 +109,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 stdlib_1 = stdlib_1_1;
             }],
         execute: function() {
-            exports_3("entity", entity = ffi_1.default["entity"] = (function (stdlib, foreign, heap) {
+            exports_3("entity", entity = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
@@ -185,6 +183,9 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     setComponent: setComponent,
                 };
             }(stdlib_1.default, ffi_1.default, ffi_2.buffer)));
+            for (var k in entity) {
+                ffi_1.default['entity_' + k] = entity[k];
+            }
         }
     }
 });
@@ -203,7 +204,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 stdlib_2 = stdlib_2_1;
             }],
         execute: function() {
-            exports_4("pool", pool = ffi_3.default["pool"] = (function (stdlib, foreign, heap) {
+            exports_4("pool", pool = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
@@ -214,14 +215,14 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var HEAPF32 = new stdlib.Float32Array(heap);
                 var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
-                var entity_getId = foreign.entity.entity_getId;
-                var entity_setId = foreign.entity.entity_setId;
-                var entity_getEnabled = foreign.entity.entity_getEnabled;
-                var entity_setEnabled = foreign.entity.entity_setEnabled;
-                var entity_getComponent = foreign.entity.entity_getComponent;
-                var entity_setComponent = foreign.entity.entity_setComponent;
-                var EntityIsNotEnabledException = foreign.exceptions.EntityIsNotEnabledException;
-                var EntityAlreadyHasComponentException = foreign.exceptions.EntityAlreadyHasComponentException;
+                var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
+                var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
+                var entity_getId = foreign.entity_getId;
+                var entity_setId = foreign.entity_setId;
+                var entity_getEnabled = foreign.entity_getEnabled;
+                var entity_setEnabled = foreign.entity_setEnabled;
+                var entity_getComponent = foreign.entity_getComponent;
+                var entity_setComponent = foreign.entity_setComponent;
                 var POOL_SIZE = 4096;
                 var init = 1;
                 var pool = 0;
@@ -249,12 +250,12 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var __01__ = 0, __02__ = 0;
                     if (init) {
                         totalComponents = count;
-                        __01__ = COMPONENTS * 4 | 0;
+                        __01__ = 4 * 4 | 0;
                         __02__ = count * 4 | 0;
                         entitySize = __02__ + __01__ | 0;
                         uniqueId = 0;
                         pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
-                        init = false;
+                        init = 0;
                     }
                 }
                 function getTotalComponents() {
@@ -266,24 +267,20 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     return count | 0;
                 }
                 function createEntity() {
-                    var __00__ = 0;
+                    var __01__ = 0, __02__ = 0;
                     var entity = 0;
                     var i = 0;
-                    entity = (malloc(2 << 2) | 0) >> 2;
-                    HEAPI32[(entity + 0) << 2 >> 2] = int;
-                    HEAPI32[(entity + 1) << 2 >> 2] = entitySize;
+                    entity = (malloc(entitySize << 2) | 0) >> 2;
+                    __01__ = entity + 0 | 0;
+                    __02__ = __01__ << 2;
+                    HEAPI32[__02__ >> 2] = 42 | 0;
                     uniqueId = uniqueId + 1 | 0;
-                    entity_setId(entity, uniqueId);
-                    entity_setEnabled(entity, true);
-                    for (i = 0; (i | 0) < totalComponents; i = i + 1 | 0) {
-                        entity_setComponent(entity, i, 0);
-                    }
+                    entity_setId(entity | 0, uniqueId | 0);
                     return entity | 0;
                 }
                 function destroyEntity(entity) {
                     entity = entity | 0;
                     var __00__ = 0;
-                    free(entity);
                 }
                 function destroyAllEntities() {
                     var __00__ = 0;
@@ -322,8 +319,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     index = index | 0;
                     component = component | 0;
                     var __00__ = 0;
-                    entity_setComponent(entity, index, component);
-                    onComponentAdded(entity, index, component);
                 }
                 function removeComponent(entity, index) {
                     entity = entity | 0;
@@ -334,11 +329,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    var __00__ = 0;
-                }
-                function getComponent(entity, index) {
-                    entity = entity | 0;
-                    index = index | 0;
                     var __00__ = 0;
                 }
                 function hasComponent(entity, index) {
@@ -363,10 +353,12 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     addComponent: addComponent,
                     removeComponent: removeComponent,
                     replaceComponent: replaceComponent,
-                    getComponent: getComponent,
                     hasComponent: hasComponent,
                 };
             }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
+            for (var k in pool) {
+                ffi_3.default['pool_' + k] = pool[k];
+            }
         }
     }
 });
@@ -383,8 +375,12 @@ Promise.all(['entity', 'pool'].map(function (x) {
         it('Pool', function () {
             return expect(pool).to.not.equal(null);
         });
-        return it('Entity', function () {
+        it('Entity', function () {
             return expect(entity).to.not.equal(null);
+        });
+        return it('CreateEntity', function () {
+            entity = pool.createEntity();
+            return expect(pool.test(entity, 0)).to.equal(1);
         });
     });
 }, function (err) {

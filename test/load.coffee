@@ -13,9 +13,9 @@ Promise.all(['entity', 'pool'].map((x) ->
       it 'Entity', ->
         expect(entity).to.not.equal(null) 
 
-      # it 'CreateEntity', ->
-      #   entity = pool.createEntity()
-      #   expect(pool.test(entity, 0)).to.equal(1)
+      it 'CreateEntity', ->
+        entity = pool.createEntity()
+        expect(pool.test(entity, 0)).to.equal(1)
 
 
   , (err) -> console.log err

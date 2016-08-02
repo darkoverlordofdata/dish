@@ -485,7 +485,6 @@ function parse(input, mangle) {
             }
         }
         const ast = parseExp(tokens.join(' '))
-        //console.log(name, ast)
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const sym = symtbl[currentScope][name]||symtbl['global'][name]
@@ -914,9 +913,13 @@ function parse(input, mangle) {
         expect('=')
         const libname = input.next()
         const source = libname.value === 'Math' ? 'stdlib' : 'foreign'
-        expect('.')
-        const method = input.next()
-        return factory.ImportDeclaration(source, libname.value, name.value)
+        if (match('.')) {
+            expect('.')
+            const method = input.next()
+            return factory.ImportDeclaration(source, `${libname.value}_${name.value}`)
+        } else {
+            return factory.ImportDeclaration(source, name.value)
+        }
     }
 
     /**

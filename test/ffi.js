@@ -10,13 +10,12 @@ HEAP_SIZE = 0x40000;
 Ffi = (function() {
   function Ffi() {}
 
-  Ffi.exceptions = {
-    EntityIsNotEnabledException: function() {
-      throw new Error('EntityIsNotEnabledException');
-    },
-    EntityAlreadyHasComponentException: function() {
-      throw new Error('EntityAlreadyHasComponentException');
-    }
+  Ffi.EntityIsNotEnabledException = function() {
+    throw new Error('EntityIsNotEnabledException');
+  };
+
+  Ffi.EntityAlreadyHasComponentException = function(index) {
+    throw new Error("EntityAlreadyHasComponentException - " + index);
   };
 
   Ffi.now = function() {
