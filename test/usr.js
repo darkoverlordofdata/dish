@@ -3,23 +3,16 @@
 /*
 ## Foreign function interface
  */
-var Ffi, HEAP, HEAP_SIZE, allocator;
+var HEAP, HEAP_SIZE, Usr, allocator, buffer;
 
 HEAP_SIZE = 0x40000;
 
-Ffi = (function() {
-  function Ffi() {}
+buffer = new ArrayBuffer(HEAP_SIZE);
 
-  Ffi.exceptions = {
-    EntityIsNotEnabledException: function() {
-      throw new Error('EntityIsNotEnabledException');
-    },
-    EntityAlreadyHasComponentException: function() {
-      throw new Error('EntityAlreadyHasComponentException');
-    }
-  };
+Usr = (function() {
+  function Usr() {}
 
-  Ffi.now = function() {
+  Usr.now = function() {
     return performance.now();
   };
 
@@ -31,7 +24,7 @@ Ffi = (function() {
    * @returns starting offset in the heap
    */
 
-  Ffi.malloc = function(nBytes) {
+  Usr.malloc = function(nBytes) {
     var offset;
     if (typeof malloc !== "undefined" && malloc !== null) {
       return allocator.alloc(nBytes);
@@ -48,23 +41,15 @@ Ffi = (function() {
     }
   };
 
-  Ffi.free = function(addr) {
+  Usr.free = function(addr) {
     if (typeof malloc !== "undefined" && malloc !== null) {
       return allocator.free(addr);
     }
   };
 
-  return Ffi;
+  return Usr;
 
 })();
-
-export default Ffi;
-
-export const buffer = new ArrayBuffer(HEAP_SIZE);
-
-export const foreign = Ffi;
-
-export const bufferMax = HEAP_SIZE;
 
 if (typeof malloc !== "undefined" && malloc !== null) {
   allocator = new malloc.Allocator(buffer);

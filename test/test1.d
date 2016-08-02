@@ -43,3 +43,23 @@ export int values(int i) {
     return value;
 
 }
+
+int setEntityId(int entity, int id) {
+    entity[0] = id;
+    return entity;
+}
+
+export int createEntity() {
+    int[] entity;
+    entity = new int[20];
+    entity = setEntityId(entity, 42);
+    return entity;
+}
+
+export int createEntity2() {
+    int[] entity;
+    entity = createEntity();
+    return entity;
+    
+}
+

@@ -6,12 +6,10 @@
         "outFile": "web/app.js"
     },
     "files": [
-        "test/stdlib.js",
         "test/ffi.js",
-        "test/test-twister.js",
-        "test/mt19937.js",
-        "test/test1.js",
-        "test/test2.js",
+        "test/stdlib.js",
+        "test/entity.js",
+        "test/pool.js",
         "test/load.js"
     ]
 }

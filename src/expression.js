@@ -99,6 +99,7 @@ class Triad {
 
     cast(type, value) {
         switch (type) {
+            case 'bool':    return '(('+value+')|0)'
             case 'uint':    return '(('+value+')|0)'
             case 'int':     return '(('+value+')|0)'
             case 'double':  return '+('+value+')'
@@ -172,9 +173,8 @@ function transpile(tokens, symbol, index, mangle) {
     if (index == null) {
         code[code.length-1].name = name
     } else {
-        code.push(new Triad(name, type, result.node.name))
+        code.push(new Triad(name, type, result.node.name || result.node.value))
     }
-
     return code
 
     function createVar() {

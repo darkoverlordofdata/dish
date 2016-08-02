@@ -9,6 +9,7 @@ const Token = require('./Token')
 module.exports = {
     ImportDeclaration: ImportDeclaration,
     ExportDeclaration: ExportDeclaration,
+    BoolDeclaration: BoolDeclaration,
     IntDeclaration: IntDeclaration,
     FloatDeclaration: FloatDeclaration,
     DoubleDeclaration: DoubleDeclaration,
@@ -343,6 +344,32 @@ function IntParameter(name) {
         }
     }
 }
+/**
+ * int <name>;
+ * 
+ * <|> var <name> = 0;
+ */
+function BoolDeclaration(name, init) {
+    return {
+        "type": "VariableDeclaration",
+        "declarations": [
+            {
+                "type": "VariableDeclarator",
+                "id": {
+                    "type": "Identifier",
+                    "name": name
+                },
+                "init": init || {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                }
+            }
+        ],
+        "kind": "var"
+    }
+}
+
 /**
  * int <name>;
  * 

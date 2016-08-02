@@ -3,14 +3,9 @@
 ###
 
 HEAP_SIZE = 0x40000
+buffer = new ArrayBuffer(HEAP_SIZE)
 
-class Ffi
-
-    @exceptions:
-        EntityIsNotEnabledException:() ->
-            throw new Error('EntityIsNotEnabledException')
-        EntityAlreadyHasComponentException:(index) ->
-            throw new Error("EntityAlreadyHasComponentException - #{index}")
+class Usr
     
 
     @now: -> performance.now()
@@ -35,11 +30,6 @@ class Ffi
 
     @free:(addr) ->
         if malloc? then allocator.free(addr)
-
-`export default Ffi`  
-`export const buffer = new ArrayBuffer(HEAP_SIZE)`
-`export const foreign = Ffi`  
-`export const bufferMax = HEAP_SIZE`
 
 if malloc?
     allocator = new malloc.Allocator(buffer) 

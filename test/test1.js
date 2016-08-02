@@ -52,10 +52,34 @@ function values(i) {
     __02__ = __01__ << 2;
     result = HEAPI32[__02__ >> 2] | 0;
     return value | 0;
+}
+function setEntityId(entity, id) {
+    entity = entity | 0;
+    id = id | 0;
+    var __01__ = 0, __02__ = 0;
+    __01__ = entity + 0 | 0;
+    __02__ = __01__ << 2;
+    HEAPI32[__02__ >> 2] = id | 0;
+    return entity | 0;
+}
+function createEntity() {
+    var __00__ = 0;
+    var entity = 0;
+    entity = (malloc(20 << 2) | 0) >> 2;
+    entity = setEntityId(entity, 42);
+    return entity | 0;
+}
+function createEntity2() {
+    var __00__ = 0;
+    var entity = 0;
+    entity = createEntity();
+    return entity | 0;
 }    
 return { 
     factorial:factorial,
     alloc:alloc,
-    values:values, 
+    values:values,
+    createEntity:createEntity,
+    createEntity2:createEntity2, 
 };
 }(Stdlib, Ffi, buffer))

@@ -22,12 +22,14 @@ class Symbol {
         this.array = array || false
         this.immutable = immutable || false
         switch(type) {
+            case 'bool': this.size = 2; break
             case 'uint': this.size = 2; break
             case 'int': this.size = 2; break
             case 'float': this.size = 2; break
             case 'double': this.size = 3; break
         }
         switch(type) {
+            case 'bool': this.heap = 'HEAPI32'; break
             case 'uint': this.heap = 'HEAPU32'; break
             case 'int': this.heap = 'HEAPI32'; break
             case 'float': this.heap = 'HEAPF32'; break
@@ -151,6 +153,7 @@ function parse(input, mangle) {
      */
     function parseGlobal() {
         //=================================
+        if (matchKeyword('bool'))   return parseBool()
         if (matchKeyword('const'))  return parseConst()
         if (matchKeyword('double')) return parseDouble()
         if (matchKeyword('export')) return parseExport()
@@ -170,6 +173,7 @@ function parse(input, mangle) {
      * defined in procedure scope. 
      */
     function parseStatement(body) {
+        if (matchKeyword('bool'))   return parseBool(currentScope)
         if (matchKeyword('const'))  return parseConst(currentScope)
         if (matchKeyword('double')) return parseDouble(currentScope)
         if (matchKeyword('float'))  return parseFloat32(currentScope)
@@ -262,6 +266,7 @@ function parse(input, mangle) {
                         switch(symtbl[scope][token.value].type) {
                             case 'int':    
                             case 'uint':    
+                            case 'bool':
                                 temp.push(new Token(Token.Delimiter, '('))
                                 temp.push(token)
                                 temp.push(new Token(Token.Delimiter, '|'))
@@ -343,6 +348,7 @@ function parse(input, mangle) {
             symtbl[name.value][args[i].name.value] = new Symbol(args[i].name.value, args[i].type.value)
 
             switch(args[i].type.value) {
+                case 'bool':    body.push(factory.IntParameter(args[i].name)); break
                 case 'uint':    body.push(factory.IntParameter(args[i].name)); break
                 case 'int':     body.push(factory.IntParameter(args[i].name)); break
                 case 'float':   body.push(factory.FloatParameter(args[i].name)); break
@@ -426,6 +432,10 @@ function parse(input, mangle) {
                     expectKeyword('uint')
                     size = 2
                     heapu32 = true
+                } else if (matchKeyword('bool')) {
+                    expectKeyword('bool')
+                    size = 2
+                    heapu32 = true
                 } else if (matchKeyword('float')) {
                     expectKeyword('float')
                     size = 2
@@ -435,7 +445,7 @@ function parse(input, mangle) {
                     size = 3
                     heapf64 = true
                 } else {
-                    input.raise('Expecting type: [int|uint|float|double]')
+                    input.raise('Expecting type: [bool|int|uint|float|double]')
                 }
                 expect('[')
                 while (!match(']')) {
@@ -475,6 +485,8 @@ function parse(input, mangle) {
             }
         }
         const ast = parseExp(tokens.join(' '))
+        //console.log(name, ast)
+
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const sym = symtbl[currentScope][name]||symtbl['global'][name]
             const lhsvalue = index.length===0?null:parseExp(index.join(' '))
@@ -583,6 +595,52 @@ function parse(input, mangle) {
         
     }
 
+    function parseBool(scope) {
+        scope = scope || 'global'
+        let isArray = false
+        expectKeyword('bool')
+        if (match('[')) {
+            expect('[')
+            expect(']')
+            isArray = true
+            malloc = true
+            heapi32 = true
+        }
+        const name = input.next()
+        if (input.peek().value === '(') { /** function definition */
+            if (isArray) {
+                input.raise('Syntax Error: array found')
+            }
+            symtbl[scope][name.value] = new Symbol(name.value, 'bool', true)
+            return parseFunction(scope, 'bool', name)
+
+        } else if (match('=')) { /** initialization */
+            expect('=')
+            let tokens = []
+            while (!match(';')) {
+                let b = input.next().value
+                switch (b) {
+                    case 'true': tokens.push('1'); break 
+                    case 'false': tokens.push('0'); break
+                    default: tokens.push(b)
+                }
+            }
+            symtbl[scope][name.value] = new Symbol(name.value, 'bool', false, tokens, isArray)
+            if (scope === 'global') {
+                return factory.IntDeclaration(name.value, {
+                    "type":     "Literal",
+                    "value":    parseInt(tokens.join(''), 10),
+                    "raw":      parseInt(tokens.join(''), 10)
+                })
+            } else  {
+                return factory.IntDeclaration(name.value) 
+            }
+
+        } else {
+            symtbl[scope][name.value] = new Symbol(name.value, 'bool', false, '', isArray)
+            return factory.IntDeclaration(name.value)
+        }
+    }
 
     function parseBreak() {
         expectKeyword('break')
@@ -665,6 +723,13 @@ function parse(input, mangle) {
             exporting[name.value] = name.value
             input.putBack()
             return parseInt32()
+        }
+        if (matchKeyword('bool')) {
+            expectKeyword('bool')
+            const name = input.peek()
+            exporting[name.value] = name.value
+            input.putBack()
+            return parseBool()
         }
         if (matchKeyword('uint')) {
             expectKeyword('uint')
@@ -894,6 +959,7 @@ function parse(input, mangle) {
 
             let castExpression = ''
             switch(symtbl.global[currentScope].type) {
+                case 'bool':    castExpression = '(('+tokens.join(' ')+')|0)'; break
                 case 'uint':    castExpression = '(('+tokens.join(' ')+')|0)'; break
                 case 'int':     castExpression = '(('+tokens.join(' ')+')|0)'; break
                 case 'double':  castExpression = '+('+tokens.join(' ')+')'; break

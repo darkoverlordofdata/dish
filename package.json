@@ -4,7 +4,8 @@
   "description": "d?ish is a dlike language that transpiles to asmjs (I hope)",
   "main": "index.js",
   "scripts": {
-    "_vscode_build": "coffee -bc ./src/dish.coffee && coffee -bc ./test && node ./src/dish.js test/test1.d --template test/test.tpl.js --output test/test1.js && node ./src/dish.js test/test2.d --template test/test.tpl.js --output test/test2.js && node ./src/dish.js test/test-twister.d --template test/test.tpl.js --output test/test-twister.js && tsc -p ./jsconfig.json",
+    "_vscode_build": "coffee -bc ./src/dish.coffee && coffee -bc ./test && node ./src/dish.js test/entity.d --template test/test.tpl.js --output test/entity.js && node ./src/dish.js test/pool.d --template test/test.tpl.js --output test/pool.js && tsc -p ./jsconfig.json",
+    "_vscode_test": "coffee -bc ./src/dish.coffee && coffee -bc ./test && node ./src/dish.js test/test1.d --template test/test.tpl.js --output test/test1.js && node ./src/dish.js test/test2.d --template test/test.tpl.js --output test/test2.js && node ./src/dish.js test/test-twister.d --template test/test.tpl.js --output test/test-twister.js && tsc -p ./jsconfig.json",
     "publish": "gulp publish",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
