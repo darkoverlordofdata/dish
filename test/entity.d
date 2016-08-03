@@ -5,7 +5,7 @@ export int create(int totalComponents) {
     int e;
     int entitySize;
     
-    entitySize = totalComponents*4+4*4;
+    entitySize = totalComponents*4+4+4;
     e = new int[entitySize];
     return e;
 

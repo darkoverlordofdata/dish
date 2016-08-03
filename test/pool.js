@@ -13,6 +13,7 @@ var HEAPU32 = new stdlib.Uint32Array(heap);
 var HEAPF32 = new stdlib.Float32Array(heap);
 var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
+var free = foreign.free;
 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
 var entity_create = foreign.entity_create;
@@ -28,8 +29,31 @@ var pool = 0;
 var totalComponents = 0;
 var count = 0;
 var index = 0;
-var entitySize = 0;
 var uniqueId = 0;
+function inc(i) {
+    i = i | 0;
+    var __00__ = 0;
+    var k = 0;
+    k = i + 1 | 0;
+    return k | 0;
+}
+function testInc() {
+    var __01__ = 0;
+    var i = 0;
+    var j = 0;
+    var k = 0;
+    i = 0;
+    while ((i | 0) < 32767) {
+        j = 0;
+        while ((j | 0) < 32767) {
+            __01__ = 32 >> 2;
+            k = j & __01__;
+            j = j + 1 | 0;
+        }
+        i = i + 1 | 0;
+    }
+    return k | 0;
+}
 function test(ptr, i) {
     ptr = ptr | 0;
     i = i | 0;
@@ -46,16 +70,14 @@ function test(ptr, i) {
 }
 function initialize(count) {
     count = count | 0;
-    var __01__ = 0, __02__ = 0;
+    var __00__ = 0;
     if (init) {
         totalComponents = count;
-        __01__ = 4 * 4 | 0;
-        __02__ = count * 4 | 0;
-        entitySize = __02__ + __01__ | 0;
         uniqueId = 0;
         pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
         init = 0;
     }
+    return init | 0;
 }
 function getTotalComponents() {
     var __00__ = 0;
@@ -69,7 +91,6 @@ function createEntity() {
     var __00__ = 0;
     var entity = 0;
     var i = 0;
-    entity = (malloc(entitySize << 2) | 0) >> 2;
     entity = entity_create(totalComponents | 0) | 0;
     uniqueId = uniqueId + 1 | 0;
     entity_setId(entity | 0, uniqueId | 0);
@@ -82,6 +103,7 @@ function createEntity() {
 function destroyEntity(entity) {
     entity = entity | 0;
     var __00__ = 0;
+    free(entity | 0);
 }
 function destroyAllEntities() {
     var __00__ = 0;
@@ -138,6 +160,7 @@ function hasComponent(entity, index) {
     var __00__ = 0;
 }    
 return { 
+    testInc:testInc,
     test:test,
     initialize:initialize,
     getTotalComponents:getTotalComponents,

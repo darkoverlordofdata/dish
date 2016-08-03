@@ -6,6 +6,7 @@ module pool;
 import EntityIsNotEnabledException = EntityIsNotEnabledException;
 import EntityAlreadyHasComponentException = EntityAlreadyHasComponentException;
 
+/** import entity methods */
 import create = entity.create;
 import getId = entity.getId;
 import setId = entity.setId;
@@ -20,8 +21,30 @@ int[] pool;
 int totalComponents;
 int count;
 int index;
-int entitySize;
 int uniqueId;
+
+int inc(int i) {
+    int k;
+    k = i+1;
+    return k;
+}
+
+export int testInc() {
+    int i;
+    int j;
+    int k;
+
+    i = 0;
+    while(i<32767) {
+        j = 0;
+        while(j<32767) {
+            k = j&32>>2; 
+            j = j+1;
+        }
+        i = i+1;
+    }
+    return k;
+}
 
 export int test(int ptr, int i) {
     double x;
@@ -38,11 +61,11 @@ export int test(int ptr, int i) {
 export int initialize(int count) {
     if (init) {
         totalComponents = count;
-        entitySize = count*4+4*4;
         uniqueId = 0;
         pool = new int[POOL_SIZE];
         init = 0;
     }
+    return init;
 }
 
 export int getTotalComponents() {
@@ -57,7 +80,7 @@ export int createEntity() {
     
     int[] entity;
     int i;
-    entity = new int[entitySize];
+
     entity = entity_create(totalComponents|0);
 
     uniqueId = uniqueId+1;
@@ -72,7 +95,7 @@ export int createEntity() {
 }
 
 export int destroyEntity(int entity) {
-    //free(entity);
+    free(entity|0);
 }
 
 export int destroyAllEntities() {

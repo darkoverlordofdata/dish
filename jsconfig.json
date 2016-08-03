@@ -10,6 +10,7 @@
         "test/stdlib.js",
         "test/entity.js",
         "test/pool.js",
+        "test/mt19937.js",
         "test/load.js"
     ]
 }

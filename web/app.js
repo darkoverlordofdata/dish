@@ -110,7 +110,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
             }],
         execute: function() {
             exports_3("entity", entity = (function (stdlib, foreign, heap) {
-                "use asm";
+                
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
                 var HEAPI16 = new stdlib.Int16Array(heap);
@@ -120,14 +120,15 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPF32 = new stdlib.Float32Array(heap);
                 var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
+                var free = foreign.free;
                 function create(totalComponents) {
                     totalComponents = totalComponents | 0;
                     var __01__ = 0, __02__ = 0;
                     var e = 0;
                     var entitySize = 0;
-                    __01__ = 4 * 4 | 0;
-                    __02__ = totalComponents * 4 | 0;
-                    entitySize = __02__ + __01__ | 0;
+                    __01__ = totalComponents * 4 | 0;
+                    __02__ = __01__ + 4 | 0;
+                    entitySize = __02__ + 4 | 0;
                     e = (malloc(entitySize << 2) | 0) >> 2;
                     return e | 0;
                 }
@@ -218,7 +219,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
             }],
         execute: function() {
             exports_4("pool", pool = (function (stdlib, foreign, heap) {
-                "use asm";
+                
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
                 var HEAPI16 = new stdlib.Int16Array(heap);
@@ -228,6 +229,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var HEAPF32 = new stdlib.Float32Array(heap);
                 var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
+                var free = foreign.free;
                 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
                 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
                 var entity_create = foreign.entity_create;
@@ -243,8 +245,31 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var totalComponents = 0;
                 var count = 0;
                 var index = 0;
-                var entitySize = 0;
                 var uniqueId = 0;
+                function inc(i) {
+                    i = i | 0;
+                    var __00__ = 0;
+                    var k = 0;
+                    k = i + 1 | 0;
+                    return k | 0;
+                }
+                function testInc() {
+                    var __01__ = 0;
+                    var i = 0;
+                    var j = 0;
+                    var k = 0;
+                    i = 0;
+                    while ((i | 0) < 32767) {
+                        j = 0;
+                        while ((j | 0) < 32767) {
+                            __01__ = 32 >> 2;
+                            k = j & __01__;
+                            j = j + 1 | 0;
+                        }
+                        i = i + 1 | 0;
+                    }
+                    return k | 0;
+                }
                 function test(ptr, i) {
                     ptr = ptr | 0;
                     i = i | 0;
@@ -261,16 +286,14 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 }
                 function initialize(count) {
                     count = count | 0;
-                    var __01__ = 0, __02__ = 0;
+                    var __00__ = 0;
                     if (init) {
                         totalComponents = count;
-                        __01__ = 4 * 4 | 0;
-                        __02__ = count * 4 | 0;
-                        entitySize = __02__ + __01__ | 0;
                         uniqueId = 0;
                         pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
                         init = 0;
                     }
+                    return init | 0;
                 }
                 function getTotalComponents() {
                     var __00__ = 0;
@@ -284,7 +307,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var __00__ = 0;
                     var entity = 0;
                     var i = 0;
-                    entity = (malloc(entitySize << 2) | 0) >> 2;
                     entity = entity_create(totalComponents | 0) | 0;
                     uniqueId = uniqueId + 1 | 0;
                     entity_setId(entity | 0, uniqueId | 0);
@@ -297,6 +319,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 function destroyEntity(entity) {
                     entity = entity | 0;
                     var __00__ = 0;
+                    free(entity | 0);
                 }
                 function destroyAllEntities() {
                     var __00__ = 0;
@@ -353,6 +376,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var __00__ = 0;
                 }
                 return {
+                    testInc: testInc,
                     test: test,
                     initialize: initialize,
                     getTotalComponents: getTotalComponents,
@@ -378,25 +402,191 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
         }
     }
 });
+System.register("mt19937", ["ffi", "stdlib"], function(exports_5, context_5) {
+    "use strict";
+    var __moduleName = context_5 && context_5.id;
+    var ffi_5, ffi_6, stdlib_3;
+    var mt19937;
+    return {
+        setters:[
+            function (ffi_5_1) {
+                ffi_5 = ffi_5_1;
+                ffi_6 = ffi_5_1;
+            },
+            function (stdlib_3_1) {
+                stdlib_3 = stdlib_3_1;
+            }],
+        execute: function() {
+            exports_5("mt19937", mt19937 = (function (stdlib, foreign, heap) {
+                
+                var HEAP = new stdlib.Uint32Array(heap);
+                var malloc = foreign.malloc;
+                var imul = stdlib.Math.imul;
+                var N = 624;
+                var M = 397;
+                var MATRIX_A = 0x9908b0df; /* constant vector a */
+                var UPPER_MASK = 0x80000000; /* most significant w-r bits */
+                var LOWER_MASK = 0x7fffffff; /* least significant r bits */
+                var mt = 0; /* ptr -> the array for the state vector  */
+                var mti = 625; /* mti==N+1 means mt[N] is not initialized */
+                var T = 0;
+                /* initializes mt[N] with a seed */
+                function init_genrand(s) {
+                    s = s | 0;
+                    var r1 = 0.0;
+                    var r2 = 0.0;
+                    var r3 = 0.0;
+                    var r4 = 0.0;
+                    var t2 = 0;
+                    var t3 = 0;
+                    var t4 = 0;
+                    var $0 = 0;
+                    var $1 = 0;
+                    var $2 = 0;
+                    var $3 = 0;
+                    r1 = +1812433253;
+                    mt = malloc(N << 3) | 0; // malloc(N*sizeof(int))
+                    $0 = mt << 2;
+                    HEAP[mt >> 2] = s & 0xffffffff;
+                    for (mti = 1; (mti | 0) < (N | 0); mti = mti + 1 | 0) {
+                        $0 = (mt + mti - 1) << 2;
+                        r2 = +(HEAP[$0 >> 2] ^ (HEAP[$0 >> 2] >> 30));
+                        t2 = ~~(r2);
+                        // if (mti<6) console.log('t2 = ', t2);
+                        r3 = r1 * r2;
+                        t3 = ~~(r3);
+                        $0 = (mt + mti) << 2;
+                        HEAP[$0 >> 2] = (t3 + mti) | 0; //t3 + mti | 0;
+                        t4 = HEAP[$0 >> 2] | 0;
+                    }
+                }
+                /* generates a random number on [0,0xffffffff]-interval */
+                function genrand_int32() {
+                    var y = 0;
+                    var mag01 = 0;
+                    var kk = 0;
+                    var $0 = 0;
+                    var $1 = 0;
+                    var $2 = 0;
+                    var $3 = 0;
+                    mag01 = malloc(2 << 3) | 0;
+                    $0 = mag01 << 2;
+                    HEAP[$0 >> 2] = 0;
+                    $0 = (mag01 + 1) << 2;
+                    HEAP[$0 >> 2] = MATRIX_A;
+                    if ((mti | 0) >= (N | 0)) {
+                        if ((mti | 0) == (N + 1 | 0))
+                            init_genrand(5489); /* a default initial seed is used */
+                        //console.log('rand ', HEAP[mt+1])
+                        T = 0;
+                        // for (kk=0;kk<N-M;kk++) {
+                        //     y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+                        //     //if (T++<5) console.log(y)
+                        //     mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1];
+                        // }
+                        for (kk = 0; (kk | 0) < (N - M | 0); kk = kk + 1 | 0) {
+                            $0 = (mt + kk) << 2;
+                            $1 = (mt + kk + 1) << 2;
+                            y = (HEAP[$0 >> 2] & UPPER_MASK) | (HEAP[$1 >> 2] & LOWER_MASK);
+                            //if (T++<5) console.log('y', y, kk, HEAP[mt+kk], HEAP[mt+kk+1])
+                            $1 = (mt + kk + M) << 2;
+                            $2 = (mag01 + (y & 1)) << 2;
+                            HEAP[$0 >> 2] = HEAP[$1 >> 2] ^ (y >> 1) ^ HEAP[$2 >> 2];
+                        }
+                        for (; (kk | 0) < (N - 1 | 0); kk = kk + 1 | 0) {
+                            $0 = (mt + kk) << 2;
+                            $1 = (mt + kk + 1) << 2;
+                            y = (HEAP[$0 >> 2] & UPPER_MASK) | (HEAP[$1 >> 2] & LOWER_MASK);
+                            $1 = (mt + kk + M - N) << 2;
+                            $2 = (mag01 + (y & 1)) << 2;
+                            HEAP[$0 >> 2] = HEAP[$1 >> 2] ^ (y >> 1) ^ HEAP[$2 >> 2];
+                        }
+                        $0 = (mt + N - 1) << 2;
+                        $1 = mt >> 2;
+                        $2 = (mt + M - 1) >> 2;
+                        $3 = (mag01 + (y & 1)) >> 2;
+                        y = (HEAP[$0 >> 2] & UPPER_MASK) | (HEAP[$1 >> 2] & LOWER_MASK);
+                        HEAP[$0 >> 2] = HEAP[$2 >> 2] ^ (y >> 1) ^ HEAP[$3 >> 2];
+                        mti = 0;
+                    }
+                    $0 = (mt + mti) << 2;
+                    y = HEAP[$0 >> 2] | 0;
+                    mti = mti + 1 | 0;
+                    /* Tempering */
+                    y = y ^ (y >> 11);
+                    y = y ^ (y << 7) & 0x9d2c5680;
+                    y = y ^ (y << 15) & 0xefc60000;
+                    y = y ^ (y >> 18);
+                    return y | 0;
+                }
+                return {
+                    genrand_int32: genrand_int32,
+                };
+            }(stdlib_3.default, ffi_5.default, ffi_6.buffer)));
+        }
+    }
+});
 // Generated by CoffeeScript 1.10.0
 /*
  * Run tests
  */
-Promise.all(['entity', 'pool'].map(function (x) {
+Promise.all(['entity', 'pool', 'mt19937'].map(function (x) {
     return System["import"](x);
 })).then(function (arg) {
-    var entity, pool, ref, ref1;
-    (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool);
-    return describe('Smoke Tests', function () {
+    var entity, mt19937, pool, ref, ref1, ref2;
+    (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], mt19937 = ref2.mt19937);
+    describe('Smoke Tests', function () {
         it('Pool', function () {
             return expect(pool).to.not.equal(null);
         });
         it('Entity', function () {
             return expect(entity).to.not.equal(null);
         });
-        return it('CreateEntity', function () {
-            entity = pool.createEntity();
-            return expect(pool.test(entity, 0)).to.equal(1);
+        it('Initialize', function () {
+            return expect(pool.initialize(10)).to.equal(0);
+        });
+        it('Create entity', function () {
+            var i, l;
+            entity = [];
+            for (i = l = 0; l <= 100; i = ++l) {
+                entity.push(pool.createEntity());
+            }
+            return expect(pool.test(entity[51], 0)).to.equal(52);
+        });
+        it('Repeat JS', function () {
+            var i, j, k, l, m;
+            for (i = l = 0; l <= 32767; i = ++l) {
+                for (j = m = 0; m <= 32767; j = ++m) {
+                    k = j & 32 >> 2;
+                }
+            }
+            return expect(k).to.equal(8);
+        });
+        return it('Repeat Dish', function () {
+            return expect(pool.testInc()).to.equal(8);
+        });
+    });
+    return describe('MT19937', function () {
+        it('check', function () {
+            return expect(mt19937ar.genrand_int32()).to.equal(20535309);
+        });
+        it('time js', function () {
+            var i, j, l, m, z;
+            for (i = l = 0; l <= 1000; i = ++l) {
+                for (j = m = 0; m <= 32767; j = ++m) {
+                    z = mt19937ar.genrand_int32();
+                }
+            }
+            return expect(0).to.equal(0);
+        });
+        return it('time dish', function () {
+            var i, j, l, m, z;
+            for (i = l = 0; l <= 1000; i = ++l) {
+                for (j = m = 0; m <= 32767; j = ++m) {
+                    z = mt19937.genrand_int32();
+                }
+            }
+            return expect(0).to.equal(0);
         });
     });
 }, function (err) {
