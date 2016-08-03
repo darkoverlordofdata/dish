@@ -6,14 +6,13 @@ module pool;
 import EntityIsNotEnabledException = EntityIsNotEnabledException;
 import EntityAlreadyHasComponentException = EntityAlreadyHasComponentException;
 
+import create = entity.create;
 import getId = entity.getId;
 import setId = entity.setId;
 import getEnabled = entity.getEnabled;
 import setEnabled = entity.setEnabled;
 import getComponent = entity.getComponent
 import setComponent = entity.setComponent
-
-
 
 const int POOL_SIZE = 0x1000;
 bool init = true;
@@ -55,18 +54,20 @@ export int getCount() {
 }
 
 export int createEntity() {
+    
     int[] entity;
     int i;
     entity = new int[entitySize];
-    //entity[0] = 42;
+    entity = entity_create(totalComponents|0);
 
     uniqueId = uniqueId+1;
-    entity_setId(entity, uniqueId);
-    // setEnabled(entity, true);
 
-    // for (i=0; i<totalComponents; i++) {
-    //     setComponent(entity, i, 0);
-    // }
+    entity_setId(entity|0, uniqueId|0);
+    entity_setEnabled(entity|0, 1|0);
+
+    for (i=0; i<(totalComponents|0); i++) {
+        entity_setComponent(entity|0, i|0, 0|0);
+    }
     return entity;
 }
 

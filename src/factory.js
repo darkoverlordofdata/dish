@@ -30,7 +30,8 @@ module.exports = {
     AssignmentExpression: AssignmentExpression,
     Return: Return,
     Print: Print,
-    New: New
+    New: New,
+    AssignmentStatementCallInt: AssignmentStatementCallInt
 }
 
 function clone(obj) {
@@ -184,6 +185,7 @@ function BreakStatement() {
     }
 }
 
+
 function CallExpression(name, args) {
     return {
         "type": "ExpressionStatement",
@@ -194,6 +196,31 @@ function CallExpression(name, args) {
                 "name": name.value
             },
             "arguments": args || []
+        }
+    }
+}
+
+
+function AssignmentStatementCallInt(name, expression) {
+    return {
+        "type": "ExpressionStatement",
+        "expression": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+                "type": "Identifier",
+                "name": name
+            },
+            "right": {
+                "type": "BinaryExpression",
+                "operator": "|",
+                "left": expression,
+                "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                }
+            }
         }
     }
 }

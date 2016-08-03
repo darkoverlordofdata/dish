@@ -1,6 +1,15 @@
 
 module entity;
 
+export int create(int totalComponents) {
+    int e;
+    int entitySize;
+    
+    entitySize = totalComponents*4+4*4;
+    e = new int[entitySize];
+    return e;
+
+}
 
 export int getId(int entity) {
     int id;

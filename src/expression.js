@@ -41,8 +41,8 @@ class Term {
                 const argz = this.node.arguments
                 for (let arg in argz) {
                     switch(argz[arg].type) {
-                        case 'CallExpression':      console.log('Not Supported'); process.exit(0) 
-                        case 'BinaryExpression':    console.log('Not Supported'); process.exit(0) 
+                        case 'CallExpression':      console.log('Not Supported', argz[arg]); process.exit(0) 
+                        case 'BinaryExpression':    console.log('Not Supported', argz[arg]); process.exit(0) 
                         case 'Literal':             args.push(argz[arg].value); break
                         case 'Identifier':          args.push(argz[arg].name); break
                     }

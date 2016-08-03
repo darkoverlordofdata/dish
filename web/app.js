@@ -119,6 +119,18 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPU32 = new stdlib.Uint32Array(heap);
                 var HEAPF32 = new stdlib.Float32Array(heap);
                 var HEAPF64 = new stdlib.Float64Array(heap);
+                var malloc = foreign.malloc;
+                function create(totalComponents) {
+                    totalComponents = totalComponents | 0;
+                    var __01__ = 0, __02__ = 0;
+                    var e = 0;
+                    var entitySize = 0;
+                    __01__ = 4 * 4 | 0;
+                    __02__ = totalComponents * 4 | 0;
+                    entitySize = __02__ + __01__ | 0;
+                    e = (malloc(entitySize << 2) | 0) >> 2;
+                    return e | 0;
+                }
                 function getId(entity) {
                     entity = entity | 0;
                     var __01__ = 0, __02__ = 0;
@@ -175,6 +187,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     HEAPI32[__03__ >> 2] = value | 0;
                 }
                 return {
+                    create: create,
                     getId: getId,
                     setId: setId,
                     getEnabled: getEnabled,
@@ -217,6 +230,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var malloc = foreign.malloc;
                 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
                 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
+                var entity_create = foreign.entity_create;
                 var entity_getId = foreign.entity_getId;
                 var entity_setId = foreign.entity_setId;
                 var entity_getEnabled = foreign.entity_getEnabled;
@@ -267,15 +281,17 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     return count | 0;
                 }
                 function createEntity() {
-                    var __01__ = 0, __02__ = 0;
+                    var __00__ = 0;
                     var entity = 0;
                     var i = 0;
                     entity = (malloc(entitySize << 2) | 0) >> 2;
-                    __01__ = entity + 0 | 0;
-                    __02__ = __01__ << 2;
-                    HEAPI32[__02__ >> 2] = 42 | 0;
+                    entity = entity_create(totalComponents | 0) | 0;
                     uniqueId = uniqueId + 1 | 0;
                     entity_setId(entity | 0, uniqueId | 0);
+                    entity_setEnabled(entity | 0, 1 | 0);
+                    for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
+                        entity_setComponent(entity | 0, i | 0, 0 | 0);
+                    }
                     return entity | 0;
                 }
                 function destroyEntity(entity) {

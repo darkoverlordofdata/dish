@@ -12,6 +12,18 @@ var HEAPI32 = new stdlib.Int32Array(heap);
 var HEAPU32 = new stdlib.Uint32Array(heap);
 var HEAPF32 = new stdlib.Float32Array(heap);
 var HEAPF64 = new stdlib.Float64Array(heap);
+var malloc = foreign.malloc;
+function create(totalComponents) {
+    totalComponents = totalComponents | 0;
+    var __01__ = 0, __02__ = 0;
+    var e = 0;
+    var entitySize = 0;
+    __01__ = 4 * 4 | 0;
+    __02__ = totalComponents * 4 | 0;
+    entitySize = __02__ + __01__ | 0;
+    e = (malloc(entitySize << 2) | 0) >> 2;
+    return e | 0;
+}
 function getId(entity) {
     entity = entity | 0;
     var __01__ = 0, __02__ = 0;
@@ -68,6 +80,7 @@ function setComponent(entity, index, value) {
     HEAPI32[__03__ >> 2] = value | 0;
 }    
 return { 
+    create:create,
     getId:getId,
     setId:setId,
     getEnabled:getEnabled,

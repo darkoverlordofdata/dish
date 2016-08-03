@@ -382,7 +382,10 @@ function parse(input, mangle) {
         expect(')')
         const params = []
         for (let i=0; i<arg.length; i++) {
-            params.push(parseExp(arg[i]))
+            //TODO: Coerce params - p1|0, +p2, fround(p3)
+            let node = parseExp(arg[i])
+            //console.log('node', arg[i], node)
+            params.push(node)
         }
         return factory.CallExpression(name, params)
     }
@@ -485,9 +488,9 @@ function parse(input, mangle) {
             }
         }
         const ast = parseExp(tokens.join(' '))
+        const sym = symtbl[currentScope][name]||symtbl['global'][name]
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
-            const sym = symtbl[currentScope][name]||symtbl['global'][name]
             const lhsvalue = index.length===0?null:parseExp(index.join(' '))
             const lines = expression.transpile(ast, sym, lhsvalue, mangle)
             for (let l in lines) {
@@ -502,7 +505,26 @@ function parse(input, mangle) {
 
             }
         } else { /**  passthru simple assignment */
-            return factory.AssignmentStatement(name, ast)
+            console.log(name, ast)
+            let a;
+            switch (ast.type) {
+                case 'Literal':
+                    a = factory.AssignmentStatement(name, ast)
+                    //console.log(JSON.stringify(a, null, 2))
+                    return a
+                case 'Identifier':
+                    a = factory.AssignmentStatement(name, ast)
+                    //console.log(JSON.stringify(a, null, 2))
+                    return a
+                case 'CallExpression':
+                    console.log('CallExpression', sym.type)
+                    switch (sym.type) {
+                        case 'int': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'uint': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'float': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'double': return factory.AssignmentStatementCallInt(name, ast)
+                    }
+            }
         }
     }
 
