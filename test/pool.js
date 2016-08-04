@@ -37,6 +37,70 @@ function inc(i) {
     k = i + 1 | 0;
     return k | 0;
 }
+function fib(x) {
+    x = x | 0;
+    var __01__ = 0, __02__ = 0;
+    var result = 0;
+    var f1 = 0;
+    var f2 = 0;
+    var x1 = 0;
+    var x2 = 0;
+    var b = 0;
+    __01__ = 2 | 0;
+    __02__ = x | 0;
+    b = __02__ < __01__ | 0;
+    if (b | 0) {
+        result = 1 | 0;
+    } else {
+        x1 = x - 1 | 0;
+        x2 = x - 2 | 0;
+        f2 = fib(x2) | 0;
+        f1 = fib(x1) | 0;
+        result = f1 + f2 | 0;
+    }
+    return result | 0;
+}
+function fibz(x) {
+    x = x | 0;
+    var __01__ = 0, __02__ = 0;
+    var result = 0;
+    var f1 = 0;
+    var f2 = 0;
+    var x1 = 0;
+    var x2 = 0;
+    var b = 0;
+    var i = 0;
+    var a = 0;
+    var v1 = 0;
+    var v2 = 0;
+    var v3 = 0;
+    var v4 = 0;
+    var v5 = 0;
+    __01__ = 2 | 0;
+    __02__ = x | 0;
+    b = __02__ < __01__ | 0;
+    if (b | 0) {
+        result = 1 | 0;
+    } else {
+        i = 1;
+        a = x;
+        while (1) {
+            v1 = i - 1 | 0;
+            v2 = fibz(v1) | 0;
+            v3 = i - 2 | 0;
+            v4 = v2 + a | 0;
+            v5 = v3 < 2 | 0;
+            if (v5) {
+                result = v4;
+                return result | 0;
+            } else {
+                a = v4;
+                i = v3;
+            }
+        }
+    }
+    return result | 0;
+}
 function testInc() {
     var __01__ = 0;
     var i = 0;
@@ -160,6 +224,8 @@ function hasComponent(entity, index) {
     var __00__ = 0;
 }    
 return { 
+    fib:fib,
+    fibz:fibz,
     testInc:testInc,
     test:test,
     initialize:initialize,

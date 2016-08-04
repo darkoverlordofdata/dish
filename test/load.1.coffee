@@ -1,50 +1,59 @@
 ###
  * Run tests
- *import {buffer} from 'ffi'
 
 ###
-Promise.all(['ffi', 'test1', 'test2', 'test-twister', 'mt19937'].map((x) -> 
-  System.import(x))).then ([{buffer}, {test1}, {test2}, {MersenneTwister}, {mt19937}]) ->
-  # Promise.all(['test1', 'test2'].map((x) -> 
-  #   System.import(x))).then ([{test1}, {test2}]) ->
 
-    describe 'Basic Tests', ->
+
+
+
+Promise.all(['entity', 'pool', 'mt19937'].map((x) -> 
+  System.import(x))).then ([{entity}, {pool}, {mt19937}]) ->
+
+    describe 'Smoke Tests', ->
     
-      it 'Factorial', ->
-        expect(test1.factorial(10)).to.equal(45)
-        return
+      it 'Pool', ->
+        expect(pool).to.not.equal(null) 
 
-      it 'Alloc', ->
-        # initial heap ptr is 16 >> 2
-        expect(test1.alloc(10)).to.equal(if malloc? then 68 else 4)
-        expect(test1.alloc(10)).to.equal(if malloc? then 80 else 14)
-        return
+      it 'Entity', ->
+        expect(entity).to.not.equal(null) 
 
-      it 'List', ->
-        expect(test1.values()).to.equal(if malloc? then 92 else 24)
-        expect(test2.index((if malloc? then 92 else 24), 2)).to.equal(44)
-        return
 
-      it 'Random', ->
-        # compare to testResults from mt18827ar.js
-        expect(mt19937.genrand_int32()).to.equal(testResults[0])
-        expect(mt19937.genrand_int32()).to.equal(testResults[1])
-        expect(mt19937.genrand_int32()).to.equal(testResults[2])
-        expect(mt19937.genrand_int32()).to.equal(testResults[3])
-        expect(mt19937.genrand_int32()).to.equal(testResults[4])
-        return
+      it 'Initialize', ->
+        expect(pool.initialize(10)).to.equal(0)
 
-      it 'And', ->
-        # expect(test2.test().to.equal(20))
-        expect(test2.and(42)).to.equal(42)
+      it 'Create entity', ->
+        entity = []
+        for i in [0..100]
+          entity.push(pool.createEntity())
+        expect(pool.test(entity[51], 0)).to.equal(52)
 
-      # it 'MersenneTwister', ->
-      #   expect(MersenneTwister.genrand_int32()).to.equal(testResults[0]) #testResults[0])
+      it 'Repeat JS', ->
+        for i in [0..32767]
+          for j in [0..32767]
+            k = j&32>>2;
+        expect(k).to.equal(8)
 
-      it 'CreateEntity', ->
-        entity = test1.createEntity()
-        expect(test2.index(entity, 0)).to.equal(42)
+      it 'Repeat Dish', ->
+        expect(pool.testInc()).to.equal(8)
 
+    describe 'MT19937', ->
+
+      it 'check', ->
+        expect(mt19937ar.genrand_int32()).to.equal(20535309)
+
+      it 'time js', ->
+        for i in [0..1000]
+          for j in [0..32767]
+            z = mt19937ar.genrand_int32()
+
+        expect(0).to.equal(0)
+
+      it 'time dish', ->
+        for i in [0..1000]
+          for j in [0..32767]
+            z = mt19937.genrand_int32()
+
+        expect(0).to.equal(0)
 
   , (err) -> console.log err
 

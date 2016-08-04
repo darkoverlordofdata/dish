@@ -3,21 +3,29 @@
 ## /dē-ish/ 
 #### a language that targets asm.js
 
-## Performance Sux
-I've read a lot of performance hype, about asmjs but it's really relative, asmjs is mostly 
-a compatability layer for c++ rather than a performance tool.
-Simple while loops with counters are faster in plain old javascript. Even logical operations
-are faster in pojs. And, tellingly, large portions of the emscripten runtime are in pojs and 
-called from asmjs. 
-In some cases, the performance can be improved by removing the 'use asm' pragma. But it is still
-no better than pojs. In other cases, the performance doesn't improve. In any case, there is no
-point in using asm.js.
-
 
 ## Why?
 Emscripten is great if you have an entire c++ application to port to the browser.
-
 But what about creating a library to use with existing javascipt? Hand coding asm.js is not pleasant.
+
+## Performance
+
+    time in ms
+    fib(45)     browser     nodejs
+    pojs        17000       26000
+    dish        16000
+    pojs*       14000
+    llvm        10000       13000
+    pojs**      00002 
+
+    * use the llvm algorythm
+    ** use iteration rather than recursion
+    llvm routine copied from emscripten output
+
+Using the same algorythms there is little difference in timing 
+between emscripten and pojs or dish. Much of the emscripten runtime is 
+actually pojs. Emscripten often uses the "almost asm" pragma which is pojs.
+Real improvements are based on choice of algorythm and avoiding gc.
 
 ## About dish
 Dish transpiles d-like code to asm.js. Code is generated from an ast using escodegen.
@@ -28,8 +36,7 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Status - discontinued
-
+Status - evaluating poc
 
 The goal of dish is to insulate me from the twiddly syntax of asm.js. 
 
@@ -113,3 +120,4 @@ http://ejohn.org/blog/asmjs-javascript-compile-target/
 http://asmjs.org/spec/latest/
 
 
+https://www.sitepoint.com/understanding-asm-js/

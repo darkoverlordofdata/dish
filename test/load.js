@@ -3,63 +3,66 @@
 /*
  * Run tests
  */
-Promise.all(['entity', 'pool', 'mt19937'].map(function(x) {
+var fib, fiby, fibz;
+
+fib = function(x) {
+  if (x < 2) {
+    return 1;
+  } else {
+    return fib(x - 1) + fib(x - 2);
+  }
+};
+
+fibz = function(n) {
+  var i, j, ref, x, y, z;
+  x = 0;
+  y = 1;
+  z = 1;
+  for (i = j = 0, ref = n; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+    x = y;
+    y = z;
+    z = x + y;
+  }
+  return x;
+};
+
+fiby = function(x) {
+  var a, v, v1, v2, v3, v4, v5;
+  if (x < 2) {
+    return 1;
+  } else {
+    a = 1;
+    v = x;
+    while (1) {
+      v1 = v - 1;
+      v2 = fiby(v1);
+      v3 = v - 2;
+      v4 = v2 + a;
+      v5 = v3 < 2;
+      if (v5) {
+        return v4;
+      } else {
+        a = v4;
+        v = v3;
+      }
+    }
+  }
+};
+
+Promise.all(['unit'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var entity, mt19937, pool, ref, ref1, ref2;
-  (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], mt19937 = ref2.mt19937);
-  describe('Smoke Tests', function() {
-    it('Pool', function() {
-      return expect(pool).to.not.equal(null);
-    });
-    it('Entity', function() {
-      return expect(entity).to.not.equal(null);
-    });
-    it('Initialize', function() {
-      return expect(pool.initialize(10)).to.equal(0);
-    });
-    it('Create entity', function() {
-      var i, l;
-      entity = [];
-      for (i = l = 0; l <= 100; i = ++l) {
-        entity.push(pool.createEntity());
-      }
-      return expect(pool.test(entity[51], 0)).to.equal(52);
-    });
-    it('Repeat JS', function() {
-      var i, j, k, l, m;
-      for (i = l = 0; l <= 32767; i = ++l) {
-        for (j = m = 0; m <= 32767; j = ++m) {
-          k = j & 32 >> 2;
-        }
-      }
-      return expect(k).to.equal(8);
-    });
-    return it('Repeat Dish', function() {
-      return expect(pool.testInc()).to.equal(8);
-    });
-  });
-  return describe('MT19937', function() {
-    it('check', function() {
-      return expect(mt19937ar.genrand_int32()).to.equal(20535309);
-    });
-    it('time js', function() {
-      var i, j, l, m, z;
-      for (i = l = 0; l <= 1000; i = ++l) {
-        for (j = m = 0; m <= 32767; j = ++m) {
-          z = mt19937ar.genrand_int32();
-        }
-      }
+  var unit;
+  unit = arg[0].unit;
+  return describe('Smoke Tests', function() {
+    it('Hello', function() {
       return expect(0).to.equal(0);
     });
-    return it('time dish', function() {
-      var i, j, l, m, z;
-      for (i = l = 0; l <= 1000; i = ++l) {
-        for (j = m = 0; m <= 32767; j = ++m) {
-          z = mt19937.genrand_int32();
-        }
-      }
-      return expect(0).to.equal(0);
+    it('Fib1', function() {
+      return expect(fib(45)).to.equal(1836311903);
+    });
+    return it('Fib2', function() {
+      return expect(fibz(45)).to.equal(1836311903);
     });
   });
 }, function(err) {

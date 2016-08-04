@@ -4,56 +4,62 @@
 ###
 
 
+fib = (x) ->
+  if x<2 
+    1
+  else
+    fib(x - 1) + fib(x - 2)
+
+fibz = (n) ->
+  x = 0
+  y = 1
+  z = 1
+  for i in [0..n]
+    x = y
+    y = z
+    z = x+y
+  x
 
 
-Promise.all(['entity', 'pool', 'mt19937'].map((x) -> 
-  System.import(x))).then ([{entity}, {pool}, {mt19937}]) ->
+fiby = (x) ->
+  if (x < 2)
+    return 1
+  else
+    a = 1
+    v = x
+    while 1
+      v1 = v-1
+      v2 = fiby(v1)
+      v3 = v-2
+      v4 = v2 + a
+      v5 = v3 < 2
+      if (v5)
+        return v4
+      else
+        a = v4
+        v = v3
+
+
+
+
+
+Promise.all(['unit'].map((x) -> 
+  System.import(x))).then ([{unit}]) ->
 
     describe 'Smoke Tests', ->
     
-      it 'Pool', ->
-        expect(pool).to.not.equal(null) 
+      it 'Hello', ->
+        expect(0).to.equal(0) 
 
-      it 'Entity', ->
-        expect(entity).to.not.equal(null) 
+      it 'Fib1', ->
+        # expect(fib(20)).to.equal(10946) 
+        expect(fib(45)).to.equal(1836311903) 
+
+      it 'Fib2', ->
+        # expect(fiby(20)).to.equal(10946) 
+        expect(fibz(45)).to.equal(1836311903) 
 
 
-      it 'Initialize', ->
-        expect(pool.initialize(10)).to.equal(0)
-
-      it 'Create entity', ->
-        entity = []
-        for i in [0..100]
-          entity.push(pool.createEntity())
-        expect(pool.test(entity[51], 0)).to.equal(52)
-
-      it 'Repeat JS', ->
-        for i in [0..32767]
-          for j in [0..32767]
-            k = j&32>>2;
-        expect(k).to.equal(8)
-
-      it 'Repeat Dish', ->
-        expect(pool.testInc()).to.equal(8)
-
-    describe 'MT19937', ->
-
-      it 'check', ->
-        expect(mt19937ar.genrand_int32()).to.equal(20535309)
-
-      it 'time js', ->
-        for i in [0..1000]
-          for j in [0..32767]
-            z = mt19937ar.genrand_int32()
-
-        expect(0).to.equal(0)
-
-      it 'time dish', ->
-        for i in [0..1000]
-          for j in [0..32767]
-            z = mt19937.genrand_int32()
-
-        expect(0).to.equal(0)
 
   , (err) -> console.log err
 

@@ -2,39 +2,64 @@
 
 /*
  * Run tests
- *import {buffer} from 'ffi'
  */
-Promise.all(['ffi', 'test1', 'test2', 'test-twister', 'mt19937'].map(function(x) {
+Promise.all(['entity', 'pool', 'mt19937'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var MersenneTwister, buffer, mt19937, ref, ref1, ref2, ref3, ref4, test1, test2;
-  (ref = arg[0], buffer = ref.buffer), (ref1 = arg[1], test1 = ref1.test1), (ref2 = arg[2], test2 = ref2.test2), (ref3 = arg[3], MersenneTwister = ref3.MersenneTwister), (ref4 = arg[4], mt19937 = ref4.mt19937);
-  return describe('Basic Tests', function() {
-    it('Factorial', function() {
-      expect(test1.factorial(10)).to.equal(45);
+  var entity, mt19937, pool, ref, ref1, ref2;
+  (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], mt19937 = ref2.mt19937);
+  describe('Smoke Tests', function() {
+    it('Pool', function() {
+      return expect(pool).to.not.equal(null);
     });
-    it('Alloc', function() {
-      expect(test1.alloc(10)).to.equal(typeof malloc !== "undefined" && malloc !== null ? 68 : 4);
-      expect(test1.alloc(10)).to.equal(typeof malloc !== "undefined" && malloc !== null ? 80 : 14);
+    it('Entity', function() {
+      return expect(entity).to.not.equal(null);
     });
-    it('List', function() {
-      expect(test1.values()).to.equal(typeof malloc !== "undefined" && malloc !== null ? 92 : 24);
-      expect(test2.index((typeof malloc !== "undefined" && malloc !== null ? 92 : 24), 2)).to.equal(44);
+    it('Initialize', function() {
+      return expect(pool.initialize(10)).to.equal(0);
     });
-    it('Random', function() {
-      expect(mt19937.genrand_int32()).to.equal(testResults[0]);
-      expect(mt19937.genrand_int32()).to.equal(testResults[1]);
-      expect(mt19937.genrand_int32()).to.equal(testResults[2]);
-      expect(mt19937.genrand_int32()).to.equal(testResults[3]);
-      expect(mt19937.genrand_int32()).to.equal(testResults[4]);
+    it('Create entity', function() {
+      var i, l;
+      entity = [];
+      for (i = l = 0; l <= 100; i = ++l) {
+        entity.push(pool.createEntity());
+      }
+      return expect(pool.test(entity[51], 0)).to.equal(52);
     });
-    it('And', function() {
-      return expect(test2.and(42)).to.equal(42);
+    it('Repeat JS', function() {
+      var i, j, k, l, m;
+      for (i = l = 0; l <= 32767; i = ++l) {
+        for (j = m = 0; m <= 32767; j = ++m) {
+          k = j & 32 >> 2;
+        }
+      }
+      return expect(k).to.equal(8);
     });
-    return it('CreateEntity', function() {
-      var entity;
-      entity = test1.createEntity();
-      return expect(test2.index(entity, 0)).to.equal(42);
+    return it('Repeat Dish', function() {
+      return expect(pool.testInc()).to.equal(8);
+    });
+  });
+  return describe('MT19937', function() {
+    it('check', function() {
+      return expect(mt19937ar.genrand_int32()).to.equal(20535309);
+    });
+    it('time js', function() {
+      var i, j, l, m, z;
+      for (i = l = 0; l <= 1000; i = ++l) {
+        for (j = m = 0; m <= 32767; j = ++m) {
+          z = mt19937ar.genrand_int32();
+        }
+      }
+      return expect(0).to.equal(0);
+    });
+    return it('time dish', function() {
+      var i, j, l, m, z;
+      for (i = l = 0; l <= 1000; i = ++l) {
+        for (j = m = 0; m <= 32767; j = ++m) {
+          z = mt19937.genrand_int32();
+        }
+      }
+      return expect(0).to.equal(0);
     });
   });
 }, function(err) {

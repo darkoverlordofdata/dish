@@ -28,6 +28,65 @@ int inc(int i) {
     k = i+1;
     return k;
 }
+export int fib(int x) {
+    int result;
+    int f1;
+    int f2;
+    int x1;
+    int x2;
+    int b;
+    b = (x|0) < (2|0);
+    if (b|0) {
+        result = 1|0;
+    } else {
+        x1 = x-1;
+        x2 = x-2;
+        f2 = fib(x2);
+        f1 = fib(x1);
+        result = f1+f2;
+    }
+    return result;
+}
+
+export int fibz(int x) {
+    int result;
+    int f1;
+    int f2;
+    int x1;
+    int x2;
+    int b;
+    int i;
+    int a;
+    int v1;
+    int v2;
+    int v3;
+    int v4;
+    int v5;
+    b = (x|0) < (2|0);
+    if (b|0) {
+        result = 1|0;
+    } else {
+        i = 1;
+        a = x;
+        while (1) {
+            v1 = i -1;
+            v2 = fibz(v1);
+            v3 = i -2;
+            v4 = v2 + a;
+            v5 = (v3 < 2);
+            if (v5) {
+                result = v4;
+                return result;
+                //break;
+            } else {
+                a = v4;
+                i = v3;
+            }
+        }
+    }
+    return result;
+}
+
 
 export int testInc() {
     int i;

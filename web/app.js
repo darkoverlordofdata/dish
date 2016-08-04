@@ -110,7 +110,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
             }],
         execute: function() {
             exports_3("entity", entity = (function (stdlib, foreign, heap) {
-                
+                "use asm";
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
                 var HEAPI16 = new stdlib.Int16Array(heap);
@@ -219,7 +219,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
             }],
         execute: function() {
             exports_4("pool", pool = (function (stdlib, foreign, heap) {
-                
+                "use asm";
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
                 var HEAPI16 = new stdlib.Int16Array(heap);
@@ -252,6 +252,73 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var k = 0;
                     k = i + 1 | 0;
                     return k | 0;
+                }
+                function fib(x) {
+                    x = x | 0;
+                    var __01__ = 0, __02__ = 0;
+                    var result = 0;
+                    var f1 = 0;
+                    var f2 = 0;
+                    var x1 = 0;
+                    var x2 = 0;
+                    var b = 0;
+                    __01__ = 2 | 0;
+                    __02__ = x | 0;
+                    b = __02__ < __01__ | 0;
+                    if (b | 0) {
+                        result = 1 | 0;
+                    }
+                    else {
+                        x1 = x - 1 | 0;
+                        x2 = x - 2 | 0;
+                        f2 = fib(x2) | 0;
+                        f1 = fib(x1) | 0;
+                        result = f1 + f2 | 0;
+                    }
+                    return result | 0;
+                }
+                function fibz(x) {
+                    x = x | 0;
+                    var __01__ = 0, __02__ = 0;
+                    var result = 0;
+                    var f1 = 0;
+                    var f2 = 0;
+                    var x1 = 0;
+                    var x2 = 0;
+                    var b = 0;
+                    var i = 0;
+                    var a = 0;
+                    var v1 = 0;
+                    var v2 = 0;
+                    var v3 = 0;
+                    var v4 = 0;
+                    var v5 = 0;
+                    __01__ = 2 | 0;
+                    __02__ = x | 0;
+                    b = __02__ < __01__ | 0;
+                    if (b | 0) {
+                        result = 1 | 0;
+                    }
+                    else {
+                        i = 1;
+                        a = x;
+                        while (1) {
+                            v1 = i - 1 | 0;
+                            v2 = fibz(v1) | 0;
+                            v3 = i - 2 | 0;
+                            v4 = v2 + a | 0;
+                            v5 = v3 < 2 | 0;
+                            if (v5) {
+                                result = v4;
+                                return result | 0;
+                            }
+                            else {
+                                a = v4;
+                                i = v3;
+                            }
+                        }
+                    }
+                    return result | 0;
                 }
                 function testInc() {
                     var __01__ = 0;
@@ -376,6 +443,8 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var __00__ = 0;
                 }
                 return {
+                    fib: fib,
+                    fibz: fibz,
                     testInc: testInc,
                     test: test,
                     initialize: initialize,
@@ -402,11 +471,11 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
         }
     }
 });
-System.register("mt19937", ["ffi", "stdlib"], function(exports_5, context_5) {
+System.register("unit", ["ffi", "stdlib"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
     var ffi_5, ffi_6, stdlib_3;
-    var mt19937;
+    var unit;
     return {
         setters:[
             function (ffi_5_1) {
@@ -417,8 +486,120 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_5, context_5) {
                 stdlib_3 = stdlib_3_1;
             }],
         execute: function() {
-            exports_5("mt19937", mt19937 = (function (stdlib, foreign, heap) {
-                
+            exports_5("unit", unit = (function (stdlib, foreign, heap) {
+                "use asm";
+                var HEAPI8 = new stdlib.Int8Array(heap);
+                var HEAPU8 = new stdlib.Uint8Array(heap);
+                var HEAPI16 = new stdlib.Int16Array(heap);
+                var HEAPU16 = new stdlib.Uint16Array(heap);
+                var HEAPI32 = new stdlib.Int32Array(heap);
+                var HEAPU32 = new stdlib.Uint32Array(heap);
+                var HEAPF32 = new stdlib.Float32Array(heap);
+                var HEAPF64 = new stdlib.Float64Array(heap);
+                var malloc = foreign.malloc;
+                var free = foreign.free;
+                function inc(i) {
+                    i = i | 0;
+                    var __00__ = 0;
+                    var k = 0;
+                    k = i + 1 | 0;
+                    return k | 0;
+                }
+                function fib(x) {
+                    x = x | 0;
+                    var __01__ = 0, __02__ = 0;
+                    var result = 0;
+                    var f1 = 0;
+                    var f2 = 0;
+                    var x1 = 0;
+                    var x2 = 0;
+                    var b = 0;
+                    __01__ = 2 | 0;
+                    __02__ = x | 0;
+                    b = __02__ < __01__ | 0;
+                    if (b | 0) {
+                        result = 1 | 0;
+                    }
+                    else {
+                        x1 = x - 1 | 0;
+                        x2 = x - 2 | 0;
+                        f2 = fib(x2) | 0;
+                        f1 = fib(x1) | 0;
+                        result = f1 + f2 | 0;
+                    }
+                    return result | 0;
+                }
+                function fibz(x) {
+                    x = x | 0;
+                    var __01__ = 0, __02__ = 0;
+                    var result = 0;
+                    var f1 = 0;
+                    var f2 = 0;
+                    var x1 = 0;
+                    var x2 = 0;
+                    var b = 0;
+                    var i = 0;
+                    var a = 0;
+                    var v1 = 0;
+                    var v2 = 0;
+                    var v3 = 0;
+                    var v4 = 0;
+                    var v5 = 0;
+                    __01__ = 2 | 0;
+                    __02__ = x | 0;
+                    b = __02__ < __01__ | 0;
+                    if (b | 0) {
+                        result = 1 | 0;
+                    }
+                    else {
+                        i = 1;
+                        a = x;
+                        while (1) {
+                            v1 = i - 1 | 0;
+                            v2 = fibz(v1) | 0;
+                            v3 = i - 2 | 0;
+                            v4 = v2 + a | 0;
+                            v5 = v3 < 2 | 0;
+                            if (v5) {
+                                result = v4;
+                                return result | 0;
+                            }
+                            else {
+                                a = v4;
+                                i = v3;
+                            }
+                        }
+                    }
+                    return result | 0;
+                }
+                return {
+                    fib: fib,
+                    fibz: fibz,
+                };
+            }(stdlib_3.default, ffi_5.default, ffi_6.buffer)));
+            for (var k in unit) {
+                ffi_5.default['unit_' + k] = unit[k];
+            }
+        }
+    }
+});
+System.register("mt19937", ["ffi", "stdlib"], function(exports_6, context_6) {
+    "use strict";
+    var __moduleName = context_6 && context_6.id;
+    var ffi_7, ffi_8, stdlib_4;
+    var mt19937;
+    return {
+        setters:[
+            function (ffi_7_1) {
+                ffi_7 = ffi_7_1;
+                ffi_8 = ffi_7_1;
+            },
+            function (stdlib_4_1) {
+                stdlib_4 = stdlib_4_1;
+            }],
+        execute: function() {
+            exports_6("mt19937", mt19937 = (function (stdlib, foreign, heap) {
+                "use asm";
                 var HEAP = new stdlib.Uint32Array(heap);
                 var malloc = foreign.malloc;
                 var imul = stdlib.Math.imul;
@@ -522,7 +703,7 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_5, context_5) {
                 return {
                     genrand_int32: genrand_int32,
                 };
-            }(stdlib_3.default, ffi_5.default, ffi_6.buffer)));
+            }(stdlib_4.default, ffi_7.default, ffi_8.buffer)));
         }
     }
 });
@@ -530,63 +711,65 @@ System.register("mt19937", ["ffi", "stdlib"], function(exports_5, context_5) {
 /*
  * Run tests
  */
-Promise.all(['entity', 'pool', 'mt19937'].map(function (x) {
+var fib, fiby, fibz;
+fib = function (x) {
+    if (x < 2) {
+        return 1;
+    }
+    else {
+        return fib(x - 1) + fib(x - 2);
+    }
+};
+fibz = function (n) {
+    var i, j, ref, x, y, z;
+    x = 0;
+    y = 1;
+    z = 1;
+    for (i = j = 0, ref = n; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+        x = y;
+        y = z;
+        z = x + y;
+    }
+    return x;
+};
+fiby = function (x) {
+    var a, v, v1, v2, v3, v4, v5;
+    if (x < 2) {
+        return 1;
+    }
+    else {
+        a = 1;
+        v = x;
+        while (1) {
+            v1 = v - 1;
+            v2 = fiby(v1);
+            v3 = v - 2;
+            v4 = v2 + a;
+            v5 = v3 < 2;
+            if (v5) {
+                return v4;
+            }
+            else {
+                a = v4;
+                v = v3;
+            }
+        }
+    }
+};
+Promise.all(['unit'].map(function (x) {
     return System["import"](x);
 })).then(function (arg) {
-    var entity, mt19937, pool, ref, ref1, ref2;
-    (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], mt19937 = ref2.mt19937);
-    describe('Smoke Tests', function () {
-        it('Pool', function () {
-            return expect(pool).to.not.equal(null);
-        });
-        it('Entity', function () {
-            return expect(entity).to.not.equal(null);
-        });
-        it('Initialize', function () {
-            return expect(pool.initialize(10)).to.equal(0);
-        });
-        it('Create entity', function () {
-            var i, l;
-            entity = [];
-            for (i = l = 0; l <= 100; i = ++l) {
-                entity.push(pool.createEntity());
-            }
-            return expect(pool.test(entity[51], 0)).to.equal(52);
-        });
-        it('Repeat JS', function () {
-            var i, j, k, l, m;
-            for (i = l = 0; l <= 32767; i = ++l) {
-                for (j = m = 0; m <= 32767; j = ++m) {
-                    k = j & 32 >> 2;
-                }
-            }
-            return expect(k).to.equal(8);
-        });
-        return it('Repeat Dish', function () {
-            return expect(pool.testInc()).to.equal(8);
-        });
-    });
-    return describe('MT19937', function () {
-        it('check', function () {
-            return expect(mt19937ar.genrand_int32()).to.equal(20535309);
-        });
-        it('time js', function () {
-            var i, j, l, m, z;
-            for (i = l = 0; l <= 1000; i = ++l) {
-                for (j = m = 0; m <= 32767; j = ++m) {
-                    z = mt19937ar.genrand_int32();
-                }
-            }
+    var unit;
+    unit = arg[0].unit;
+    return describe('Smoke Tests', function () {
+        it('Hello', function () {
             return expect(0).to.equal(0);
         });
-        return it('time dish', function () {
-            var i, j, l, m, z;
-            for (i = l = 0; l <= 1000; i = ++l) {
-                for (j = m = 0; m <= 32767; j = ++m) {
-                    z = mt19937.genrand_int32();
-                }
-            }
-            return expect(0).to.equal(0);
+        it('Fib1', function () {
+            return expect(fib(45)).to.equal(1836311903);
+        });
+        return it('Fib2', function () {
+            return expect(fibz(45)).to.equal(1836311903);
         });
     });
 }, function (err) {

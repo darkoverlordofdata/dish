@@ -911,6 +911,7 @@ function parse(input, mangle) {
         expect('}')
         const alternate = []
         if (matchKeyword('else')) {
+            expectKeyword('else')
             expect('{')
             while (!match('}')) {
                 alternate.push(parseStatement(alternate))
@@ -922,7 +923,8 @@ function parse(input, mangle) {
         const _then = consequent.length === 0 ? null :  { "type": "BlockStatement", "body": consequent }
         const _else = alternate.length === 0 ? null : { "type": "BlockStatement", "body": alternate }
 
-        return factory.IfStatement(parseExp(tokens, true), _then, _else)
+        let c = factory.IfStatement(parseExp(tokens, false), _then, _else)
+        return c;
     }
     /**
      * import func from lib:
