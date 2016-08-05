@@ -31,7 +31,8 @@ module.exports = {
     Return: Return,
     Print: Print,
     New: New,
-    AssignmentStatementCallInt: AssignmentStatementCallInt
+    AssignmentStatementCallInt: AssignmentStatementCallInt,
+    AssignmentStatementCallDouble: AssignmentStatementCallDouble
 }
 
 function clone(obj) {
@@ -224,6 +225,27 @@ function AssignmentStatementCallInt(name, expression) {
         }
     }
 }
+
+function AssignmentStatementCallDouble(name, expression) {
+    return {
+        "type": "ExpressionStatement",
+        "expression": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+                "type": "Identifier",
+                "name": name
+            },
+            "right": {
+                "type": "UnaryExpression",
+                "operator": "+",
+                "argument": expression,
+                "prefix": true
+            }
+        }
+    }
+}
+
 
 function AssignmentStatement(names, expressions) {
     

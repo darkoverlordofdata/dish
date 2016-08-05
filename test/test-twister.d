@@ -17,13 +17,10 @@ int[] mag01;
 int init_genrand(int s)
 {
 
-    int n;
+    int t0;
     int t1;
     double t2;
     double t3;
-    int t0;
-    double r1 = +1812433253;
-    double r3;
     
     mt = new int[N];
     mag01 = new int[2];
@@ -33,23 +30,17 @@ int init_genrand(int s)
 
     mt[0] = s & 0xffffffff;
 
-    for (mti=1; (mti|0)<(N|0); mti++) {
+    for (mti=1; (mti|0) < (N|0); mti++) {
 
         //mt[mti] = 
         //(1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
 
-            // t2 = +(HEAP[mt+mti-1<<2>>2] ^ (HEAP[mt+mti-1<<2>>2] >> 30));
-            // t3 = +(mti|0);
-            // HEAP[mt+mti<<2>>2] = ~~((1812433253.0 * t2)+t3)|0;
-
         t1 = mt[mti-1] ^ (mt[mti-1] >> 30);
         t2 = to!double(t1|0);
         t3 = to!double(mti|0);
-        t0 = to!int(r1*t2+t3);
+        t0 = to!int(+1812433253*t2+t3);
         
         mt[mti] = t0 & 0xffffffff;
-
-
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -68,13 +59,14 @@ export int genrand_int32()
     //int[] mag01 = [0x0, MATRIX_A];
     //int mag01[2]={0x0, MATRIX_A};
     int kk;
+    int z;
 
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if ((mti|0) >= (N|0)) { /* generate N words at one time */
 
         if ((mti|0) == (N+1|0)) {  /* if init_genrand() has not been called, */
-            init_genrand(5489); /* a default initial seed is used */
+            z = init_genrand(5489)|0; /* a default initial seed is used */
         }
 
         for (kk=0;(kk|0)<(N-M|0);kk++) {

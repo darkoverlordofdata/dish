@@ -483,7 +483,7 @@ function parse(input, mangle) {
                     break
                 case 'to!float':
                     tokens[i] = 'fround'
-                    fround = true
+                    float = true
                     break
             }
         }
@@ -505,7 +505,7 @@ function parse(input, mangle) {
 
             }
         } else { /**  passthru simple assignment */
-            console.log(name, ast)
+            //console.log(name, ast)
             let a;
             switch (ast.type) {
                 case 'Literal':
@@ -517,12 +517,13 @@ function parse(input, mangle) {
                     //console.log(JSON.stringify(a, null, 2))
                     return a
                 case 'CallExpression':
-                    console.log('CallExpression', sym.type)
+                    //console.log('CallExpression', sym.type, JSON.stringify(ast, null, 2))
                     switch (sym.type) {
                         case 'int': return factory.AssignmentStatementCallInt(name, ast)
                         case 'uint': return factory.AssignmentStatementCallInt(name, ast)
-                        case 'float': return factory.AssignmentStatementCallInt(name, ast)
-                        case 'double': return factory.AssignmentStatementCallInt(name, ast)
+                        //case 'float': return factory.AssignmentStatementCallFloat(name, ast)
+                        case 'double': return factory.AssignmentStatementCallDouble(name, ast)
+                        case 'float': throw 'WTF???'
                     }
             }
         }
@@ -896,12 +897,13 @@ function parse(input, mangle) {
 
     function parseIf() {
         expectKeyword('if')
-        expect('(')
+        let paren = 0
         let tokens = []
-        while (!match(')')) {
+        do {
+            if (match('(')) paren++
+            if (match(')')) paren--
             tokens.push(input.next())
-        }
-        expect(')')
+        } while (paren !== 0)
         const consequent = []
         expect('{')
         while (!match('}')) {
@@ -1069,12 +1071,13 @@ function parse(input, mangle) {
 
     function parseWhile() {
         expectKeyword('while')
-        expect('(')
-        const tokens = []
-        while (!match(')')) {
+        let paren = 0
+        let tokens = []
+        do {
+            if (match('(')) paren++
+            if (match(')')) paren--
             tokens.push(input.next())
-        }
-        expect(')')
+        } while (paren !== 0)
         const body = []
         expect('{')
         while (!match('}')) {

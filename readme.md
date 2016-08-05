@@ -1,20 +1,12 @@
 
 # dee·ish
 ## /dē-ish/ 
-#### a language that targets asm.js
+#### an estools based language that targets asm.js
 
 
 ## Why?
 Emscripten is great if you have an entire c++ application to port to the browser.
 But what about creating a library to use with existing javascipt? Hand coding asm.js is not pleasant.
-
-## Status
-evaluating poc. the real question seems to be is asm.js worthwhile?
-prng mersenne-twister is debugged, and runs about 25% faster in asm.js mode. (545 vs 405ms)
-Dish version runs just as fast as hand-coded version (411 ms vs 405 ms). 
-
-Performance gains in emscripten seem to be due mostly due to llvm.
-in fact, I can manually port emscripten output concepts to pojs and see improved performance.
 
 ## About dish
 Dish transpiles d-like code to asm.js. Code is generated from an ast using escodegen.
@@ -41,7 +33,6 @@ Features
 * added sugar for heap management and array types.
 * multiple modules share 1 heap
 * use 3rd party npm module 'malloc' for heap implementation. (patched to run in the browser)
-
 
 ### example
 
@@ -82,6 +73,11 @@ return {
 
 ```
 
+## Status
+Not yet robust, the happy path is the MersenneTwister demo code,
+which runs about 20% faster than the original pojs code. (545 vs 405ms)
+With compression and whitespace removal, it is also about the same size as the original.
+
 
 ### notes
 
@@ -99,13 +95,10 @@ values I find are the floats that I've encoded.
 
 http://mrale.ph/blog/2013/03/28/why-asmjs-bothers-me.html
 
-http://danluu.com/malloc-tutorial/
-
 http://www.2ality.com/2013/02/asm-js.html
 
 http://ejohn.org/blog/asmjs-javascript-compile-target/
 
 http://asmjs.org/spec/latest/
-
 
 https://www.sitepoint.com/understanding-asm-js/
