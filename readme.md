@@ -8,24 +8,13 @@
 Emscripten is great if you have an entire c++ application to port to the browser.
 But what about creating a library to use with existing javascipt? Hand coding asm.js is not pleasant.
 
-## Performance
+## Status
+evaluating poc. the real question seems to be is asm.js worthwhile?
+prng mersenne-twister is debugged, and runs about 25% faster in asm.js mode. (545 vs 405ms)
+Dish version runs just as fast as hand-coded version (411 ms vs 405 ms). 
 
-    time in ms
-    fib(45)     browser     nodejs
-    pojs        17000       26000
-    dish        16000
-    pojs*       14000
-    llvm        10000       13000
-    pojs**      00002 
-
-    * use the llvm algorythm
-    ** use iteration rather than recursion
-    llvm routine copied from emscripten output
-
-Using the same algorythms there is little difference in timing 
-between emscripten and pojs or dish. Much of the emscripten runtime is 
-actually pojs. Emscripten often uses the "almost asm" pragma which is pojs.
-Real improvements are based on choice of algorythm and avoiding gc.
+Performance gains in emscripten seem to be due mostly due to llvm.
+in fact, I can manually port emscripten output concepts to pojs and see improved performance.
 
 ## About dish
 Dish transpiles d-like code to asm.js. Code is generated from an ast using escodegen.
@@ -36,7 +25,6 @@ Dish is not intended to transpile arbitrary d to js.
 
 Dish is a hack.
 
-Status - evaluating poc
 
 The goal of dish is to insulate me from the twiddly syntax of asm.js. 
 

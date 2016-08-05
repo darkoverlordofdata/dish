@@ -5,7 +5,7 @@
  */
 var Ffi, HEAP, HEAP_SIZE, allocator;
 
-HEAP_SIZE = 0x40000;
+HEAP_SIZE = 0x10000;
 
 Ffi = (function() {
   function Ffi() {}

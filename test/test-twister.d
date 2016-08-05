@@ -3,8 +3,6 @@
  */
 module MersenneTwister;
 
-import imul = Math.imul;
-
 const int N = 624;
 const int M = 397;
 const int MATRIX_A    = 0x9908b0df; /* constant vector a */
@@ -13,35 +11,44 @@ const int LOWER_MASK  = 0x7fffffff; /* least significant r bits */
 
 uint[] mt;       /* ptr -> the array for the state vector  */
 int mti = 625;  /* mti==N+1 means mt[N] is not initialized */
+int[] mag01;
+
 
 int init_genrand(int s)
 {
 
     int n;
-    int t2;
-    int t3;
-    int t4;
+    int t1;
+    double t2;
+    double t3;
+    int t0;
     double r1 = +1812433253;
     double r3;
     
     mt = new int[N];
+    mag01 = new int[2];
+    mag01[0] = 0;
+    mag01[1] = MATRIX_A;
+    //[0x0, MATRIX_A];
+
     mt[0] = s & 0xffffffff;
 
-    for (mti=1; mti<N; mti++) {
+    for (mti=1; (mti|0)<(N|0); mti++) {
 
         //mt[mti] = 
         //(1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
 
+            // t2 = +(HEAP[mt+mti-1<<2>>2] ^ (HEAP[mt+mti-1<<2>>2] >> 30));
+            // t3 = +(mti|0);
+            // HEAP[mt+mti<<2>>2] = ~~((1812433253.0 * t2)+t3)|0;
 
-        t2 = (mt[mti-1] ^ (mt[mti-1] >> 30));
-        r3 = r1 * to!double(t2);
-        t3 = to!int(r3)+mti;
-        mt[mti] = t3 & 0xffffffff;
-        t4 = mt[mti];
+        t1 = mt[mti-1] ^ (mt[mti-1] >> 30);
+        t2 = to!double(t1|0);
+        t3 = to!double(mti|0);
+        t0 = to!int(r1*t2+t3);
+        
+        mt[mti] = t0 & 0xffffffff;
 
-        if (mti < 6) {
-            print('test-twister: t2 = ', t2, t3, r3, t4);
-        }
 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
@@ -58,23 +65,23 @@ int init_genrand(int s)
 export int genrand_int32()
 {
     int y;
-    int[] mag01 = [0x0, MATRIX_A];
+    //int[] mag01 = [0x0, MATRIX_A];
     //int mag01[2]={0x0, MATRIX_A};
     int kk;
 
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
-    if (mti >= N) { /* generate N words at one time */
+    if ((mti|0) >= (N|0)) { /* generate N words at one time */
 
-        if (mti == N+1) {  /* if init_genrand() has not been called, */
+        if ((mti|0) == (N+1|0)) {  /* if init_genrand() has not been called, */
             init_genrand(5489); /* a default initial seed is used */
         }
 
-        for (kk=0;kk<N-M;kk++) {
+        for (kk=0;(kk|0)<(N-M|0);kk++) {
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
             mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1];
         }
-        for (;kk<N-1;kk++) {
+        for (;(kk|0)<(N-1|0);kk++) {
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
             mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1];
         }
@@ -99,4 +106,17 @@ export int genrand_int32()
     y = y ^ (y >> 18);
 
     return y;
+}
+
+export int test(int n, int m) {
+    int i;
+    int j;
+    int z;
+
+    for (i=0|0; (i|0) < (n|0);i = i+1|0) {
+        for (j=0|0; (j|0) < (m|0);j = j+1|0) {
+            z = genrand_int32()|0;
+        }
+    }
+    
 }

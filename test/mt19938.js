@@ -1,10 +1,7 @@
-import Ffi from 'ffi'
-import {buffer} from 'ffi'
-import Stdlib from 'stdlib'
 
 /* Period parameters */  
 //const mt19937 = (function() {
-export const mt19937 = (function(stdlib, foreign, heap) {
+const mt19937 = (function(stdlib, foreign, heap) {
     "use asm";
     var malloc = foreign.malloc;
     var HEAP = new stdlib.Int32Array(heap);
@@ -18,14 +15,15 @@ export const mt19937 = (function(stdlib, foreign, heap) {
     //var HEAP = Array(N) /* the array for the state vector  */
     var mt = 0;
     var mti=625; //N+1; /* mti==N+1 means HEAP[mt+N] is not initialized */
+    var T = 0;
+    var t2 = 0.0;
+    var t3 = 0.0;
     var mag01 = 0;// [0x0, MATRIX_A];
 
     /* initializes HEAP[mt+N] with a seed */
     function init_genrand(s)
     {
         s = s|0;
-        var t2 = 0.0;
-        var t3 = 0.0;
         mt = malloc(N<<2)|0;
         mag01 = malloc(2<<2)|0;
         HEAP[mag01<<2>>2] = 0;

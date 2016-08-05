@@ -12,6 +12,7 @@
         "test/pool.js",
         "test/unit.js",
         "test/mt19937.js",
+        "test/test-twister.js",
         "test/load.js"
     ]
 }

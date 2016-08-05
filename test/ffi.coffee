@@ -2,7 +2,7 @@
 ## Foreign function interface 
 ###
 
-HEAP_SIZE = 0x40000
+HEAP_SIZE = 0x10000
 
 class Ffi
 
@@ -39,6 +39,9 @@ class Ffi
 `export const buffer = new ArrayBuffer(HEAP_SIZE)`
 `export const foreign = Ffi`  
 `export const bufferMax = HEAP_SIZE`
+# buffer = new ArrayBuffer(HEAP_SIZE)
+# foreign = Ffi
+# bufferMax = HEAP_SIZE
 
 if malloc?
     allocator = new malloc.Allocator(buffer) 

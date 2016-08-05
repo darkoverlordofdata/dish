@@ -4,62 +4,32 @@
 ###
 
 
-fib = (x) ->
-  if x<2 
-    1
-  else
-    fib(x - 1) + fib(x - 2)
+Promise.all(['entity', 'pool', 'mt19937', 'test-twister'].map((x) -> 
+  System.import(x))).then ([{entity}, {pool}, {mt19937}, {MersenneTwister}]) ->
+# Promise.all(['entity', 'pool'].map((x) -> 
+#   System.import(x))).then ([{entity}, {pool}]) ->
 
-fibz = (n) ->
-  x = 0
-  y = 1
-  z = 1
-  for i in [0..n]
-    x = y
-    y = z
-    z = x+y
-  x
+    describe 'MT19937', ->
 
+      it 'check', ->
+        expect(MersenneTwister.genrand_int32()).to.equal(20535309)
+        expect(mt19937.genrand_int32()).to.equal(20535309)
+        expect(mt19937ar.genrand_int32()).to.equal(20535309)
 
-fiby = (x) ->
-  if (x < 2)
-    return 1
-  else
-    a = 1
-    v = x
-    while 1
-      v1 = v-1
-      v2 = fiby(v1)
-      v3 = v-2
-      v4 = v2 + a
-      v5 = v3 < 2
-      if (v5)
-        return v4
-      else
-        a = v4
-        v = v3
+      it 'time js', ->
+        for i in [0..1000]
+          for j in [0..32767]
+            z = mt19937ar.genrand_int32()
 
+        expect(0).to.equal(0)
 
+      it 'time dish', ->
+        mt19937.test(1000, 32767)
+        # for i in [0..1000]
+        #   for j in [0..32767]
+        #     z = mt19937.genrand_int32()
 
-
-
-Promise.all(['unit'].map((x) -> 
-  System.import(x))).then ([{unit}]) ->
-
-    describe 'Smoke Tests', ->
-    
-      it 'Hello', ->
-        expect(0).to.equal(0) 
-
-      it 'Fib1', ->
-        # expect(fib(20)).to.equal(10946) 
-        expect(fib(45)).to.equal(1836311903) 
-
-      it 'Fib2', ->
-        # expect(fiby(20)).to.equal(10946) 
-        expect(fibz(45)).to.equal(1836311903) 
-
-
+        expect(0).to.equal(0)
 
   , (err) -> console.log err
 

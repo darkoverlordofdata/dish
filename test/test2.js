@@ -13,6 +13,7 @@ var HEAPU32 = new stdlib.Uint32Array(heap);
 var HEAPF32 = new stdlib.Float32Array(heap);
 var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
+var free = foreign.free;
 var ID = 0;
 function index(ptr, i) {
     ptr = ptr | 0;
@@ -46,7 +47,7 @@ function and(s) {
 function test() {
     var __00__ = 0;
     var zz = 0;
-    zz = ~~(20);
+    zz = ~~(20) | 0;
     return zz | 0;
 }    
 return { 
@@ -55,3 +56,6 @@ return {
     test:test, 
 };
 }(Stdlib, Ffi, buffer))
+for (let k in test2) { 
+    Ffi['test2_'+k] = test2[k] 
+}

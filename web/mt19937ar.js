@@ -12,6 +12,7 @@ var mt19937ar = (function() {
     var mti=N+1; /* mti==N+1 means mt[N] is not initialized */
     var T = 0;
     var t2 = 0;
+    var mag01 = [0x0, MATRIX_A];
 
     /* initializes mt[N] with a seed */
     function init_genrand(s)
@@ -39,7 +40,7 @@ var mt19937ar = (function() {
     function genrand_int32()
     {
         var y;
-        var mag01 = [0x0, MATRIX_A];
+        // var mag01 = [0x0, MATRIX_A];
         /* mag01[x] = x * MATRIX_A  for x=0,1 */
             
         if (mti >= N) { /* generate N words at one time */
