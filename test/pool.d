@@ -23,88 +23,9 @@ int count;
 int index;
 int uniqueId;
 
-int inc(int i) {
-    int k;
-    k = i+1;
-    return k;
-}
-export int fib(int x) {
-    int result;
-    int f1;
-    int f2;
-    int x1;
-    int x2;
-    int b;
-    b = (x|0) < (2|0);
-    if (b|0) {
-        result = 1|0;
-    } else {
-        x1 = x-1;
-        x2 = x-2;
-        f2 = fib(x2);
-        f1 = fib(x1);
-        result = f1+f2;
-    }
-    return result;
-}
-
-export int fibz(int x) {
-    int result;
-    int f1;
-    int f2;
-    int x1;
-    int x2;
-    int b;
-    int i;
-    int a;
-    int v1;
-    int v2;
-    int v3;
-    int v4;
-    int v5;
-    b = (x|0) < (2|0);
-    if (b|0) {
-        result = 1|0;
-    } else {
-        i = 1;
-        a = x;
-        while (1) {
-            v1 = i -1;
-            v2 = fibz(v1);
-            v3 = i -2;
-            v4 = v2 + a;
-            v5 = (v3 < 2);
-            if (v5) {
-                result = v4;
-                return result;
-                //break;
-            } else {
-                a = v4;
-                i = v3;
-            }
-        }
-    }
-    return result;
-}
-
-
-export int testInc() {
-    int i;
-    int j;
-    int k;
-
-    i = 0;
-    while(i<32767) {
-        j = 0;
-        while(j<32767) {
-            k = j&32>>2; 
-            j = j+1;
-        }
-        i = i+1;
-    }
-    return k;
-}
-
+/**
+ * return value at ptr+i
+ */
 export int test(int ptr, int i) {
     double x;
     int[] value;
@@ -117,6 +38,12 @@ export int test(int ptr, int i) {
     return result;
 }
 
+/**
+ * initialize
+ *
+ * @param count int number of components per entity
+ * @returns false
+ */
 export int initialize(int count) {
     if (init) {
         totalComponents = count;
@@ -187,14 +114,16 @@ export int onEntityReleased(int entity) {
 
 
 export int addComponent(int entity, int index, int component) {
-    // if (getEnabled(entity) {
-    //     EntityIsNotEnabledException();
-    // }
-    // if (getComponent(entity, index) {
-    //     EntityAlreadyHasComponentException(index);
-    // }
-    // setComponent(entity, index, component);
-    // onComponentAdded(entity, index, component);
+    // if (!(entity.getEnabled()|0)) {
+    if (!(entity_getEnabled(entity|0)|0)) {
+        EntityIsNotEnabledException();
+    }
+    // if (entity.getComponent(index|0)|0) {
+    if (entity_getComponent(entity|0, index|0)|0) {
+        EntityAlreadyHasComponentException(index|0);
+    }
+    entity_setComponent(entity|0, index|0, component|0);
+    //entity_onComponentAdded(entity|0, index|0, component|0);
 
 }
 

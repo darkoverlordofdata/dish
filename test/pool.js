@@ -3,7 +3,7 @@ import Ffi from 'ffi'
 import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
 export const pool = (function(stdlib, foreign, heap) {
-"almost asm";
+"use asm";
 var HEAPI8 = new stdlib.Int8Array(heap);
 var HEAPU8 = new stdlib.Uint8Array(heap);
 var HEAPI16 = new stdlib.Int16Array(heap);
@@ -30,94 +30,6 @@ var totalComponents = 0;
 var count = 0;
 var index = 0;
 var uniqueId = 0;
-function inc(i) {
-    i = i | 0;
-    var __00__ = 0;
-    var k = 0;
-    k = i + 1 | 0;
-    return k | 0;
-}
-function fib(x) {
-    x = x | 0;
-    var __01__ = 0, __02__ = 0;
-    var result = 0;
-    var f1 = 0;
-    var f2 = 0;
-    var x1 = 0;
-    var x2 = 0;
-    var b = 0;
-    __01__ = 2 | 0;
-    __02__ = x | 0;
-    b = __02__ < __01__ | 0;
-    if (b | 0) {
-        result = 1 | 0;
-    } else {
-        x1 = x - 1 | 0;
-        x2 = x - 2 | 0;
-        f2 = fib(x2) | 0;
-        f1 = fib(x1) | 0;
-        result = f1 + f2 | 0;
-    }
-    return result | 0;
-}
-function fibz(x) {
-    x = x | 0;
-    var __01__ = 0, __02__ = 0;
-    var result = 0;
-    var f1 = 0;
-    var f2 = 0;
-    var x1 = 0;
-    var x2 = 0;
-    var b = 0;
-    var i = 0;
-    var a = 0;
-    var v1 = 0;
-    var v2 = 0;
-    var v3 = 0;
-    var v4 = 0;
-    var v5 = 0;
-    __01__ = 2 | 0;
-    __02__ = x | 0;
-    b = __02__ < __01__ | 0;
-    if (b | 0) {
-        result = 1 | 0;
-    } else {
-        i = 1;
-        a = x;
-        while (1) {
-            v1 = i - 1 | 0;
-            v2 = fibz(v1) | 0;
-            v3 = i - 2 | 0;
-            v4 = v2 + a | 0;
-            v5 = v3 < 2 | 0;
-            if (v5) {
-                result = v4;
-                return result | 0;
-            } else {
-                a = v4;
-                i = v3;
-            }
-        }
-    }
-    return result | 0;
-}
-function testInc() {
-    var __01__ = 0;
-    var i = 0;
-    var j = 0;
-    var k = 0;
-    i = 0;
-    while ((i | 0) < 32767) {
-        j = 0;
-        while ((j | 0) < 32767) {
-            __01__ = 32 >> 2;
-            k = j & __01__;
-            j = j + 1 | 0;
-        }
-        i = i + 1 | 0;
-    }
-    return k | 0;
-}
 function test(ptr, i) {
     ptr = ptr | 0;
     i = i | 0;
@@ -134,7 +46,6 @@ function test(ptr, i) {
 }
 function initialize(count) {
     count = count | 0;
-    var __00__ = 0;
     if (init) {
         totalComponents = count;
         uniqueId = 0;
@@ -144,15 +55,12 @@ function initialize(count) {
     return init | 0;
 }
 function getTotalComponents() {
-    var __00__ = 0;
     return totalComponents | 0;
 }
 function getCount() {
-    var __00__ = 0;
     return count | 0;
 }
 function createEntity() {
-    var __00__ = 0;
     var entity = 0;
     var i = 0;
     entity = entity_create(totalComponents | 0) | 0;
@@ -166,67 +74,59 @@ function createEntity() {
 }
 function destroyEntity(entity) {
     entity = entity | 0;
-    var __00__ = 0;
     free(entity | 0);
 }
 function destroyAllEntities() {
-    var __00__ = 0;
 }
 function hasEntity(entity) {
     entity = entity | 0;
-    var __00__ = 0;
 }
 function getEntities(matching) {
     matching = matching | 0;
-    var __00__ = 0;
 }
 function getGroup(matching) {
     matching = matching | 0;
-    var __00__ = 0;
 }
 function updateGroupsComponentAddedOrRemoved(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    var __00__ = 0;
 }
 function updateGroupsComponentReplaced(entity, index, prevcomponent, newcomponent) {
     entity = entity | 0;
     index = index | 0;
     prevcomponent = prevcomponent | 0;
     newcomponent = newcomponent | 0;
-    var __00__ = 0;
 }
 function onEntityReleased(entity) {
     entity = entity | 0;
-    var __00__ = 0;
 }
 function addComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    var __00__ = 0;
+    if (!(entity_getEnabled(entity | 0) | 0)) {
+        EntityIsNotEnabledException();
+    }
+    if (entity_getComponent(entity | 0, index | 0) | 0) {
+        EntityAlreadyHasComponentException(index | 0);
+    }
+    entity_setComponent(entity | 0, index | 0, component | 0);
 }
 function removeComponent(entity, index) {
     entity = entity | 0;
     index = index | 0;
-    var __00__ = 0;
 }
 function replaceComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    var __00__ = 0;
 }
 function hasComponent(entity, index) {
     entity = entity | 0;
     index = index | 0;
-    var __00__ = 0;
 }    
 return { 
-    fib:fib,
-    fibz:fibz,
-    testInc:testInc,
     test:test,
     initialize:initialize,
     getTotalComponents:getTotalComponents,

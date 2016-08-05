@@ -71,7 +71,7 @@ function genrand_int32() {
         if ((mti | 0) == (N + 1 | 0)) {
             z = init_genrand(5489) | 0;
         }
-        for (kk = 0; (kk | 0 | 0) < (N - M | 0); kk = kk + 1 | 0) {
+        for (kk = 0; (kk|0) < (N - M | 0); kk = kk + 1 | 0) {
             __02__ = kk + 1 | 0;
             __03__ = mt + __02__ | 0;
             __04__ = __03__ << 2;
@@ -97,7 +97,7 @@ function genrand_int32() {
             __24__ = __23__ ^ __17__ | 0;
             HEAPU32[__13__ >> 2] = __24__ | 0;
         }
-        for (; (kk | 0 | 0) < (N - 1 | 0); kk = kk + 1 | 0) {
+        for (; (kk|0) < (N - 1 | 0); kk = kk + 1 | 0) {
             __25__ = kk + 1 | 0;
             __26__ = mt + __25__ | 0;
             __27__ = __26__ << 2;
@@ -170,12 +170,11 @@ function genrand_int32() {
 function test(n, m) {
     n = n | 0;
     m = m | 0;
-    var __00__ = 0;
     var i = 0;
     var j = 0;
     var z = 0;
-    for (i = 0 | 0; (i | 0 | 0) < (n | 0 | 0); i = i + 1 | 0) {
-        for (j = 0 | 0; (j | 0 | 0) < (m | 0 | 0); j = j + 1 | 0) {
+    for (i = 0 | 0; (i|0) < (n|0); i = i + 1 | 0) {
+        for (j = 0 | 0; (j|0) < (m|0); j = j + 1 | 0) {
             z = genrand_int32() | 0;
         }
     }

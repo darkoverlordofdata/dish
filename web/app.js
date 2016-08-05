@@ -110,7 +110,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
             }],
         execute: function() {
             exports_3("entity", entity = (function (stdlib, foreign, heap) {
-                "almost asm";
+                "use asm";
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
                 var HEAPI16 = new stdlib.Int16Array(heap);
@@ -219,7 +219,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
             }],
         execute: function() {
             exports_4("pool", pool = (function (stdlib, foreign, heap) {
-                "almost asm";
+                "use asm";
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
                 var HEAPI16 = new stdlib.Int16Array(heap);
@@ -246,97 +246,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var count = 0;
                 var index = 0;
                 var uniqueId = 0;
-                function inc(i) {
-                    i = i | 0;
-                    var __00__ = 0;
-                    var k = 0;
-                    k = i + 1 | 0;
-                    return k | 0;
-                }
-                function fib(x) {
-                    x = x | 0;
-                    var __01__ = 0, __02__ = 0;
-                    var result = 0;
-                    var f1 = 0;
-                    var f2 = 0;
-                    var x1 = 0;
-                    var x2 = 0;
-                    var b = 0;
-                    __01__ = 2 | 0;
-                    __02__ = x | 0;
-                    b = __02__ < __01__ | 0;
-                    if (b | 0) {
-                        result = 1 | 0;
-                    }
-                    else {
-                        x1 = x - 1 | 0;
-                        x2 = x - 2 | 0;
-                        f2 = fib(x2) | 0;
-                        f1 = fib(x1) | 0;
-                        result = f1 + f2 | 0;
-                    }
-                    return result | 0;
-                }
-                function fibz(x) {
-                    x = x | 0;
-                    var __01__ = 0, __02__ = 0;
-                    var result = 0;
-                    var f1 = 0;
-                    var f2 = 0;
-                    var x1 = 0;
-                    var x2 = 0;
-                    var b = 0;
-                    var i = 0;
-                    var a = 0;
-                    var v1 = 0;
-                    var v2 = 0;
-                    var v3 = 0;
-                    var v4 = 0;
-                    var v5 = 0;
-                    __01__ = 2 | 0;
-                    __02__ = x | 0;
-                    b = __02__ < __01__ | 0;
-                    if (b | 0) {
-                        result = 1 | 0;
-                    }
-                    else {
-                        i = 1;
-                        a = x;
-                        while (1) {
-                            v1 = i - 1 | 0;
-                            v2 = fibz(v1) | 0;
-                            v3 = i - 2 | 0;
-                            v4 = v2 + a | 0;
-                            v5 = v3 < 2 | 0;
-                            if (v5) {
-                                result = v4;
-                                return result | 0;
-                            }
-                            else {
-                                a = v4;
-                                i = v3;
-                            }
-                        }
-                    }
-                    return result | 0;
-                }
-                function testInc() {
-                    var __01__ = 0;
-                    var i = 0;
-                    var j = 0;
-                    var k = 0;
-                    i = 0;
-                    while ((i | 0) < 32767) {
-                        j = 0;
-                        while ((j | 0) < 32767) {
-                            __01__ = 32 >> 2;
-                            k = j & __01__;
-                            j = j + 1 | 0;
-                        }
-                        i = i + 1 | 0;
-                    }
-                    return k | 0;
-                }
                 function test(ptr, i) {
                     ptr = ptr | 0;
                     i = i | 0;
@@ -353,7 +262,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 }
                 function initialize(count) {
                     count = count | 0;
-                    var __00__ = 0;
                     if (init) {
                         totalComponents = count;
                         uniqueId = 0;
@@ -363,15 +271,12 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     return init | 0;
                 }
                 function getTotalComponents() {
-                    var __00__ = 0;
                     return totalComponents | 0;
                 }
                 function getCount() {
-                    var __00__ = 0;
                     return count | 0;
                 }
                 function createEntity() {
-                    var __00__ = 0;
                     var entity = 0;
                     var i = 0;
                     entity = entity_create(totalComponents | 0) | 0;
@@ -385,67 +290,59 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 }
                 function destroyEntity(entity) {
                     entity = entity | 0;
-                    var __00__ = 0;
                     free(entity | 0);
                 }
                 function destroyAllEntities() {
-                    var __00__ = 0;
                 }
                 function hasEntity(entity) {
                     entity = entity | 0;
-                    var __00__ = 0;
                 }
                 function getEntities(matching) {
                     matching = matching | 0;
-                    var __00__ = 0;
                 }
                 function getGroup(matching) {
                     matching = matching | 0;
-                    var __00__ = 0;
                 }
                 function updateGroupsComponentAddedOrRemoved(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    var __00__ = 0;
                 }
                 function updateGroupsComponentReplaced(entity, index, prevcomponent, newcomponent) {
                     entity = entity | 0;
                     index = index | 0;
                     prevcomponent = prevcomponent | 0;
                     newcomponent = newcomponent | 0;
-                    var __00__ = 0;
                 }
                 function onEntityReleased(entity) {
                     entity = entity | 0;
-                    var __00__ = 0;
                 }
                 function addComponent(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    var __00__ = 0;
+                    if (!(entity_getEnabled(entity | 0) | 0)) {
+                        EntityIsNotEnabledException();
+                    }
+                    if (entity_getComponent(entity | 0, index | 0) | 0) {
+                        EntityAlreadyHasComponentException(index | 0);
+                    }
+                    entity_setComponent(entity | 0, index | 0, component | 0);
                 }
                 function removeComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
-                    var __00__ = 0;
                 }
                 function replaceComponent(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    var __00__ = 0;
                 }
                 function hasComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
-                    var __00__ = 0;
                 }
                 return {
-                    fib: fib,
-                    fibz: fibz,
-                    testInc: testInc,
                     test: test,
                     initialize: initialize,
                     getTotalComponents: getTotalComponents,
@@ -765,7 +662,7 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_7, context_7
                         if ((mti | 0) == (N + 1 | 0)) {
                             z = init_genrand(5489) | 0;
                         }
-                        for (kk = 0; (kk | 0 | 0) < (N - M | 0); kk = kk + 1 | 0) {
+                        for (kk = 0; (kk | 0) < (N - M | 0); kk = kk + 1 | 0) {
                             __02__ = kk + 1 | 0;
                             __03__ = mt + __02__ | 0;
                             __04__ = __03__ << 2;
@@ -791,7 +688,7 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_7, context_7
                             __24__ = __23__ ^ __17__ | 0;
                             HEAPU32[__13__ >> 2] = __24__ | 0;
                         }
-                        for (; (kk | 0 | 0) < (N - 1 | 0); kk = kk + 1 | 0) {
+                        for (; (kk | 0) < (N - 1 | 0); kk = kk + 1 | 0) {
                             __25__ = kk + 1 | 0;
                             __26__ = mt + __25__ | 0;
                             __27__ = __26__ << 2;
@@ -864,12 +761,11 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_7, context_7
                 function test(n, m) {
                     n = n | 0;
                     m = m | 0;
-                    var __00__ = 0;
                     var i = 0;
                     var j = 0;
                     var z = 0;
-                    for (i = 0 | 0; (i | 0 | 0) < (n | 0 | 0); i = i + 1 | 0) {
-                        for (j = 0 | 0; (j | 0 | 0) < (m | 0 | 0); j = j + 1 | 0) {
+                    for (i = 0 | 0; (i | 0) < (n | 0); i = i + 1 | 0) {
+                        for (j = 0 | 0; (j | 0) < (m | 0); j = j + 1 | 0) {
                             z = genrand_int32() | 0;
                         }
                     }
@@ -889,18 +785,21 @@ System.register("test-twister", ["ffi", "stdlib"], function(exports_7, context_7
 /*
  * Run tests
  */
-Promise.all(['entity', 'pool', 'mt19937', 'test-twister'].map(function (x) {
+Promise.all(['entity', 'pool', 'test-twister'].map(function (x) {
     return System["import"](x);
 })).then(function (arg) {
-    var MersenneTwister, entity, mt19937, pool, ref, ref1, ref2, ref3;
-    (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], mt19937 = ref2.mt19937), (ref3 = arg[3], MersenneTwister = ref3.MersenneTwister);
+    var MersenneTwister, entity, pool, ref, ref1, ref2;
+    (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], MersenneTwister = ref2.MersenneTwister);
     return describe('MT19937', function () {
-        it('check', function () {
-            expect(MersenneTwister.genrand_int32()).to.equal(20535309);
-            expect(mt19937.genrand_int32()).to.equal(20535309);
-            return expect(mt19937ar.genrand_int32()).to.equal(20535309);
+        it('Same result', function () {
+            var i, k, results;
+            results = [];
+            for (i = k = 0; k <= 4; i = ++k) {
+                results.push(expect(MersenneTwister.genrand_int32()).to.equal(mt19937ar.genrand_int32()));
+            }
+            return results;
         });
-        it('time js', function () {
+        it('Speed js', function () {
             var i, j, k, l, z;
             for (i = k = 0; k <= 1000; i = ++k) {
                 for (j = l = 0; l <= 32767; j = ++l) {
@@ -909,8 +808,8 @@ Promise.all(['entity', 'pool', 'mt19937', 'test-twister'].map(function (x) {
             }
             return expect(0).to.equal(0);
         });
-        return it('time dish', function () {
-            mt19937.test(1000, 32767);
+        return it('Speed dish', function () {
+            MersenneTwister.test(1000, 32767);
             return expect(0).to.equal(0);
         });
     });

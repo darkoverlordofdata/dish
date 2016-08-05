@@ -3,7 +3,7 @@ import Ffi from 'ffi'
 import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
 export const entity = (function(stdlib, foreign, heap) {
-"almost asm";
+"use asm";
 var HEAPI8 = new stdlib.Int8Array(heap);
 var HEAPU8 = new stdlib.Uint8Array(heap);
 var HEAPI16 = new stdlib.Int16Array(heap);

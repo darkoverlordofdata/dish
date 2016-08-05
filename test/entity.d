@@ -11,6 +11,7 @@ export int create(int totalComponents) {
 
 }
 
+// export int getId(this entity) {
 export int getId(int entity) {
     int id;
     id = entity[0];

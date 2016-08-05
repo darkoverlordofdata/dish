@@ -45,7 +45,6 @@ function and(s) {
     return x | 0;
 }
 function test() {
-    var __00__ = 0;
     var zz = 0;
     zz = ~~(20) | 0;
     return zz | 0;

@@ -17,7 +17,6 @@ var free = foreign.free;
 var buf = 0;
 function factorial(n) {
     n = n | 0;
-    var __00__ = 0;
     var i = 0;
     var result = 0;
     result = 0;
@@ -28,7 +27,6 @@ function factorial(n) {
 }
 function alloc(n) {
     n = n | 0;
-    var __00__ = 0;
     buf = (malloc(n << 2) | 0) >> 2;
     return buf | 0;
 }
@@ -64,14 +62,12 @@ function setEntityId(entity, id) {
     return entity | 0;
 }
 function createEntity() {
-    var __00__ = 0;
     var entity = 0;
     entity = (malloc(20 << 2) | 0) >> 2;
     entity = setEntityId(entity, 42) | 0;
     return entity | 0;
 }
 function createEntity2() {
-    var __00__ = 0;
     var entity = 0;
     entity = createEntity() | 0;
     return entity | 0;

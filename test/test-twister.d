@@ -9,7 +9,7 @@ const int MATRIX_A    = 0x9908b0df; /* constant vector a */
 const int UPPER_MASK  = 0x80000000; /* most significant w-r bits */
 const int LOWER_MASK  = 0x7fffffff; /* least significant r bits */
 
-uint[] mt;       /* ptr -> the array for the state vector  */
+uint[] mt;      /* ptr -> the array for the state vector  */
 int mti = 625;  /* mti==N+1 means mt[N] is not initialized */
 int[] mag01;
 
