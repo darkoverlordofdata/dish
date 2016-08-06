@@ -98,7 +98,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var ffi_1, ffi_2, stdlib_1;
-    var entity;
+    var Entity;
     return {
         setters:[
             function (ffi_1_1) {
@@ -109,7 +109,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 stdlib_1 = stdlib_1_1;
             }],
         execute: function() {
-            exports_3("entity", entity = (function (stdlib, foreign, heap) {
+            exports_3("Entity", Entity = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI8 = new stdlib.Int8Array(heap);
                 var HEAPU8 = new stdlib.Uint8Array(heap);
@@ -197,8 +197,8 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     setComponent: setComponent,
                 };
             }(stdlib_1.default, ffi_1.default, ffi_2.buffer)));
-            for (var k in entity) {
-                ffi_1.default['entity_' + k] = entity[k];
+            for (var k in Entity) {
+                ffi_1.default['Entity_' + k] = Entity[k];
             }
         }
     }
@@ -232,13 +232,13 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var free = foreign.free;
                 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
                 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
-                var entity_ctor = foreign.entity_ctor;
-                var entity_getId = foreign.entity_getId;
-                var entity_setId = foreign.entity_setId;
-                var entity_getEnabled = foreign.entity_getEnabled;
-                var entity_setEnabled = foreign.entity_setEnabled;
-                var entity_getComponent = foreign.entity_getComponent;
-                var entity_setComponent = foreign.entity_setComponent;
+                var Entity_ctor = foreign.Entity_ctor;
+                var Entity_getId = foreign.Entity_getId;
+                var Entity_setId = foreign.Entity_setId;
+                var Entity_getEnabled = foreign.Entity_getEnabled;
+                var Entity_setEnabled = foreign.Entity_setEnabled;
+                var Entity_getComponent = foreign.Entity_getComponent;
+                var Entity_setComponent = foreign.Entity_setComponent;
                 var POOL_SIZE = 4096;
                 var init = 1;
                 var pool = 0;
@@ -279,12 +279,11 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var ent = 0;
                     var i = 0;
                     uniqueId = uniqueId + 1 | 0;
-                    undefined(totalComponents | 0);
-                    ent = entity_ctor(totalComponents | 0) | 0;
-                    entity_setId(ent | 0, uniqueId | 0);
-                    entity_setEnabled(ent | 0, 1 | 0);
+                    ent = Entity_ctor(totalComponents | 0) | 0;
+                    Entity_setId(ent | 0, uniqueId | 0);
+                    Entity_setEnabled(ent | 0, 1 | 0);
                     for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
-                        entity_setComponent(ent | 0, i | 0, 0 | 0);
+                        Entity_setComponent(ent | 0, i | 0, 0 | 0);
                     }
                     return ent | 0;
                 }
@@ -327,7 +326,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     if (entity.getComponent(index | 0) | 0) {
                         EntityAlreadyHasComponentException(index | 0);
                     }
-                    entity_setComponent(entity | 0, index | 0, component | 0);
+                    Entity_setComponent(entity | 0, index | 0, component | 0);
                 }
                 function removeComponent(entity, index) {
                     entity = entity | 0;

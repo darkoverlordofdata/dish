@@ -1,5 +1,5 @@
 
-module entity;
+module Entity;
 
 export int ctor(int totalComponents) {
     int e;

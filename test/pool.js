@@ -16,13 +16,13 @@ var malloc = foreign.malloc;
 var free = foreign.free;
 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
-var entity_ctor = foreign.entity_ctor;
-var entity_getId = foreign.entity_getId;
-var entity_setId = foreign.entity_setId;
-var entity_getEnabled = foreign.entity_getEnabled;
-var entity_setEnabled = foreign.entity_setEnabled;
-var entity_getComponent = foreign.entity_getComponent;
-var entity_setComponent = foreign.entity_setComponent;
+var Entity_ctor = foreign.Entity_ctor;
+var Entity_getId = foreign.Entity_getId;
+var Entity_setId = foreign.Entity_setId;
+var Entity_getEnabled = foreign.Entity_getEnabled;
+var Entity_setEnabled = foreign.Entity_setEnabled;
+var Entity_getComponent = foreign.Entity_getComponent;
+var Entity_setComponent = foreign.Entity_setComponent;
 var POOL_SIZE = 4096;
 var init = 1;
 var pool = 0;
@@ -63,12 +63,11 @@ function createEntity() {
     var ent = 0;
     var i = 0;
     uniqueId = uniqueId + 1 | 0;
-    undefined(totalComponents | 0);
-    ent = entity_ctor(totalComponents | 0) | 0;
-    entity_setId(ent | 0, uniqueId | 0);
-    entity_setEnabled(ent | 0, 1 | 0);
+    ent = Entity_ctor(totalComponents | 0) | 0;
+    Entity_setId(ent | 0, uniqueId | 0);
+    Entity_setEnabled(ent | 0, 1 | 0);
     for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
-        entity_setComponent(ent | 0, i | 0, 0 | 0);
+        Entity_setComponent(ent | 0, i | 0, 0 | 0);
     }
     return ent | 0;
 }
@@ -111,7 +110,7 @@ function addComponent(entity, index, component) {
     if (entity.getComponent(index | 0) | 0) {
         EntityAlreadyHasComponentException(index | 0);
     }
-    entity_setComponent(entity | 0, index | 0, component | 0);
+    Entity_setComponent(entity | 0, index | 0, component | 0);
 }
 function removeComponent(entity, index) {
     entity = entity | 0;

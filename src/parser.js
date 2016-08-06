@@ -457,7 +457,6 @@ function parse(input, mangle) {
                     malloc = true
                     let klass = input.next()
                     klass.value = `${klass.value}_ctor`
-                    console.log(klass)
                     const arg = []
                     let pos = 0
                     expect('(')
@@ -479,7 +478,7 @@ function parse(input, mangle) {
                         // console.log('node', arg[i], node)
                         params.push(node)
                     }
-                    return factory.CallExpression(klass, params)
+                    return factory.NewClass(name, klass, params)
                     
                 }
                 expect('[')

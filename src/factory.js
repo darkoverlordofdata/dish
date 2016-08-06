@@ -31,6 +31,7 @@ module.exports = {
     Return: Return,
     Print: Print,
     New: New,
+    NewClass: NewClass,
     AssignmentStatementCallInt: AssignmentStatementCallInt,
     AssignmentStatementCallDouble: AssignmentStatementCallDouble
 }
@@ -60,6 +61,39 @@ function Print(args) {
         }        
     }
 }
+
+
+function NewClass(name, klass, args) {
+    return {
+        "type": "ExpressionStatement",
+        "expression": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+                "type": "Identifier",
+                "name": name
+            },
+            "right": {
+                "type": "BinaryExpression",
+                "operator": "|",
+                "left": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": klass.value
+                    },
+                    "arguments": args || []
+                },
+                "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                }
+            }
+        }
+    }
+}
+
 
 
 // function New(name, size, type, id) {

@@ -7,13 +7,13 @@ import EntityIsNotEnabledException ;
 import EntityAlreadyHasComponentException;
 
 /** import entity methods */
-import entity.ctor;
-import entity.getId;
-import entity.setId;
-import entity.getEnabled;
-import entity.setEnabled;
-import entity.getComponent;
-import entity.setComponent;
+import Entity.ctor;
+import Entity.getId;
+import Entity.setId;
+import Entity.getEnabled;
+import Entity.setEnabled;
+import Entity.getComponent;
+import Entity.setComponent;
 
 const int POOL_SIZE = 0x1000;
 bool init = true;
@@ -67,8 +67,7 @@ export int createEntity() {
 
     uniqueId = uniqueId+1;
 
-    ent = new entity(totalComponents|0);
-    ent = entity_ctor(totalComponents|0);
+    ent = new Entity(totalComponents|0);
     ent.setId(uniqueId|0);
     ent.setEnabled(1|0);
     for (i=0; i<(totalComponents|0); i++) {

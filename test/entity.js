@@ -2,7 +2,7 @@
 import Ffi from 'ffi'
 import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
-export const entity = (function(stdlib, foreign, heap) {
+export const Entity = (function(stdlib, foreign, heap) {
 "use asm";
 var HEAPI8 = new stdlib.Int8Array(heap);
 var HEAPU8 = new stdlib.Uint8Array(heap);
@@ -90,6 +90,6 @@ return {
     setComponent:setComponent, 
 };
 }(Stdlib, Ffi, buffer))
-for (let k in entity) { 
-    Ffi['entity_'+k] = entity[k] 
+for (let k in Entity) { 
+    Ffi['Entity_'+k] = Entity[k] 
 }
