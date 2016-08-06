@@ -26,9 +26,15 @@ Promise.all(['entity', 'pool', 'test-twister'].map(function(x) {
       }
       return expect(0).to.equal(0);
     });
-    return it('Speed dish', function() {
+    it('Speed dish', function() {
       MersenneTwister.test(1000, 32767);
       return expect(0).to.equal(0);
+    });
+    return it('Create entity', function() {
+      var e;
+      pool.initialize(10);
+      e = pool.createEntity();
+      return expect(entity.getId(e)).to.equal(1);
     });
   });
 }, function(err) {

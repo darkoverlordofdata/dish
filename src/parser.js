@@ -57,6 +57,7 @@ function parse(input, mangle) {
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
     const exporting = {}
+    const methods = {}
 
     let block = [] // current output block
     let currentScope = ''
@@ -161,6 +162,7 @@ function parse(input, mangle) {
         if (matchKeyword('import')) return parseImport()
         if (matchKeyword('uint'))   return parseUint32()
         if (matchKeyword('int'))    return parseInt32()
+        if (matchKeyword('void'))   return parseVoid()
         //=================================
         input.raise('Unexpected token: ')
     }
@@ -179,6 +181,7 @@ function parse(input, mangle) {
         if (matchKeyword('float'))  return parseFloat32(currentScope)
         if (matchKeyword('int'))    return parseInt32(currentScope)
         if (matchKeyword('uint'))   return parseUint32(currentScope)
+        if (matchKeyword('void'))   return parseVoid(currentScope)
         if (currentScope !== priorScope) {
             expression.reset()
             priorScope = currentScope
@@ -223,9 +226,11 @@ function parse(input, mangle) {
                 case '[':
                     input.putBack()
                     return parseVarAssignment(body)
+                case '.':
+                    input.putBack()
+                    return parseMultiMethod(body)                    
             }
         }
-        //=================================
         input.raise('Unexpected token: ')
     }    
 
@@ -448,7 +453,34 @@ function parse(input, mangle) {
                     size = 3
                     heapf64 = true
                 } else {
-                    input.raise('Expecting type: [bool|int|uint|float|double]')
+                    //input.raise('Expecting type: [bool|int|uint|float|double]')
+                    malloc = true
+                    let klass = input.next()
+                    klass.value = `${klass.value}_ctor`
+                    console.log(klass)
+                    const arg = []
+                    let pos = 0
+                    expect('(')
+                    while (!match(')')) {
+                        if (match(',')) {
+                            expect(',')
+                            pos++
+                        } else {
+                            if (!arg[pos]) arg[pos] = []
+                            arg[pos].push(input.next())
+                        }
+
+                    }
+                    expect(')')
+                    const params = []
+                    for (let i=0; i<arg.length; i++) {
+                        //TODO: Coerce params - p1|0, +p2, fround(p3)
+                        let node = parseExp(arg[i])
+                        // console.log('node', arg[i], node)
+                        params.push(node)
+                    }
+                    return factory.CallExpression(klass, params)
+                    
                 }
                 expect('[')
                 while (!match(']')) {
@@ -504,13 +536,22 @@ function parse(input, mangle) {
                 }
 
             }
-        } else { /**  passthru simple assignment */
-            //console.log(name, ast)
+        } else { /**  simple assignment */
             let a;
             switch (ast.type) {
-                case 'Literal':
+                case 'Literal': 
+                    switch (ast.raw) {
+                        case 'true': 
+                            ast.value = 1
+                            ast.raw = '1'
+                            break
+                        case 'false':
+                            ast.value = 0
+                            ast.raw = '0'
+                            break
+                    }
                     a = factory.AssignmentStatement(name, ast)
-                    //console.log(JSON.stringify(a, null, 2))
+                    // console.log(JSON.stringify(a, null, 2))
                     return a
                 case 'Identifier':
                     a = factory.AssignmentStatement(name, ast)
@@ -739,6 +780,13 @@ function parse(input, mangle) {
 
     function parseExport() {
         expectKeyword('export')
+        if (matchKeyword('void')) {
+            expectKeyword('void')
+            const name = input.peek()
+            exporting[name.value] = name.value
+            input.putBack()
+            return parseVoid()
+        }
         if (matchKeyword('int')) {
             expectKeyword('int')
             const name = input.peek()
@@ -931,23 +979,70 @@ function parse(input, mangle) {
     /**
      * import func from lib:
      * 
-     * import method = lib.method;
+     * import lib.method;
+     * 
+     * import EntityIsNotEnabledException;
+     * import entity.create;
+     * import Math.log
+     * 
      */
     function parseImport() {
         expectKeyword('import')
         const name = input.next()
-        expect('=')
-        const libname = input.next()
-        const source = libname.value === 'Math' ? 'stdlib' : 'foreign'
         if (match('.')) {
             expect('.')
-            const method = input.next()
-            return factory.ImportDeclaration(source, `${libname.value}_${name.value}`)
+            let method = input.next()
+            if (name.value === 'Math') {
+                return factory.ImportDeclaration(method.value, 'stdlib', name.value, method.value)
+            } else {
+                methods[method.value] = name.value
+                return factory.ImportDeclaration(`${name.value}_${method.value}`, 'foreign', `${name.value}_${method.value}`)
+            }
         } else {
-            return factory.ImportDeclaration(source, name.value)
+            return factory.ImportDeclaration(name.value, 'foreign', name.value)
         }
     }
 
+    /**
+     * MultiMethod
+     * 
+     * TOOD: need a way to determine the type of selector
+     * so that I can dispatch to the correct multi-method
+     * Currently, this is limited to 1 method
+     * 
+     */
+    function parseMultiMethod() {
+        const _this = input.next()
+        expect('.')
+        const name = input.next()
+        name.value = `${methods[name.value]}_${name.value}`
+        const arg = [[
+            _this,
+            new Token(Token.Delimiter, '|'),
+            new Token(Token.Number, '0')
+        ]]
+        let pos = 1
+        expect('(')
+        while (!match(')')) {
+            if (match(',')) {
+                expect(',')
+                pos++
+            } else {
+                if (!arg[pos]) arg[pos] = []
+                arg[pos].push(input.next())
+            }
+
+        }
+        expect(')')
+        const params = []
+        for (let i=0; i<arg.length; i++) {
+            //TODO: Coerce params - p1|0, +p2, fround(p3)
+            let node = parseExp(arg[i])
+            // console.log('node', arg[i], node)
+            params.push(node)
+        }
+        return factory.CallExpression(name, params)
+    }
     /**
      * Print statement - wrapper for console.log
      * 
@@ -993,6 +1088,7 @@ function parse(input, mangle) {
                 case 'int':     castExpression = '(('+tokens.join(' ')+')|0)'; break
                 case 'double':  castExpression = '+('+tokens.join(' ')+')'; break
                 case 'float':   castExpression = 'fround('+tokens.join(' ')+')'; break
+                case 'void':    castExpression = 'void 0'; break
             }
             value = factory.Return(parseExp(castExpression))
         }
@@ -1068,6 +1164,20 @@ function parse(input, mangle) {
             return factory.IntDeclaration(name.value)
         }
     }
+
+    function parseVoid(scope) {
+        scope = scope || 'global'
+        expectKeyword('void')
+        const name = input.next()
+        if (input.peek().value === '(') { /** function definition */
+            symtbl[scope][name.value] = new Symbol(name.value, 'void', true)
+            return parseFunction(scope, 'void', name)
+
+        } else {
+            input.raise('Syntax Error: only function can be void')
+        }
+    }
+
 
     function parseWhile() {
         expectKeyword('while')

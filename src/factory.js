@@ -507,31 +507,67 @@ function FloatDeclaration(name, init) {
  * 
  * <|> var <name> = stdlib.libname.source;
  */
-function ImportDeclaration(libname, name) {
-    return {
-        "type": "VariableDeclaration",
-        "declarations": [
-            {
-                "type": "VariableDeclarator",
-                "id": {
-                    "type": "Identifier",
-                    "name": name
-                },
-                "init": {
-                    "type": "MemberExpression",
-                    "computed": false,
-                    "object": {
-                        "type": "Identifier",
-                        "name": libname,
-                    },
-                    "property": {
+function ImportDeclaration(name, object, method, method2) {
+    if (object === 'stdlib') {
+        return {
+            "type": "VariableDeclaration",
+            "declarations": [
+                {
+                    "type": "VariableDeclarator",
+                    "id": {
                         "type": "Identifier",
                         "name": name
+                    },
+                    "init": {
+                        "type": "MemberExpression",
+                        "computed": false,
+                        "object": {
+                            "type": "MemberExpression",
+                            "computed": false,
+                            "object": {
+                                "type": "Identifier",
+                                "name": object
+                            },
+                            "property": {
+                                "type": "Identifier",
+                                "name": method
+                            }
+                        },
+                        "property": {
+                            "type": "Identifier",
+                            "name": method2
+                        }
                     }
                 }
-            }
-        ],
-        "kind": "var"
+            ],
+            "kind": "var"
+        }
+    } else {
+        return {
+            "type": "VariableDeclaration",
+            "declarations": [
+                {
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": name
+                    },
+                    "init": {
+                        "type": "MemberExpression",
+                        "computed": false,
+                        "object": {
+                            "type": "Identifier",
+                            "name": object,
+                        },
+                        "property": {
+                            "type": "Identifier",
+                            "name": method
+                        }
+                    }
+                }
+            ],
+            "kind": "var"
+        }
     }
 }
 

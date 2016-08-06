@@ -3,17 +3,17 @@
  */
 module pool;
 
-import EntityIsNotEnabledException = EntityIsNotEnabledException;
-import EntityAlreadyHasComponentException = EntityAlreadyHasComponentException;
+import EntityIsNotEnabledException ;
+import EntityAlreadyHasComponentException;
 
 /** import entity methods */
-import create = entity.create;
-import getId = entity.getId;
-import setId = entity.setId;
-import getEnabled = entity.getEnabled;
-import setEnabled = entity.setEnabled;
-import getComponent = entity.getComponent
-import setComponent = entity.setComponent
+import entity.ctor;
+import entity.getId;
+import entity.setId;
+import entity.getEnabled;
+import entity.setEnabled;
+import entity.getComponent;
+import entity.setComponent;
 
 const int POOL_SIZE = 0x1000;
 bool init = true;
@@ -44,14 +44,13 @@ export int test(int ptr, int i) {
  * @param count int number of components per entity
  * @returns false
  */
-export int initialize(int count) {
+export void initialize(int count) {
     if (init) {
         totalComponents = count;
         uniqueId = 0;
         pool = new int[POOL_SIZE];
-        init = 0;
+        init = false;
     }
-    return init;
 }
 
 export int getTotalComponents() {
@@ -63,21 +62,19 @@ export int getCount() {
 }
 
 export int createEntity() {
-    
-    int[] entity;
+    int[] ent;
     int i;
-
-    entity = entity_create(totalComponents|0);
 
     uniqueId = uniqueId+1;
 
-    entity_setId(entity|0, uniqueId|0);
-    entity_setEnabled(entity|0, 1|0);
-
+    ent = new entity(totalComponents|0);
+    ent = entity_ctor(totalComponents|0);
+    ent.setId(uniqueId|0);
+    ent.setEnabled(1|0);
     for (i=0; i<(totalComponents|0); i++) {
-        entity_setComponent(entity|0, i|0, 0|0);
+        ent.setComponent(i|0, 0|0);
     }
-    return entity;
+    return ent;
 }
 
 export int destroyEntity(int entity) {
@@ -114,15 +111,13 @@ export int onEntityReleased(int entity) {
 
 
 export int addComponent(int entity, int index, int component) {
-    // if (!(entity.getEnabled()|0)) {
-    if (!(entity_getEnabled(entity|0)|0)) {
+    if (!(entity.getEnabled()|0)) {
         EntityIsNotEnabledException();
     }
-    // if (entity.getComponent(index|0)|0) {
-    if (entity_getComponent(entity|0, index|0)|0) {
+    if (entity.getComponent(index|0)|0) {
         EntityAlreadyHasComponentException(index|0);
     }
-    entity_setComponent(entity|0, index|0, component|0);
+    entity.setComponent(index|0, component|0);
     //entity_onComponentAdded(entity|0, index|0, component|0);
 
 }

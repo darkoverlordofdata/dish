@@ -22,5 +22,10 @@ Promise.all(['entity', 'pool', 'test-twister'].map((x) ->
 
         expect(0).to.equal(0)
 
+      it 'Create entity', ->
+        pool.initialize(10)
+        e = pool.createEntity()
+        expect(entity.getId(e)).to.equal(1)
+
   , (err) -> console.log err
 

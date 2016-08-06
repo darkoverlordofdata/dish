@@ -121,7 +121,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
-                function create(totalComponents) {
+                function ctor(totalComponents) {
                     totalComponents = totalComponents | 0;
                     var __01__ = 0, __02__ = 0;
                     var e = 0;
@@ -188,7 +188,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     HEAPI32[__03__ >> 2] = value | 0;
                 }
                 return {
-                    create: create,
+                    ctor: ctor,
                     getId: getId,
                     setId: setId,
                     getEnabled: getEnabled,
@@ -232,7 +232,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var free = foreign.free;
                 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
                 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
-                var entity_create = foreign.entity_create;
+                var entity_ctor = foreign.entity_ctor;
                 var entity_getId = foreign.entity_getId;
                 var entity_setId = foreign.entity_setId;
                 var entity_getEnabled = foreign.entity_getEnabled;
@@ -268,7 +268,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                         pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
                         init = 0;
                     }
-                    return init | 0;
                 }
                 function getTotalComponents() {
                     return totalComponents | 0;
@@ -277,16 +276,17 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     return count | 0;
                 }
                 function createEntity() {
-                    var entity = 0;
+                    var ent = 0;
                     var i = 0;
-                    entity = entity_create(totalComponents | 0) | 0;
                     uniqueId = uniqueId + 1 | 0;
-                    entity_setId(entity | 0, uniqueId | 0);
-                    entity_setEnabled(entity | 0, 1 | 0);
+                    undefined(totalComponents | 0);
+                    ent = entity_ctor(totalComponents | 0) | 0;
+                    entity_setId(ent | 0, uniqueId | 0);
+                    entity_setEnabled(ent | 0, 1 | 0);
                     for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
-                        entity_setComponent(entity | 0, i | 0, 0 | 0);
+                        entity_setComponent(ent | 0, i | 0, 0 | 0);
                     }
-                    return entity | 0;
+                    return ent | 0;
                 }
                 function destroyEntity(entity) {
                     entity = entity | 0;
@@ -321,10 +321,10 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    if (!(entity_getEnabled(entity | 0) | 0)) {
+                    if (!(entity.getEnabled() | 0)) {
                         EntityIsNotEnabledException();
                     }
-                    if (entity_getComponent(entity | 0, index | 0) | 0) {
+                    if (entity.getComponent(index | 0) | 0) {
                         EntityAlreadyHasComponentException(index | 0);
                     }
                     entity_setComponent(entity | 0, index | 0, component | 0);
@@ -808,9 +808,15 @@ Promise.all(['entity', 'pool', 'test-twister'].map(function (x) {
             }
             return expect(0).to.equal(0);
         });
-        return it('Speed dish', function () {
+        it('Speed dish', function () {
             MersenneTwister.test(1000, 32767);
             return expect(0).to.equal(0);
+        });
+        return it('Create entity', function () {
+            var e;
+            pool.initialize(10);
+            e = pool.createEntity();
+            return expect(entity.getId(e)).to.equal(1);
         });
     });
 }, function (err) {

@@ -26,11 +26,11 @@ Features
 * generates import/export bindings.
 * generates a module header
 * similar restrictions as asm.js - no strings, etc.
-* module level only allows declarations - import, export, int, float, double. 
+* module level only allows declarations - import, export, int, float, double, void. 
 * one level of nesting - functions can only be declared at the module level.
 * import/export can only be used at the module level.
 * within a function: break, case, continue, do, else, for, if, return, switch, while
-* added sugar for heap management and array types.
+* added sugar for heap management, array types, and generic methods.
 * multiple modules share 1 heap
 * use 3rd party npm module 'malloc' for heap implementation. (patched to run in the browser)
 

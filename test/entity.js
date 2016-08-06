@@ -14,7 +14,7 @@ var HEAPF32 = new stdlib.Float32Array(heap);
 var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
-function create(totalComponents) {
+function ctor(totalComponents) {
     totalComponents = totalComponents | 0;
     var __01__ = 0, __02__ = 0;
     var e = 0;
@@ -81,7 +81,7 @@ function setComponent(entity, index, value) {
     HEAPI32[__03__ >> 2] = value | 0;
 }    
 return { 
-    create:create,
+    ctor:ctor,
     getId:getId,
     setId:setId,
     getEnabled:getEnabled,
