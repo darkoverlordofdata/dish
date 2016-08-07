@@ -1,40 +1,31 @@
 
 # dee·ish
 ## /dē-ish/ 
-#### an estools based language that targets asm.js
-
+#### a language that targets asm.js
 
 ## Why?
 Emscripten is great if you have an entire c++ application to port to the browser.
 But what about creating a library to use with existing javascipt? Hand coding asm.js is not pleasant.
 
 ## About dish
-Dish transpiles d-like code to asm.js. Code is generated from an ast using escodegen.
+Dish uses the *.d extension to leverage ide syntax hghlighting, and is not intended to transpile arbitrary d to js.
 
-Dish uses the *.d extension to leverage ide syntax hghlighting. 
+The goal of dish is to insulate me from the twiddly aspects of asm.js. 
 
-Dish is not intended to transpile arbitrary d to js.
+## Features
 
-Dish is a hack.
-
-
-The goal of dish is to insulate me from the twiddly syntax of asm.js. 
-
-Features
-
+* similar restrictions as asm.js:
+    * no strings.
+    * module level only allows declarations - import, export, int, float, double, void. 
+    * one level of nesting - functions can only be declared at the module level.
 * uses type information to add type coercions to generated code.
 * generates import/export bindings.
 * generates a module header
-* similar restrictions as asm.js - no strings, etc.
-* module level only allows declarations - import, export, int, float, double, void. 
-* one level of nesting - functions can only be declared at the module level.
-* import/export can only be used at the module level.
-* within a function: break, case, continue, do, else, for, if, return, switch, while
-* added sugar for heap management, array types, and generic methods.
+* added sugar for heap management, array types, and lite-weight obects
 * multiple modules share 1 heap
 * use 3rd party npm module 'malloc' for heap implementation. (patched to run in the browser)
 
-### example
+## Example
 
 #### test.d
 ```d
@@ -74,12 +65,12 @@ return {
 ```
 
 ## Status
-Not yet robust, the happy path is the MersenneTwister demo code,
-which runs about 20% faster than the original pojs code. (545 vs 405ms)
+Not yet robust, the MersenneTwister demo code is on the 'happy path'.
+It runs about 20% faster than the original pojs code. (545 vs 405ms)
 With compression and whitespace removal, it is also about the same size as the original.
 
 
-### notes
+## Notes
 
 A custom recursive descent parser produces SpiderMonkey AST as output. Escodegen is then used to 
 generate the final javascript code. 
@@ -89,6 +80,26 @@ is concerned - in standard javascript there is no difference. To work around thi
 wrapper - i.e. '0.0'. After the call to escodegen, these wrappers are removed using regexp. This works because
 quoted literals don't exist in asm.js, with the sole exception of the 'use asm' pragma, therefore any quoted
 values I find are the floats that I've encoded. 
+
+
+Simple oop object reference is a pointer into the heap
+
+
+
+                        heap:
+                        ------------
+        var entity ->   |		| <- this = malloc(n)
+                        ------------
+                        |		|	|
+                        ------------
+                        |		|	|
+                        ------------
+                        |		| <-
+                        ------------
+                        |		|
+                        ------------
+                        |		|
+                        ------------
 
 
 ### asm.js resources

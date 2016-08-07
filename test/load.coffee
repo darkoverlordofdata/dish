@@ -2,7 +2,7 @@
  * Run tests
 ###
 Promise.all(['entity', 'pool', 'test-twister'].map((x) -> 
-  System.import(x))).then ([{entity}, {pool}, {MersenneTwister}]) ->
+  System.import(x))).then ([{Entity}, {pool}, {MersenneTwister}]) ->
 
     describe 'MT19937', ->
 
@@ -25,7 +25,7 @@ Promise.all(['entity', 'pool', 'test-twister'].map((x) ->
       it 'Create entity', ->
         pool.initialize(10)
         e = pool.createEntity()
-        expect(entity.getId(e)).to.equal(1)
+        expect(Entity.getId(e)).to.equal(1)
 
   , (err) -> console.log err
 

@@ -61,8 +61,8 @@ export int getCount() {
     return count;
 }
 
-export int createEntity() {
-    int[] ent;
+export Entity createEntity() {
+    Entity ent;
     int i;
 
     uniqueId = uniqueId+1;
@@ -76,15 +76,15 @@ export int createEntity() {
     return ent;
 }
 
-export int destroyEntity(int entity) {
+export void destroyEntity(Entity entity) {
     free(entity|0);
 }
 
-export int destroyAllEntities() {
+export void destroyAllEntities() {
 
 }
 
-export int hasEntity(int entity) {
+export bool hasEntity(Entity entity) {
 
 }
 
@@ -96,42 +96,46 @@ export int getGroup(int matching) {
 
 }
 
-export int updateGroupsComponentAddedOrRemoved(int entity, int index, int component) {
+export void updateGroupsComponentAddedOrRemoved(Entity entity, int index, int component) {
 
 }
 
-export int updateGroupsComponentReplaced(int entity, int index, int prevcomponent, int newcomponent) {
+export void updateGroupsComponentReplaced(Entity entity, int index, int prevcomponent, int newcomponent) {
 
 }
 
-export int onEntityReleased(int entity) {
+export void onEntityReleased(Entity entity) {
 
 }
 
 
-export int addComponent(int entity, int index, int component) {
-    if (!(entity.getEnabled()|0)) {
+export void addComponent(Entity entity, int index, int component) {
+    bool enabled;
+    bool comp;
+
+    enabled = entity.getEnabled();
+    if (!enabled) {
         EntityIsNotEnabledException();
     }
-    if (entity.getComponent(index|0)|0) {
+    comp = entity.hasComponent(index)|0;
+    if (comp) {
         EntityAlreadyHasComponentException(index|0);
     }
     entity.setComponent(index|0, component|0);
-    //entity_onComponentAdded(entity|0, index|0, component|0);
+    // entity_onComponentAdded(entity|0, index|0, component|0);
+}
+
+export void removeComponent(Entity entity, int index) {
 
 }
 
-export int removeComponent(int entity, int index) {
-
+export void replaceComponent(Entity entity, int index, int component) {
 }
 
-export int replaceComponent(int entity, int index, int component) {
-}
-
-// export int getComponent(int entity, int index) {
+// export int getComponent(Entity entity, int index) {
 
 // }
 
-export bool hasComponent(int entity, int index) {
+export bool hasComponent(Entity entity, int index) {
 
 }

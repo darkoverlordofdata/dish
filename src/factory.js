@@ -1,7 +1,7 @@
 /*
  * Factory
  * 
- *  Create constructs as ast structures 
+ *  Create concepts with ast structures 
  */
 "use strict"
 const Token = require('./Token')

@@ -50,7 +50,6 @@ parsed.heapf32 = true
 parsed.heapf64 = true
 
 tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
-
 code = escodegen.generate(parsed.ast, verbatim: 'verbatim')
 
 out = tpl.render
@@ -71,7 +70,6 @@ out = tpl.render
     heapf32:    parsed.heapf32
     heapf64:    parsed.heapf64
     malloc:     parsed.malloc
-
 
 ###
  * Fix Ups

@@ -27,6 +27,7 @@ class Symbol {
             case 'int': this.size = 2; break
             case 'float': this.size = 2; break
             case 'double': this.size = 3; break
+            default: this.size = 2; break
         }
         switch(type) {
             case 'bool': this.heap = 'HEAPI32'; break
@@ -34,6 +35,7 @@ class Symbol {
             case 'int': this.heap = 'HEAPI32'; break
             case 'float': this.heap = 'HEAPF32'; break
             case 'double': this.heap = 'HEAPF64'; break
+            default: this.heap = 'HEAPI32'; break
         }
     }
 }
@@ -57,7 +59,7 @@ function parse(input, mangle) {
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
     const exporting = {}
-    const methods = {}
+    const types = {}
 
     let block = [] // current output block
     let currentScope = ''
@@ -81,7 +83,8 @@ function parse(input, mangle) {
         expect(';')
 
         while (!input.eof()) {
-            ast.body.push(parseGlobal())
+            let node = parseGlobal()
+            if (node) ast.body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
         }
         return {
@@ -164,6 +167,7 @@ function parse(input, mangle) {
         if (matchKeyword('int'))    return parseInt32()
         if (matchKeyword('void'))   return parseVoid()
         //=================================
+        if (types[input.peek().value])  return parseType()
         input.raise('Unexpected token: ')
     }
 
@@ -228,8 +232,13 @@ function parse(input, mangle) {
                     return parseVarAssignment(body)
                 case '.':
                     input.putBack()
-                    return parseMultiMethod(body)                    
+                    return parseMethod(body)                    
             }
+        }
+        /** If we get here, it may be a custom type */
+        input.putBack()
+        if (types[input.peek().value]) {
+            return parseType(currentScope)
         }
         input.raise('Unexpected token: ')
     }    
@@ -290,6 +299,9 @@ function parse(input, mangle) {
                                 temp.push(token)
                                 temp.push(new Token(Token.Delimiter, ')'))
                                 break
+                            default:
+                                console.log('WTF 303')
+                                process.exit(0)
                         }
                     } else {
                         temp.push(token)
@@ -347,19 +359,23 @@ function parse(input, mangle) {
         expect(')')
 
         const body = block = []
-        expect('{')
+
         for (let i=0; i<args.length; i++) {
             const size = args[i].type.value === 'double' ? 3 : 2;
             symtbl[name.value][args[i].name.value] = new Symbol(args[i].name.value, args[i].type.value)
-
             switch(args[i].type.value) {
                 case 'bool':    body.push(factory.IntParameter(args[i].name)); break
                 case 'uint':    body.push(factory.IntParameter(args[i].name)); break
                 case 'int':     body.push(factory.IntParameter(args[i].name)); break
                 case 'float':   body.push(factory.FloatParameter(args[i].name)); break
                 case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
+                default: 
+                    if (types[args[i].type.value]) {
+                        body.push(factory.IntParameter(args[i].name)); break
+                    } else input.raise('Parameter type not found')        
             }
         }
+        expect('{')
         body.push(body.vars = factory.IntDeclaration(mangle?'$00':'__00__'))
         while (!match('}')) {
             body.push(parseStatement(body))
@@ -389,7 +405,6 @@ function parse(input, mangle) {
         for (let i=0; i<arg.length; i++) {
             //TODO: Coerce params - p1|0, +p2, fround(p3)
             let node = parseExp(arg[i])
-            //console.log('node', arg[i], node)
             params.push(node)
         }
         return factory.CallExpression(name, params)
@@ -409,6 +424,8 @@ function parse(input, mangle) {
         let lhs = true
         let indexer = false
         let heapname = ''
+        let method = ''
+        let _this = ''
 
         while (!match(';')) {
             if (name === '') { /* next token MUST be the lhs, therefore it's the name */
@@ -427,6 +444,22 @@ function parse(input, mangle) {
             } else if (lhs && match(']')) {
                 expect(']')
                 indexer = false
+            } else if (lhs && match('.')) {
+                expect('.')
+                if (indexer) 
+                    index.push(input.next().value)
+                else {
+                    method = input.next().value
+                    tokens.push(input.next().value)
+                }
+            } else if (!lhs && match('.')) {
+                expect('.')
+                if (indexer) 
+                    index.push(input.next().value)
+                else {
+                    method = input.next().value
+                    tokens.push(input.next().value)
+                }
             } else if (matchKeyword('new')) {
                 expectKeyword('new') 
                 let size = 0
@@ -475,7 +508,6 @@ function parse(input, mangle) {
                     for (let i=0; i<arg.length; i++) {
                         //TODO: Coerce params - p1|0, +p2, fround(p3)
                         let node = parseExp(arg[i])
-                        // console.log('node', arg[i], node)
                         params.push(node)
                     }
                     return factory.NewClass(name, klass, params)
@@ -502,6 +534,12 @@ function parse(input, mangle) {
                 else
                     tokens.push(input.next().value)
             }
+        }
+
+        if (method !== '') {
+            _this = tokens[0]
+            let sym = symtbl[currentScope][_this]
+            tokens[0] = `${sym.type}_${method}`
         }
 
         for (let i in tokens) {
@@ -550,23 +588,31 @@ function parse(input, mangle) {
                             break
                     }
                     a = factory.AssignmentStatement(name, ast)
-                    // console.log(JSON.stringify(a, null, 2))
                     return a
                 case 'Identifier':
                     a = factory.AssignmentStatement(name, ast)
-                    //console.log(JSON.stringify(a, null, 2))
                     return a
                 case 'CallExpression':
-                    //console.log('CallExpression', sym.type, JSON.stringify(ast, null, 2))
+                    if (_this !== '') {
+                        ast.arguments.unshift(
+                        { type: 'BinaryExpression',
+                            operator: '|',
+                            left: { type: 'Identifier', name: _this },
+                            right: { type: 'Literal', value: 0, raw: '0' } } 
+                        )
+                    }
                     switch (sym.type) {
                         case 'int': return factory.AssignmentStatementCallInt(name, ast)
                         case 'uint': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'bool': return factory.AssignmentStatementCallInt(name, ast)
                         //case 'float': return factory.AssignmentStatementCallFloat(name, ast)
                         case 'double': return factory.AssignmentStatementCallDouble(name, ast)
-                        case 'float': throw 'WTF???'
+                        case 'float': throw new Error('WTF???')
+                        default: throw new Error(`Unknown Symbol ${sym.type}`)
                     }
             }
         }
+
     }
 
     /**
@@ -821,6 +867,14 @@ function parse(input, mangle) {
             input.putBack()
             return parseFloat32()
         }
+        if (types[input.peek().value]) {
+            input.next()
+            const name = input.peek()
+            exporting[name.value] = name.value
+            input.putBack()
+            return parseType()
+        }
+        input.raise('Export type not found')
     }
 
     function parseFloat32(scope) {
@@ -994,7 +1048,7 @@ function parse(input, mangle) {
             if (name.value === 'Math') {
                 return factory.ImportDeclaration(method.value, 'stdlib', name.value, method.value)
             } else {
-                methods[method.value] = name.value
+                types[name.value] = name.value
                 return factory.ImportDeclaration(`${name.value}_${method.value}`, 'foreign', `${name.value}_${method.value}`)
             }
         } else {
@@ -1003,18 +1057,16 @@ function parse(input, mangle) {
     }
 
     /**
-     * MultiMethod
-     * 
-     * TOOD: need a way to determine the type of selector
-     * so that I can dispatch to the correct multi-method
-     * Currently, this is limited to 1 method
+     * Method
      * 
      */
-    function parseMultiMethod() {
+    function parseMethod() {
         const _this = input.next()
         expect('.')
         const name = input.next()
-        name.value = `${methods[name.value]}_${name.value}`
+
+        let sym = symtbl[currentScope][_this.value]
+        name.value = `${sym.type}_${name.value}`
         const arg = [[
             _this,
             new Token(Token.Delimiter, '|'),
@@ -1037,7 +1089,6 @@ function parse(input, mangle) {
         for (let i=0; i<arg.length; i++) {
             //TODO: Coerce params - p1|0, +p2, fround(p3)
             let node = parseExp(arg[i])
-            // console.log('node', arg[i], node)
             params.push(node)
         }
         return factory.CallExpression(name, params)
@@ -1088,6 +1139,7 @@ function parse(input, mangle) {
                 case 'double':  castExpression = '+('+tokens.join(' ')+')'; break
                 case 'float':   castExpression = 'fround('+tokens.join(' ')+')'; break
                 case 'void':    castExpression = 'void 0'; break
+                default:        castExpression = '(('+tokens.join(' ')+')|0)'; break
             }
             value = factory.Return(parseExp(castExpression))
         }
@@ -1121,6 +1173,49 @@ function parse(input, mangle) {
         expect('}')
         return factory.SwitchStatement(parseExp(tokens), cases)
     }
+
+    function parseType(scope) {
+        scope = scope || 'global'
+        let isArray = false
+        let klass = input.next()
+        if (match('[')) {
+            expect('[')
+            expect(']')
+            isArray = true
+            malloc = true
+            heapi32 = true
+        }
+        const name = input.next()
+        if (input.peek().value === '(') { /** function definition */
+            if (isArray) {
+                input.raise('Syntax Error: array found')
+            }
+            symtbl[scope][name.value] = new Symbol(name.value, klass.value, true)
+            return parseFunction(scope, klass.value, name)
+
+        } else if (match('=')) { /** initialization */
+            expect('=')
+            let tokens = []
+            while (!match(';')) {
+                tokens.push(input.next().value)
+            }
+            symtbl[scope][name.value] = new Symbol(name.value, klass.value, false, tokens, isArray)
+            if (scope === 'global') {
+                return factory.IntDeclaration(name.value, {
+                    "type":     "Literal",
+                    "value":    parseInt(tokens.join(''), 10),
+                    "raw":      parseInt(tokens.join(''), 10)
+                })
+            } else  {
+                return factory.IntDeclaration(name.value) 
+            }
+
+        } else {
+            symtbl[scope][name.value] = new Symbol(name.value, klass.value, false, '', isArray)
+            return factory.IntDeclaration(name.value)
+        }
+    }
+
 
     function parseUint32(scope) {
         scope = scope || 'global'

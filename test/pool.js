@@ -104,10 +104,14 @@ function addComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    if (!(entity.getEnabled() | 0)) {
+    var enabled = 0;
+    var comp = 0;
+    enabled = Entity_getEnabled(entity | 0) | 0;
+    if (!enabled) {
         EntityIsNotEnabledException();
     }
-    if (entity.getComponent(index | 0) | 0) {
+    comp = Entity_hasComponent(index)|0;
+    if (comp) {
         EntityAlreadyHasComponentException(index | 0);
     }
     Entity_setComponent(entity | 0, index | 0, component | 0);

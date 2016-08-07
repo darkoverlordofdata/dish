@@ -6,8 +6,8 @@
 Promise.all(['entity', 'pool', 'test-twister'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var MersenneTwister, entity, pool, ref, ref1, ref2;
-  (ref = arg[0], entity = ref.entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], MersenneTwister = ref2.MersenneTwister);
+  var Entity, MersenneTwister, pool, ref, ref1, ref2;
+  (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], pool = ref1.pool), (ref2 = arg[2], MersenneTwister = ref2.MersenneTwister);
   return describe('MT19937', function() {
     it('Same result', function() {
       var i, k, results;
@@ -34,7 +34,7 @@ Promise.all(['entity', 'pool', 'test-twister'].map(function(x) {
       var e;
       pool.initialize(10);
       e = pool.createEntity();
-      return expect(entity.getId(e)).to.equal(1);
+      return expect(Entity.getId(e)).to.equal(1);
     });
   });
 }, function(err) {
