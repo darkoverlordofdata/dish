@@ -80,19 +80,16 @@ function parse(input, mangle) {
 
     try {
 
-        expectKeyword('module') //  first keyword is required
-        const name = input.next().value
-        moduleName = name
-        expect(';')
-
-        while (!input.eof()) {
-            let node = parseGlobal(ast.body)
-            if (node) ast.body.push(node)
-            if (!input.eof()) if (match(';')) expect(';')
+        /** It's either a module or a class */
+        if (matchKeyword('module')) {
+            parseModule(ast.body)
+        } else if (matchKeyword('class')) {
+            parseClass(ast.body)
         }
+
         return {
             ast: ast,           //  main code body ast
-            name: name,         //  module name
+            name: moduleName,   //  module name
             float: float,       //  uses floats?
             malloc: malloc,     //  use heap?
             heapi8: heapi8,     //  heap views:
@@ -146,6 +143,32 @@ function parse(input, mangle) {
         else input.raise(`Expecting keyword: [${kw}]`)
     }
 
+    function parseModule(body) {
+        expectKeyword('module') //  first keyword is required
+        moduleName = input.next().value
+        expect(';')
+
+        while (!input.eof()) {
+            let node = parseGlobal(body)
+            if (node) body.push(node)
+            if (!input.eof()) if (match(';')) expect(';')
+        }
+    }
+
+    function parseClass(body) {
+        expectKeyword('class') //  first keyword is required
+        moduleName = input.next().value
+        expect('{')
+        while (!input.eof()) {
+            let node = parseGlobal(body)
+            if (node) body.push(node)
+            if (!input.eof()) if (match(';')) expect(';')
+            if (match('}')) break
+
+        }
+        expect('}')
+    }
+
     /**
      * Parse Global Scope
      * 
@@ -161,17 +184,21 @@ function parse(input, mangle) {
      */
     function parseGlobal(body) {
         //=================================
-        if (matchKeyword('bool'))   return parseBool()
-        if (matchKeyword('const'))  return parseConst()
-        if (matchKeyword('double')) return parseDouble()
-        if (matchKeyword('export')) return parseExport()
-        if (matchKeyword('float'))  return parseFloat32()
-        if (matchKeyword('import')) return parseImport(body)
-        if (matchKeyword('uint'))   return parseUint32()
-        if (matchKeyword('int'))    return parseInt32()
-        if (matchKeyword('void'))   return parseVoid()
+        if (matchKeyword('bool'))       return parseBool()
+        if (matchKeyword('const'))      return parseConst()
+        if (matchKeyword('double'))     return parseDouble()
+        if (matchKeyword('export'))     return parseExport('export')
+        if (matchKeyword('public'))     return parseExport('public')
+        if (matchKeyword('private'))    return parsePrivate()
+        if (matchKeyword('float'))      return parseFloat32()
+        if (matchKeyword('import'))     return parseImport(body)
+        if (matchKeyword('extern'))     return parseExtern(body)
+        if (matchKeyword('uint'))       return parseUint32()
+        if (matchKeyword('int'))        return parseInt32()
+        if (matchKeyword('void'))       return parseVoid()
         //=================================
         if (types[input.peek().value])  return parseType()
+
         input.raise('Unexpected token: ')
     }
 
@@ -834,8 +861,12 @@ function parse(input, mangle) {
         }
     }
 
-    function parseExport() {
-        expectKeyword('export')
+    function parsePrivate() {
+        expectKeyword('private')
+    }
+
+    function parseExport(which) {
+        expectKeyword(which)
         if (matchKeyword('void')) {
             expectKeyword('void')
             const name = input.peek()
@@ -892,7 +923,7 @@ function parse(input, mangle) {
             input.putBack()
             return parseType()
         }
-        input.raise('Export type not found: ')
+        input.raise(`Export/Public (${which}) type not found: `)
     }
 
     function parseFloat32(scope) {
@@ -1047,35 +1078,18 @@ function parse(input, mangle) {
         let c = factory.IfStatement(parseExp(tokens, false), _then, _else)
         return c;
     }
+
     /**
-     * import func from lib:
+     * import class from another asm.js class module
      * 
-     * import lib.method;
+     * import class = package.class;
      * 
-     * import EntityIsNotEnabledException;
-     * import entity.create;
-     * import Math.log
      * 
      */
     function parseImport(body) {
         expectKeyword('import')
         const name = input.next()
-        if (match('.')) {
-            /**
-             * import module.method;
-             */
-            expect('.')
-            let method = input.next()
-            if (name.value === 'Math') {
-                return factory.ImportDeclaration(method.value, 'stdlib', name.value, method.value)
-            } else {
-                types[name.value] = name.value
-                return factory.ImportDeclaration(`${name.value}_${method.value}`, 'foreign', `${name.value}_${method.value}`)
-            }
-        } else if (match('=')) {
-            /**
-             * import alias = package.module;
-             */
+        if (match('=')) {
             expect('=')
             const pname = input.next().value
             expect('.')
@@ -1085,12 +1099,36 @@ function parse(input, mangle) {
             for (let aname in api[pname][mname].api) {
                 body.push(factory.ImportDeclaration(`${mname}_${aname}`, 'foreign', `${mname}_${aname}`))
             }
-            
         } else {
             return factory.ImportDeclaration(name.value, 'foreign', name.value)
         }
     }
 
+    /**
+     * declare external javascript function:
+     * 
+     * 
+     * extern EntityIsNotEnabledException;
+     * extern entity.create;
+     * extern Math.log
+     * 
+     */
+    function parseExtern(body) {
+        expectKeyword('extern')
+        const name = input.next()
+        if (match('.')) {
+            expect('.')
+            let method = input.next()
+            if (name.value === 'Math') {
+                return factory.ImportDeclaration(method.value, 'stdlib', name.value, method.value)
+            } else {
+                types[name.value] = name.value
+                return factory.ImportDeclaration(`${name.value}_${method.value}`, 'foreign', `${name.value}_${method.value}`)
+            }
+        } else {
+            return factory.ImportDeclaration(name.value, 'foreign', name.value)
+        }
+    }
     /**
      * Method
      * 

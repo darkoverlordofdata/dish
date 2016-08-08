@@ -63,3 +63,41 @@ export int createEntity2() {
     
 }
 
+/**
+ * return value at ptr+i
+ */
+export int test(int ptr, int i) {
+    double x;
+    int[] value;
+    
+    int k;
+    int result;
+    value = ptr;
+
+    result = value[i];
+    return result;
+}
+
+export void perf1(int n, int m) {
+    int i;
+    int j;
+    int z;
+
+    for (i=0|0; (i|0) < (n|0);i = i+1|0) {
+        for (j=0|0; (j|0) < (m|0);j = j+1|0) {
+            z = test(1, 0);
+        }
+    }    
+}
+
+export void perf2(int n, int m) {
+    int i;
+    int j;
+    int z;
+
+    for (i=0|0; (i|0) < (n|0);i = i+1|0) {
+        for (j=0|0; (j|0) < (m|0);j = j+1|0) {
+            z =Entity_test(1, 0);
+        }
+    }    
+}

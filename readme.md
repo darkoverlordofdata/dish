@@ -22,6 +22,8 @@ The goal of dish is to insulate me from the twiddly aspects of asm.js.
 * generates import/export bindings.
 * generates a module header
 * added sugar for heap management, array types, and lite-weight obects
+    * the asm.js module is a basic class unit. The penalty of cross-module calls is insignificant-
+        less than 0.1% / 5ms per billion calls
 * multiple modules share 1 heap
 * use 3rd party npm module 'malloc' for heap implementation. (patched to run in the browser)
 

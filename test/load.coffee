@@ -36,6 +36,5 @@ Promise.all(['entity', 'pool', 'test-twister'].map((x) ->
         expect(Entity.getId(e2)).to.equal(MAX+2)
 
 
-
   , (err) -> console.log err
 

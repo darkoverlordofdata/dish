@@ -61,3 +61,17 @@ export int test() {
     return zz;
 
 }
+/**
+ * return value at ptr+i
+ */
+export int test(int ptr, int i) {
+    double x;
+    int[] value;
+    
+    int k;
+    int result;
+    value = ptr;
+
+    result = value[i];
+    return result;
+}

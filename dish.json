@@ -7,6 +7,7 @@
         "ctor": {
           "totalComponents": "int"
         },
+        "callme": {},
         "getId": {
           "entity": "Entity"
         },
@@ -36,10 +37,63 @@
       "name": "pool",
       "source": "test/pool.d",
       "api": {
-        "test": {
-          "ptr": "int",
-          "i": "int"
+        "initialize": {
+          "count": "int"
         },
+        "getTotalComponents": {},
+        "getCount": {},
+        "createEntity": {},
+        "destroyEntity": {
+          "entity": "Entity"
+        },
+        "destroyAllEntities": {},
+        "hasEntity": {
+          "entity": "Entity"
+        },
+        "getEntities": {
+          "matching": "int"
+        },
+        "getGroup": {
+          "matching": "int"
+        },
+        "updateGroupsComponentAddedOrRemoved": {
+          "entity": "Entity",
+          "index": "int",
+          "component": "int"
+        },
+        "updateGroupsComponentReplaced": {
+          "entity": "Entity",
+          "index": "int",
+          "prevcomponent": "int",
+          "newcomponent": "int"
+        },
+        "onEntityReleased": {
+          "entity": "Entity"
+        },
+        "addComponent": {
+          "entity": "Entity",
+          "index": "int",
+          "component": "int"
+        },
+        "removeComponent": {
+          "entity": "Entity",
+          "index": "int"
+        },
+        "replaceComponent": {
+          "entity": "Entity",
+          "index": "int",
+          "component": "int"
+        },
+        "hasComponent": {
+          "entity": "Entity",
+          "index": "int"
+        }
+      }
+    },
+    "": {
+      "name": "",
+      "source": "test/pool.d",
+      "api": {
         "initialize": {
           "count": "int"
         },

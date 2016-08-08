@@ -135,6 +135,9 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     e = (malloc(entitySize << 2) | 0) >> 2;
                     return e | 0;
                 }
+                function callme() {
+                    console.log('WTF?');
+                }
                 function getId(entity) {
                     entity = entity | 0;
                     var __01__ = 0, __02__ = 0;
@@ -174,7 +177,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     index = index | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
                     var component = 0;
-                    __01__ = COMPONENT + index | 0;
+                    __01__ = index + COMPONENT | 0;
                     __02__ = entity + __01__ | 0;
                     __03__ = __02__ << 2;
                     component = HEAPI32[__03__ >> 2] | 0;
@@ -185,7 +188,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     index = index | 0;
                     value = value | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
-                    __01__ = COMPONENT + index;
+                    __01__ = index + COMPONENT;
                     __02__ = entity + __01__;
                     __03__ = __02__ << 2;
                     HEAPI32[__03__ >> 2] = value;
@@ -234,6 +237,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 var Entity_ctor = foreign.Entity_ctor;
+                var Entity_callme = foreign.Entity_callme;
                 var Entity_getId = foreign.Entity_getId;
                 var Entity_setId = foreign.Entity_setId;
                 var Entity_getEnabled = foreign.Entity_getEnabled;
@@ -249,20 +253,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var count = 0;
                 var index = 0;
                 var uniqueId = 0;
-                function test(ptr, i) {
-                    ptr = ptr | 0;
-                    i = i | 0;
-                    var __01__ = 0, __02__ = 0;
-                    var x = 0.0;
-                    var value = 0;
-                    var k = 0;
-                    var result = 0;
-                    value = ptr;
-                    __01__ = value + i | 0;
-                    __02__ = __01__ << 2;
-                    result = HEAPI32[__02__ >> 2] | 0;
-                    return result | 0;
-                }
                 function initialize(count) {
                     count = count | 0;
                     if (init) {
@@ -349,7 +339,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     index = index | 0;
                 }
                 return {
-                    test: test,
                     initialize: initialize,
                     getTotalComponents: getTotalComponents,
                     getCount: getCount,

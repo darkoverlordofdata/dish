@@ -15,6 +15,7 @@ var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
 var Entity_ctor = foreign.Entity_ctor;
+var Entity_callme = foreign.Entity_callme;
 var Entity_getId = foreign.Entity_getId;
 var Entity_setId = foreign.Entity_setId;
 var Entity_getEnabled = foreign.Entity_getEnabled;
@@ -30,20 +31,6 @@ var totalComponents = 0;
 var count = 0;
 var index = 0;
 var uniqueId = 0;
-function test(ptr, i) {
-    ptr = ptr | 0;
-    i = i | 0;
-    var __01__ = 0, __02__ = 0;
-    var x = 0.0;
-    var value = 0;
-    var k = 0;
-    var result = 0;
-    value = ptr;
-    __01__ = value + i | 0;
-    __02__ = __01__ << 2;
-    result = HEAPI32[__02__ >> 2] | 0;
-    return result | 0;
-}
 function initialize(count) {
     count = count | 0;
     if (init) {
@@ -130,7 +117,6 @@ function hasComponent(entity, index) {
     index = index | 0;
 }    
 return { 
-    test:test,
     initialize:initialize,
     getTotalComponents:getTotalComponents,
     getCount:getCount,

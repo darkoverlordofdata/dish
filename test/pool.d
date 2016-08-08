@@ -4,8 +4,9 @@
 module pool;
 
 import Entity = entitas.Entity;
-import EntityIsNotEnabledException;
-import EntityAlreadyHasComponentException;
+
+extern EntityIsNotEnabledException;
+extern EntityAlreadyHasComponentException;
 
 const int POOL_SIZE = 0x1000;
 bool init = true;
@@ -15,20 +16,6 @@ int count;
 int index;
 int uniqueId;
 
-/**
- * return value at ptr+i
- */
-export int test(int ptr, int i) {
-    double x;
-    int[] value;
-    
-    int k;
-    int result;
-    value = ptr;
-
-    result = value[i];
-    return result;
-}
 
 /**
  * initialize

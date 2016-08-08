@@ -28,6 +28,9 @@ function ctor(totalComponents) {
     e = (malloc(entitySize << 2) | 0) >> 2;
     return e | 0;
 }
+function callme() {
+    console.log('WTF?');
+}
 function getId(entity) {
     entity = entity | 0;
     var __01__ = 0, __02__ = 0;
@@ -67,7 +70,7 @@ function getComponent(entity, index) {
     index = index | 0;
     var __01__ = 0, __02__ = 0, __03__ = 0;
     var component = 0;
-    __01__ = COMPONENT + index | 0;
+    __01__ = index + COMPONENT | 0;
     __02__ = entity + __01__ | 0;
     __03__ = __02__ << 2;
     component = HEAPI32[__03__ >> 2] | 0;
@@ -78,7 +81,7 @@ function setComponent(entity, index, value) {
     index = index | 0;
     value = value | 0;
     var __01__ = 0, __02__ = 0, __03__ = 0;
-    __01__ = COMPONENT + index;
+    __01__ = index + COMPONENT;
     __02__ = entity + __01__;
     __03__ = __02__ << 2;
     HEAPI32[__03__ >> 2] = value;

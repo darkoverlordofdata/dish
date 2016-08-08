@@ -1,30 +1,34 @@
-## Linkage
+## dish grammer
 
-### module
-    Define the top level javascript object
-
-### import
-    Import external values and functions from javascript
+### module / class
+    Define the top level javascript object. Each asm.js module is either a logical module or class.
+    Use module to declare a singleton or expose static functions.
 
 ### export
-    Export to javascript
+    Use export to expose functions in a module.
 
-### int
-    Defines a 32 bit integer
+### import
+    Imports classes or functions from another asm.js module
 
-### float
-    Defines a 32 bit float
-
-### double
-    Defines a 64 bit double precision
+### extern
+    Declares am external function provided by the pojs container.
 
 ### new
-    Allocate a a new array: int[] totals;
+    Allocate a a new array or type or to instantiate a class. 
 
-### const
-    Access modifier defines int, float, or double as read only.
+### primitive types
+    double      float64 data type
+    float       float32 data type
+    int         int32
+    uint        uint32
+    void        no value. 
+    short       int16 (proposed)
+    char        char16 (proposed)
 
-## Control flow
+### access
+    const       mark type as read only.
+    public      expose the class method
+    private     do not expost the class method. Default.
 
 ### do
     do {
