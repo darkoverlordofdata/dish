@@ -23,9 +23,19 @@ Promise.all(['entity', 'pool', 'test-twister'].map((x) ->
         expect(0).to.equal(0)
 
       it 'Create entity', ->
+        MAX = 800
+
         pool.initialize(10)
-        e = pool.createEntity()
-        expect(Entity.getId(e)).to.equal(1)
+        e1 = pool.createEntity()
+        expect(Entity.getId(e1)).to.equal(1)
+        Entity.setEnabled(e1, 0)
+        expect(Entity.getEnabled(e1)).to.equal(0)
+
+        for i in [0..MAX]
+          e2 = pool.createEntity()
+        expect(Entity.getId(e2)).to.equal(MAX+2)
+
+
 
   , (err) -> console.log err
 

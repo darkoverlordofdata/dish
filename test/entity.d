@@ -1,7 +1,19 @@
 
 module Entity;
 
-export int ctor(int totalComponents) {
+const int ID  = 0;
+const int ENABLED = 1;
+const int COMPONENT = 2;
+
+/**
+ * ctor 
+ *
+ * is invoked by new Entity(n)
+ *
+ * @param totalComponents
+ * @returns new Entity
+ */
+export Entity ctor(int totalComponents) {
     int e;
     int entitySize;
     
@@ -10,33 +22,33 @@ export int ctor(int totalComponents) {
     return e;
 }
 
-export int getId(int entity) {
+export int getId(Entity entity) {
     int id;
-    id = entity[0];
+    id = entity[ID];
     return id;
 }
 
-export void setId(int entity, int id) {
-    entity[0] = id;
+export void setId(Entity entity, int id) {
+    entity[ID] = id;
 }
 
-export int getEnabled(int entity) {
+export int getEnabled(Entity entity) {
     int enabled;
-    enabled = entity[1];
+    enabled = entity[ENABLED];
     return enabled;
 }
 
-export void setEnabled(int entity, bool enabled) {
-    entity[1] = enabled;
+export void setEnabled(Entity entity, bool enabled) {
+    entity[ENABLED] = enabled;
 }
 
-export int getComponent(int entity, int index) {
+export int getComponent(Entity entity, int index) {
     int component;
-    component = entity[2+index];
+    component = entity[COMPONENT+index];
     return component;
 }
 
-export void setComponent(int entity, int index, int value) {
-    entity[2+index] = value;
+export void setComponent(Entity entity, int index, int value) {
+    entity[COMPONENT+index] = value;
 }
 

@@ -14,7 +14,7 @@ int mti = 625;  /* mti==N+1 means mt[N] is not initialized */
 int[] mag01;
 
 
-int init_genrand(int s)
+void init_genrand(int s)
 {
 
     int t0;
@@ -66,7 +66,7 @@ export int genrand_int32()
     if ((mti|0) >= (N|0)) { /* generate N words at one time */
 
         if ((mti|0) == (N+1|0)) {  /* if init_genrand() has not been called, */
-            z = init_genrand(5489)|0; /* a default initial seed is used */
+            init_genrand(5489)|0; /* a default initial seed is used */
         }
 
         for (kk=0;(kk|0)<(N-M|0);kk++) {

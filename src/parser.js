@@ -60,7 +60,9 @@ function parse(input, mangle) {
     const symtbl = { global: {} }
     const exporting = {}
     const types = {}
+    const api = {}
 
+    let moduleName = ''
     let block = [] // current output block
     let currentScope = ''
     let priorScope = ''
@@ -80,10 +82,11 @@ function parse(input, mangle) {
 
         expectKeyword('module') //  first keyword is required
         const name = input.next().value
+        moduleName = name
         expect(';')
 
         while (!input.eof()) {
-            let node = parseGlobal()
+            let node = parseGlobal(ast.body)
             if (node) ast.body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
         }
@@ -100,7 +103,8 @@ function parse(input, mangle) {
             heapu32: heapu32,
             heapf32: heapf32,
             heapf64: heapf64,
-            exports: exporting  //  exported API
+            exports: exporting,  //  exported API
+            api: api
         }
         
     } catch (ex) {
@@ -155,14 +159,14 @@ function parse(input, mangle) {
      * float
      * double
      */
-    function parseGlobal() {
+    function parseGlobal(body) {
         //=================================
         if (matchKeyword('bool'))   return parseBool()
         if (matchKeyword('const'))  return parseConst()
         if (matchKeyword('double')) return parseDouble()
         if (matchKeyword('export')) return parseExport()
         if (matchKeyword('float'))  return parseFloat32()
-        if (matchKeyword('import')) return parseImport()
+        if (matchKeyword('import')) return parseImport(body)
         if (matchKeyword('uint'))   return parseUint32()
         if (matchKeyword('int'))    return parseInt32()
         if (matchKeyword('void'))   return parseVoid()
@@ -349,11 +353,16 @@ function parse(input, mangle) {
             input.raise(`Function ${name.value} already defined.`)
         }
         currentScope = name.value
-        
+        api[currentScope] = {}
+       
         const args = []
         expect('(')
         while (!match(')')) {
-            args.push({ type: input.next(), name: input.next()})
+            const apiType = input.next()
+            const apiName = input.next()
+
+            api[currentScope][apiName.value] = apiType.value
+            args.push({ type: apiType, name: apiName})
             if (match(',')) input.next()
         }
         expect(')')
@@ -371,6 +380,8 @@ function parse(input, mangle) {
                 case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
                 default: 
                     if (types[args[i].type.value]) {
+                        body.push(factory.IntParameter(args[i].name)); break
+                    } else if (args[i].type.value === moduleName) {
                         body.push(factory.IntParameter(args[i].name)); break
                     } else input.raise('Parameter type not found')        
             }
@@ -874,7 +885,14 @@ function parse(input, mangle) {
             input.putBack()
             return parseType()
         }
-        input.raise('Export type not found')
+        if (input.peek().value === moduleName) {
+            input.next()
+            const name = input.peek()
+            exporting[name.value] = name.value
+            input.putBack()
+            return parseType()
+        }
+        input.raise('Export type not found: ')
     }
 
     function parseFloat32(scope) {
@@ -1039,10 +1057,13 @@ function parse(input, mangle) {
      * import Math.log
      * 
      */
-    function parseImport() {
+    function parseImport(body) {
         expectKeyword('import')
         const name = input.next()
         if (match('.')) {
+            /**
+             * import module.method;
+             */
             expect('.')
             let method = input.next()
             if (name.value === 'Math') {
@@ -1051,6 +1072,20 @@ function parse(input, mangle) {
                 types[name.value] = name.value
                 return factory.ImportDeclaration(`${name.value}_${method.value}`, 'foreign', `${name.value}_${method.value}`)
             }
+        } else if (match('=')) {
+            /**
+             * import alias = package.module;
+             */
+            expect('=')
+            const pname = input.next().value
+            expect('.')
+            const mname = input.next().value
+            const api = require('../dish.json')
+            types[mname] = mname
+            for (let aname in api[pname][mname].api) {
+                body.push(factory.ImportDeclaration(`${mname}_${aname}`, 'foreign', `${mname}_${aname}`))
+            }
+            
         } else {
             return factory.ImportDeclaration(name.value, 'foreign', name.value)
         }

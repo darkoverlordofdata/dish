@@ -31,10 +31,17 @@ Promise.all(['entity', 'pool', 'test-twister'].map(function(x) {
       return expect(0).to.equal(0);
     });
     return it('Create entity', function() {
-      var e;
+      var MAX, e1, e2, i, k, ref3;
+      MAX = 800;
       pool.initialize(10);
-      e = pool.createEntity();
-      return expect(Entity.getId(e)).to.equal(1);
+      e1 = pool.createEntity();
+      expect(Entity.getId(e1)).to.equal(1);
+      Entity.setEnabled(e1, 0);
+      expect(Entity.getEnabled(e1)).to.equal(0);
+      for (i = k = 0, ref3 = MAX; 0 <= ref3 ? k <= ref3 : k >= ref3; i = 0 <= ref3 ? ++k : --k) {
+        e2 = pool.createEntity();
+      }
+      return expect(Entity.getId(e2)).to.equal(MAX + 2);
     });
   });
 }, function(err) {

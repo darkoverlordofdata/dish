@@ -102,6 +102,9 @@ Simple oop object reference is a pointer into the heap
                         ------------
 
 
+
+http://orion.lcg.ufrj.br/Dr.Dobbs/books/book2/algo022e.htm
+
 ### asm.js resources
 
 http://mrale.ph/blog/2013/03/28/why-asmjs-bothers-me.html

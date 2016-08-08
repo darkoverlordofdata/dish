@@ -3,17 +3,9 @@
  */
 module pool;
 
-import EntityIsNotEnabledException ;
+import Entity = entitas.Entity;
+import EntityIsNotEnabledException;
 import EntityAlreadyHasComponentException;
-
-/** import entity methods */
-import Entity.ctor;
-import Entity.getId;
-import Entity.setId;
-import Entity.getEnabled;
-import Entity.setEnabled;
-import Entity.getComponent;
-import Entity.setComponent;
 
 const int POOL_SIZE = 0x1000;
 bool init = true;

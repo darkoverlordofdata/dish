@@ -2,7 +2,7 @@
 ## Foreign function interface 
 ###
 
-HEAP_SIZE = 0x10000
+HEAP_SIZE = 0x40000
 
 class Ffi
 

@@ -21,23 +21,34 @@ manifest = require('../package.json')
 
 usage = """
 Usage: dish <filename>
-    -o --output        output file name
-    -t --template      template file name
-    -m --mangle        mangle output
-    -w --whitespace    remove whitespace
+    -o --output         output file name
+    -t --template       template file name
+    -m --mangle         mangle output
+    -w --whitespace     remove whitespace
+    -p --package        package name
 """
 
 if args.count<3 
     console.log usage
     process.exit 1
 
-source      = args()
 template    = args  '-t', '--template', './src/asm.tpl.js'
 output      = args  '-o', '--output'
+packge      = args  '-p', '--package'
 mangle      = flags '-m', '--mangle'
 whitespace  = flags '-w', '--whitespace'
 
-console.log "dish #{manifest.version}  #{source}"
+source      = args()
+
+console.log "dish #{manifest.version} #{packge||''}  #{source}"
+if packge
+    if not fs.existsSync("./dish.json")
+        fs.writeFileSync "./dish.json", """
+        {
+            "#{packge}": {}
+        }
+        """
+    api = require("../dish.json")
 
 parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle)
 parsed.heapi8 = true
@@ -95,6 +106,18 @@ else out = out.replace(/\('0.0'\)/g, '0.0')         # reverse verbatim option
 
 if output then fs.writeFileSync output, out
 else console.log out
+
+###
+ * Update package api info
+###
+if packge
+    api[packge][parsed.name] = {
+        name: parsed.name,
+        source: source,
+        api: parsed.api
+    }
+    fs.writeFileSync "./dish.json", JSON.stringify(api, null, 2)
+
 
 
 

@@ -9,9 +9,12 @@
  */
 function args(short, long, def) {
     if (short) {
+        // console.log('args', short, long, def)
         /** look for -o or --option */
         for (let i=3; i<process.argv.length; i++) {
+            // console.log('test', i, process.argv[i], process.argv[i+1])
             if (process.argv[i] === short || process.argv[i] === long) {
+                // console.log('found', i, process.argv[i], process.argv[i+1])
                 return process.argv[i+1]
             }
         }

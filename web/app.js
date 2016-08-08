@@ -9,7 +9,7 @@ System.register("ffi", [], function(exports_1, context_1) {
             /*
             ## Foreign function interface
              */
-            HEAP_SIZE = 0x10000;
+            HEAP_SIZE = 0x40000;
             Ffi = (function () {
                 function Ffi() { }
                 Ffi.EntityIsNotEnabledException = function () {
@@ -121,6 +121,9 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
+                var ID = 0;
+                var ENABLED = 1;
+                var COMPONENT = 2;
                 function ctor(totalComponents) {
                     totalComponents = totalComponents | 0;
                     var __01__ = 0, __02__ = 0;
@@ -136,7 +139,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     entity = entity | 0;
                     var __01__ = 0, __02__ = 0;
                     var id = 0;
-                    __01__ = entity + 0 | 0;
+                    __01__ = entity + ID | 0;
                     __02__ = __01__ << 2;
                     id = HEAPI32[__02__ >> 2] | 0;
                     return id | 0;
@@ -145,15 +148,15 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     entity = entity | 0;
                     id = id | 0;
                     var __01__ = 0, __02__ = 0;
-                    __01__ = entity + 0 | 0;
+                    __01__ = entity + ID;
                     __02__ = __01__ << 2;
-                    HEAPI32[__02__ >> 2] = id | 0;
+                    HEAPI32[__02__ >> 2] = id;
                 }
                 function getEnabled(entity) {
                     entity = entity | 0;
                     var __01__ = 0, __02__ = 0;
                     var enabled = 0;
-                    __01__ = entity + 1 | 0;
+                    __01__ = entity + ENABLED | 0;
                     __02__ = __01__ << 2;
                     enabled = HEAPI32[__02__ >> 2] | 0;
                     return enabled | 0;
@@ -162,16 +165,16 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     entity = entity | 0;
                     enabled = enabled | 0;
                     var __01__ = 0, __02__ = 0;
-                    __01__ = entity + 1 | 0;
+                    __01__ = entity + ENABLED;
                     __02__ = __01__ << 2;
-                    HEAPI32[__02__ >> 2] = enabled | 0;
+                    HEAPI32[__02__ >> 2] = enabled;
                 }
                 function getComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
                     var component = 0;
-                    __01__ = 2 + index | 0;
+                    __01__ = COMPONENT + index | 0;
                     __02__ = entity + __01__ | 0;
                     __03__ = __02__ << 2;
                     component = HEAPI32[__03__ >> 2] | 0;
@@ -182,10 +185,10 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     index = index | 0;
                     value = value | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
-                    __01__ = 2 + index | 0;
-                    __02__ = entity + __01__ | 0;
+                    __01__ = COMPONENT + index;
+                    __02__ = entity + __01__;
                     __03__ = __02__ << 2;
-                    HEAPI32[__03__ >> 2] = value | 0;
+                    HEAPI32[__03__ >> 2] = value;
                 }
                 return {
                     ctor: ctor,
@@ -230,8 +233,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
-                var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
-                var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
                 var Entity_ctor = foreign.Entity_ctor;
                 var Entity_getId = foreign.Entity_getId;
                 var Entity_setId = foreign.Entity_setId;
@@ -239,6 +240,8 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var Entity_setEnabled = foreign.Entity_setEnabled;
                 var Entity_getComponent = foreign.Entity_getComponent;
                 var Entity_setComponent = foreign.Entity_setComponent;
+                var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
+                var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
                 var POOL_SIZE = 4096;
                 var init = 1;
                 var pool = 0;
@@ -816,10 +819,17 @@ Promise.all(['entity', 'pool', 'test-twister'].map(function (x) {
             return expect(0).to.equal(0);
         });
         return it('Create entity', function () {
-            var e;
+            var MAX, e1, e2, i, k, ref3;
+            MAX = 800;
             pool.initialize(10);
-            e = pool.createEntity();
-            return expect(Entity.getId(e)).to.equal(1);
+            e1 = pool.createEntity();
+            expect(Entity.getId(e1)).to.equal(1);
+            Entity.setEnabled(e1, 0);
+            expect(Entity.getEnabled(e1)).to.equal(0);
+            for (i = k = 0, ref3 = MAX; 0 <= ref3 ? k <= ref3 : k >= ref3; i = 0 <= ref3 ? ++k : --k) {
+                e2 = pool.createEntity();
+            }
+            return expect(Entity.getId(e2)).to.equal(MAX + 2);
         });
     });
 }, function (err) {

@@ -8,7 +8,7 @@
  *
  */
 'use strict';
-var args, ast, code, escodegen, esmangle, esprima, flags, fs, i, lexer, lhs, liquid, mangle, manifest, out, output, parsed, parser, path, ref, res, rhs, source, template, tpl, usage, util, whitespace;
+var api, args, ast, code, escodegen, esmangle, esprima, flags, fs, i, lexer, lhs, liquid, mangle, manifest, out, output, packge, parsed, parser, path, ref, res, rhs, source, template, tpl, usage, util, whitespace;
 
 fs = require('fs');
 
@@ -32,24 +32,33 @@ liquid = require('liquid.coffee');
 
 manifest = require('../package.json');
 
-usage = "Usage: dish <filename>\n    -o --output        output file name\n    -t --template      template file name\n    -m --mangle        mangle output\n    -w --whitespace    remove whitespace";
+usage = "Usage: dish <filename>\n    -o --output         output file name\n    -t --template       template file name\n    -m --mangle         mangle output\n    -w --whitespace     remove whitespace\n    -p --package        package name";
 
 if (args.count < 3) {
   console.log(usage);
   process.exit(1);
 }
 
-source = args();
-
 template = args('-t', '--template', './src/asm.tpl.js');
 
 output = args('-o', '--output');
+
+packge = args('-p', '--package');
 
 mangle = flags('-m', '--mangle');
 
 whitespace = flags('-w', '--whitespace');
 
-console.log("dish " + manifest.version + "  " + source);
+source = args();
+
+console.log("dish " + manifest.version + " " + (packge || '') + "  " + source);
+
+if (packge) {
+  if (!fs.existsSync("./dish.json")) {
+    fs.writeFileSync("./dish.json", "{\n    \"" + packge + "\": {}\n}");
+  }
+  api = require("../dish.json");
+}
 
 parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle);
 
@@ -137,4 +146,18 @@ if (output) {
   fs.writeFileSync(output, out);
 } else {
   console.log(out);
+}
+
+
+/*
+ * Update package api info
+ */
+
+if (packge) {
+  api[packge][parsed.name] = {
+    name: parsed.name,
+    source: source,
+    api: parsed.api
+  };
+  fs.writeFileSync("./dish.json", JSON.stringify(api, null, 2));
 }
