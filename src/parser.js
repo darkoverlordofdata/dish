@@ -13,6 +13,32 @@ module.exports = {
     parse: parse
 }
 
+class Field {
+    constructor(_public, _static, _const,  name, type, array, size) {
+        this.name = name
+        this.type = type
+        this.array = array
+        this.size = size
+        this.index = Field.index
+        this.offset = Field.offset
+        this.public = _public
+        this.static = _static
+        this.const = _const
+
+        switch (type) {
+            case 'char': Field.offset += (2*(size||1))
+            case 'double': Field.offset += (8*(size||1))
+            default: Field.offset += (4*(size||1))
+        }
+        Field.index++
+        Field.size += Field.offset
+    }
+
+}
+Field.offset = 0
+Field.index = 0
+Field.size = 0
+
 class Symbol {
     constructor(name, type, func, init, array, immutable) {
         this.name = name
@@ -61,12 +87,17 @@ function parse(input, mangle) {
     const exporting = {}
     const types = {}
     const api = {}
+    const data = []
 
     let moduleName = ''
     let block = [] // current output block
     let currentScope = ''
     let priorScope = ''
     let injectInit = false
+    let isClass = false
+    let isPublic = false
+    let isStatic = false
+    let isConst = false
     let float = false
     let malloc = false
     let heapi8 = false
@@ -84,8 +115,10 @@ function parse(input, mangle) {
         if (matchKeyword('module')) {
             parseModule(ast.body)
         } else if (matchKeyword('class')) {
+            isClass = true
             parseClass(ast.body)
         }
+
 
         return {
             ast: ast,           //  main code body ast
@@ -101,7 +134,10 @@ function parse(input, mangle) {
             heapf32: heapf32,
             heapf64: heapf64,
             exports: exporting,  //  exported API
-            api: api
+            api: api,
+            data: data,
+            size: Field.size,
+            'class': isClass
         }
         
     } catch (ex) {
@@ -160,6 +196,9 @@ function parse(input, mangle) {
         moduleName = input.next().value
         expect('{')
         while (!input.eof()) {
+            isPublic = true
+            isStatic = false
+            isConst = false
             let node = parseGlobal(body)
             if (node) body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
@@ -196,6 +235,7 @@ function parse(input, mangle) {
         if (matchKeyword('uint'))       return parseUint32()
         if (matchKeyword('int'))        return parseInt32()
         if (matchKeyword('void'))       return parseVoid()
+        if (matchKeyword('static'))     return parseStatic()
         //=================================
         if (types[input.peek().value])  return parseType()
 
@@ -280,12 +320,41 @@ function parse(input, mangle) {
     function parseConst(scope) {
 
         expectKeyword('const')
+        isConst = true
         if (matchKeyword('double'))     return parseDouble(scope)
         if (matchKeyword('float'))      return parseFloat32(scope)
+        if (matchKeyword('bool'))       return parseBool(scope)
         if (matchKeyword('int'))        return parseInt32(scope)
         if (matchKeyword('uint'))       return parseUint32(scope)
         input.raise('Unexpected token: ')
     }
+    
+    function parseStatic(scope) {
+
+        expectKeyword('static')
+        isStatic = true
+        if (matchKeyword('const'))      return parseConst()
+        if (matchKeyword('double'))     return parseDouble(scope)
+        if (matchKeyword('float'))      return parseFloat32(scope)
+        if (matchKeyword('bool'))       return parseBool(scope)
+        if (matchKeyword('int'))        return parseInt32(scope)
+        if (matchKeyword('uint'))       return parseUint32(scope)
+        input.raise('Unexpected token: ')
+    }
+
+    function parsePrivate() {
+        expectKeyword('private')
+        isPublic = false
+        if (matchKeyword('static'))     return parseStatic()
+        if (matchKeyword('const'))      return parseConst()
+        if (matchKeyword('double'))     return parseDouble()
+        if (matchKeyword('float'))      return parseFloat32()
+        if (matchKeyword('bool'))       return parseBool()
+        if (matchKeyword('int'))        return parseInt32()
+        if (matchKeyword('uint'))       return parseUint32()
+        input.raise('Unexpected token: ')
+    }
+
 
     /**
      * Parse an expression
@@ -484,8 +553,9 @@ function parse(input, mangle) {
                 indexer = false
             } else if (lhs && match('.')) {
                 expect('.')
-                if (indexer) 
+                if (indexer) {
                     index.push(input.next().value)
+                }
                 else {
                     method = input.next().value
                     tokens.push(input.next().value)
@@ -744,16 +814,20 @@ function parse(input, mangle) {
     function parseBool(scope) {
         scope = scope || 'global'
         let isArray = false
+        let alloc = 0
         expectKeyword('bool')
         if (match('[')) {
             expect('[')
+            if (input.peek().type === Token.Number) {
+                alloc = input.next().value
+            }
             expect(']')
             isArray = true
             malloc = true
             heapi32 = true
         }
         const name = input.next()
-        if (input.peek().value === '(') { /** function definition */
+        if (match('(')) {   /** function definition */
             if (isArray) {
                 input.raise('Syntax Error: array found')
             }
@@ -782,9 +856,13 @@ function parse(input, mangle) {
                 return factory.IntDeclaration(name.value) 
             }
 
-        } else {
-            symtbl[scope][name.value] = new Symbol(name.value, 'bool', false, '', isArray)
-            return factory.IntDeclaration(name.value)
+        } else { /** Field? */
+            if (isClass && scope === 'global') {
+                data.push(new Field(isPublic, isStatic, isConst, name.value, 'bool', isArray, alloc))
+            } else {
+                symtbl[scope][name.value] = new Symbol(name.value, 'bool', false, '', isArray)
+                return factory.IntDeclaration(name.value)
+            }
         }
     }
 
@@ -821,16 +899,20 @@ function parse(input, mangle) {
     function parseDouble(scope) {
         scope = scope || 'global'
         let isArray = false
+        let alloc = 0
         expectKeyword('double')
         if (match('[')) {
             expect('[')
+            if (input.peek().type === Token.Number) {
+                alloc = input.next().value
+            }
             expect(']')
             isArray = true
             malloc = true
             heapi32 = true
         }
         const name = input.next()
-        if (input.peek().value === '(') { /** function definition */
+        if (match('(')) { /** function definition */
             if (isArray) {
                 input.raise('Syntax Error: array found')
             }
@@ -856,17 +938,18 @@ function parse(input, mangle) {
             }
 
         } else {
-            symtbl[scope][name.value] = new Symbol(name.value, 'double', false, '', isArray)
-            return factory.DoubleDeclaration(name.value)
+            if (isClass && scope === 'global') {
+                data.push(new Field(isPublic, isStatic, isConst, name.value, 'double', isArray, alloc))
+            } else {
+                symtbl[scope][name.value] = new Symbol(name.value, 'double', false, '', isArray)
+                return factory.DoubleDeclaration(name.value)
+            }
         }
-    }
-
-    function parsePrivate() {
-        expectKeyword('private')
     }
 
     function parseExport(which) {
         expectKeyword(which)
+        isPublic = true
         if (matchKeyword('void')) {
             expectKeyword('void')
             const name = input.peek()
@@ -929,16 +1012,20 @@ function parse(input, mangle) {
     function parseFloat32(scope) {
         scope = scope || 'global'
         let isArray = false
+        let alloc = 0
         expectKeyword('float')
         if (match('[')) {
             expect('[')
+            if (input.peek().type === Token.Number) {
+                alloc = input.next().value
+            }
             expect(']')
             isArray = true
             malloc = true
             heapi32 = true
         }
         const name = input.next()
-        if (input.peek().value === '(') { /** function definition */
+        if (match('(')) { /** function definition */
             if (isArray) {
                 input.raise('Syntax Error: array found')
             }
@@ -964,8 +1051,12 @@ function parse(input, mangle) {
             }
 
         } else {
-            symtbl[scope][name.value] = new Symbol(name.value, 'float', false, '', isArray)
-            return factory.FloatDeclaration(name.value)
+            if (isClass && scope === 'global') {
+                data.push(new Field(isPublic, isStatic, isConst, name.value, 'float', isArray, alloc))
+            } else {
+                symtbl[scope][name.value] = new Symbol(name.value, 'float', false, '', isArray)
+                return factory.FloatDeclaration(name.value)
+            }
         }
     }
 
@@ -1006,16 +1097,20 @@ function parse(input, mangle) {
     function parseInt32(scope) {
         scope = scope || 'global'
         let isArray = false
+        let alloc = 0
         expectKeyword('int')
         if (match('[')) {
             expect('[')
+            if (input.peek().type === Token.Number) {
+                alloc = input.next().value
+            }
             expect(']')
             isArray = true
             malloc = true
             heapi32 = true
         }
         const name = input.next()
-        if (input.peek().value === '(') { /** function definition */
+        if (match('(')) {   /** function definition */
             if (isArray) {
                 input.raise('Syntax Error: array found')
             }
@@ -1039,9 +1134,13 @@ function parse(input, mangle) {
                 return factory.IntDeclaration(name.value) 
             }
 
-        } else {
-            symtbl[scope][name.value] = new Symbol(name.value, 'int', false, '', isArray)
-            return factory.IntDeclaration(name.value)
+        } else { /** Field? */
+            if (isClass && scope === 'global') {
+                data.push(new Field(isPublic, isStatic, isConst, name.value, 'int', isArray, alloc))
+            } else {
+                symtbl[scope][name.value] = new Symbol(name.value, 'int', false, '', isArray)
+                return factory.IntDeclaration(name.value)
+            }
         }
     }
 
@@ -1293,16 +1392,20 @@ function parse(input, mangle) {
     function parseUint32(scope) {
         scope = scope || 'global'
         let isArray = false
+        let alloc = 0
         expectKeyword('uint')
         if (match('[')) {
             expect('[')
+            if (input.peek().type === Token.Number) {
+                alloc = input.next().value
+            }
             expect(']')
             isArray = true
             malloc = true
             heapi32 = true
         }
         const name = input.next()
-        if (input.peek().value === '(') { /** function definition */
+        if (match('(')) { /** function definition */
             if (isArray) {
                 input.raise('Syntax Error: array found')
             }
@@ -1327,8 +1430,12 @@ function parse(input, mangle) {
             }
 
         } else {
-            symtbl[scope][name.value] = new Symbol(name.value, 'uint', false, '', isArray)
-            return factory.IntDeclaration(name.value)
+            if (isClass && scope === 'global') {
+                data.push(new Field(isPublic, isStatic, isConst, name.value, 'uint', isArray, alloc))
+            } else {
+                symtbl[scope][name.value] = new Symbol(name.value, 'uint', false, '', isArray)
+                return factory.IntDeclaration(name.value)
+            }
         }
     }
 

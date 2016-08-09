@@ -156,8 +156,11 @@ if (output) {
 if (packge) {
   api[packge][parsed.name] = {
     name: parsed.name,
-    source: source,
-    api: parsed.api
+    "class": parsed["class"],
+    size: parsed.size,
+    api: parsed.api,
+    data: parsed.data,
+    source: source
   };
   fs.writeFileSync("./dish.json", JSON.stringify(api, null, 2));
 }

@@ -32,7 +32,7 @@ Promise.all(['entity', 'pool', 'test-twister'].map(function(x) {
     });
     return it('Create entity', function() {
       var MAX, e1, e2, i, k, ref3;
-      MAX = 800;
+      MAX = 400;
       pool.initialize(10);
       e1 = pool.createEntity();
       expect(Entity.getId(e1)).to.equal(1);

@@ -63,7 +63,7 @@ function Tokenizer(source) {
     function isDelim(ch)        { return /[.,;(){}[\]:]/.test(ch) }
     function isOperator(ch)     { return /[+\-*\/%=&|<>!^]/.test(ch) }
     function isKeyword(wd)      {
-        return /bool|break|case|class|continue|const|delete|do|double|else|export|extern|float|for|if|import|int|module|new|print|private|public|return|switch|to!int|to!double|to!float|uint|void|while/.test(wd);
+        return /bool|break|case|class|continue|const|delete|do|double|else|export|extern|float|for|if|import|int|module|new|print|private|public|return|switch|static|to!int|to!double|to!float|uint|void|while/.test(wd);
     }
 
     /*

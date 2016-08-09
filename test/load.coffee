@@ -23,7 +23,7 @@ Promise.all(['entity', 'pool', 'test-twister'].map((x) ->
         expect(0).to.equal(0)
 
       it 'Create entity', ->
-        MAX = 800
+        MAX = 400
 
         pool.initialize(10)
         e1 = pool.createEntity()

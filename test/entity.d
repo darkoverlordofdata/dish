@@ -3,7 +3,14 @@ class Entity {
 
     const int ID        = 0;
     const int ENABLED   = 1;
-    const int COMPONENT = 2;
+    const int COUNT     = 2;
+    const int COMPONENT = 3;
+    const int MAX       = 20;
+
+    int id;
+    bool enabled;
+    int count;
+    uint[20] component;
 
     /**
     * ctor 
@@ -17,39 +24,46 @@ class Entity {
         int e;
         int entitySize;
         
-        entitySize = totalComponents*4+4+4;
+        entitySize = MAX*4+4+4+4;
         e = new int[entitySize];
+        Entity(e, totalComponents);
         return e;
     }
 
-    public int getId(Entity entity) {
+    public void Entity(Entity self, int totalComponents) {
+        self[COUNT] = totalComponents;
+    }
+
+    public int getId(Entity self) {
         int id;
-        id = entity[ID];
+        //id = self.id;
+        id = self[ID];
         return id;
     }
 
-    public void setId(Entity entity, int id) {
-        entity[ID] = id;
+    public void setId(Entity self, int id) {
+        //self.id = id;
+        self[ID] = id;
     }
 
-    public int getEnabled(Entity entity) {
+    public int getEnabled(Entity self) {
         int enabled;
-        enabled = entity[ENABLED];
+        enabled = self[ENABLED];
         return enabled;
     }
 
-    public void setEnabled(Entity entity, bool enabled) {
-        entity[ENABLED] = enabled;
+    public void setEnabled(Entity self, bool enabled) {
+        self[ENABLED] = enabled;
     }
 
-    public int getComponent(Entity entity, int index) {
+    public int getComponent(Entity self, int index) {
         int component;
-        component = entity[index + COMPONENT];
+        component = self[index + COMPONENT];
         return component;
     }
 
-    public void setComponent(Entity entity, int index, int value) {
-        entity[index + COMPONENT] = value;
+    public void setComponent(Entity self, int index, int value) {
+        self[index + COMPONENT] = value;
     }
 
 }

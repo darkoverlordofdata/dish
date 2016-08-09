@@ -2,40 +2,92 @@
   "entitas": {
     "Entity": {
       "name": "Entity",
-      "source": "test/entity.d",
+      "class": true,
+      "size": 116,
       "api": {
         "ctor": {
           "totalComponents": "int"
         },
-        "callme": {},
+        "Entity": {
+          "self": "Entity",
+          "totalComponents": "int"
+        },
         "getId": {
-          "entity": "Entity"
+          "self": "Entity"
         },
         "setId": {
-          "entity": "Entity",
+          "self": "Entity",
           "id": "int"
         },
         "getEnabled": {
-          "entity": "Entity"
+          "self": "Entity"
         },
         "setEnabled": {
-          "entity": "Entity",
+          "self": "Entity",
           "enabled": "bool"
         },
         "getComponent": {
-          "entity": "Entity",
+          "self": "Entity",
           "index": "int"
         },
         "setComponent": {
-          "entity": "Entity",
+          "self": "Entity",
           "index": "int",
           "value": "int"
         }
-      }
+      },
+      "data": [
+        {
+          "name": "id",
+          "type": "int",
+          "array": false,
+          "size": 0,
+          "index": 0,
+          "offset": 0,
+          "public": true,
+          "static": false,
+          "const": false
+        },
+        {
+          "name": "enabled",
+          "type": "bool",
+          "array": false,
+          "size": 0,
+          "index": 1,
+          "offset": 4,
+          "public": true,
+          "static": false,
+          "const": false
+        },
+        {
+          "name": "count",
+          "type": "int",
+          "array": false,
+          "size": 0,
+          "index": 2,
+          "offset": 8,
+          "public": true,
+          "static": false,
+          "const": false
+        },
+        {
+          "name": "component",
+          "type": "uint",
+          "array": true,
+          "size": 20,
+          "index": 3,
+          "offset": 12,
+          "public": true,
+          "static": false,
+          "const": false
+        }
+      ],
+      "source": "test/entity.d"
     },
     "pool": {
       "name": "pool",
-      "source": "test/pool.d",
+      "class": false,
+      "size": 0,
       "api": {
         "initialize": {
           "count": "int"
@@ -88,7 +140,9 @@
           "entity": "Entity",
           "index": "int"
         }
-      }
+      },
+      "data": [],
+      "source": "test/pool.d"
     },
     "": {
       "name": "",
