@@ -93,11 +93,11 @@ function addComponent(entity, index, component) {
     component = component | 0;
     var enabled = 0;
     var comp = 0;
-    enabled = Entity_getEnabled(entity | 0) | 0;
+    enabled = entity(entity | 0) | 0;
     if (!enabled) {
         EntityIsNotEnabledException();
     }
-    comp = Entity_hasComponent(index)|0;
+    comp = entity(index)|0;
     if (comp) {
         EntityAlreadyHasComponentException(index | 0);
     }

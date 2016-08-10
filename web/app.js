@@ -121,9 +121,6 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
-                var ID = 0;
-                var ENABLED = 1;
-                var COUNT = 2;
                 var COMPONENT = 3;
                 var MAX = 20;
                 function ctor(totalComponents) {
@@ -143,7 +140,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     self = self | 0;
                     totalComponents = totalComponents | 0;
                     var __01__ = 0, __02__ = 0;
-                    __01__ = self + COUNT;
+                    __01__ = self + 2;
                     __02__ = __01__ << 2;
                     HEAPI32[__02__ >> 2] = totalComponents;
                 }
@@ -168,7 +165,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     self = self | 0;
                     var __01__ = 0, __02__ = 0;
                     var enabled = 0;
-                    __01__ = self + ENABLED | 0;
+                    __01__ = self + 1 | 0;
                     __02__ = __01__ << 2;
                     enabled = HEAPI32[__02__ >> 2] | 0;
                     return enabled | 0;
@@ -177,7 +174,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     self = self | 0;
                     enabled = enabled | 0;
                     var __01__ = 0, __02__ = 0;
-                    __01__ = self + ENABLED;
+                    __01__ = self + 1;
                     __02__ = __01__ << 2;
                     HEAPI32[__02__ >> 2] = enabled;
                 }
@@ -186,7 +183,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     index = index | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
                     var component = 0;
-                    __01__ = index + COMPONENT | 0;
+                    __01__ = index + 3 | 0;
                     __02__ = self + __01__ | 0;
                     __03__ = __02__ << 2;
                     component = HEAPI32[__03__ >> 2] | 0;
@@ -325,11 +322,11 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     component = component | 0;
                     var enabled = 0;
                     var comp = 0;
-                    enabled = Entity_getEnabled(entity | 0) | 0;
+                    enabled = entity(entity | 0) | 0;
                     if (!enabled) {
                         EntityIsNotEnabledException();
                     }
-                    comp = Entity_hasComponent(index) | 0;
+                    comp = entity(index) | 0;
                     if (comp) {
                         EntityAlreadyHasComponentException(index | 0);
                     }

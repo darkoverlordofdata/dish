@@ -333,11 +333,12 @@ function parse(input, mangle, packge) {
             return parseCall()
         }
         /** assignment 
+         * lhs            rhs
          * 
-         * x            = exp / new class(...) / obj.method(...)
-         * x.member     = exp / new class(...) / obj.method(...)
-         * x[e*]        = exp / new class(...) / obj.method(...)
-         * x[e*].member = exp / new class(...) / obj.method(...)
+         * x            = expression
+         * x.field      = expression
+         * x[e*]        = expression
+         * x[e*].field  = expression
          *  
          *  e* = simple expression - no members or sub-indexing
          */
@@ -382,14 +383,11 @@ function parse(input, mangle, packge) {
         if (member !== '') { /** Encode lhsvalue */
             const sym = symtbl[currentScope][name]
             const def = lookupField(sym.type, member)
-            index.push(def.offset)
-            // console.log(sym, def)
-            //lhs = `${sym.heap}[self+${def.offset}<<${sym.size}>>${sym.size}]`
+            index.push(def.offset/4)
         }
 
         /** RHS */
         while (!match(';')) {
-            //console.log('RHS', input.peek().value)
             if (matchKeyword('new')) {
                 expectKeyword('new') 
                 let size = 0
@@ -467,15 +465,17 @@ function parse(input, mangle, packge) {
             let sym = symtbl[currentScope][self]
             if (rhs.length === 1) {/** Property */
                 const def = lookupField(sym.type, method)
-                if (def.static) {
-                    input.raise(`Invalid static type ${sym.type}.${method}`)
-                } else {
-                    rhs.push(new Token(Token.Delimiter, '['))
-                    rhs.push(new Token(Token.Number, def.offset))
-                    rhs.push(new Token(Token.Delimiter, ']'))
-                }
+                if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
+
+                rhs.push(new Token(Token.Delimiter, '['))
+                rhs.push(new Token(Token.Number, def.offset/4))
+                rhs.push(new Token(Token.Delimiter, ']'))
             } else {
-                rhs[0].value = `${sym.type}_${method}`
+                if (rhs[1].value === '[') {
+                    const def = lookupField(sym.type, method)
+                    if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
+                    rhs[2].value = `${rhs[2].value} + ${def.offset/4}`
+                }
             }
         }
 
@@ -484,8 +484,6 @@ function parse(input, mangle, packge) {
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const lhsvalue = index.length===0?null:parseExp(index.join(' '))
-            // console.log(sym.name, index)
-            // console.log(sym.name, lhsvalue)
             const lines = expression.transpile(ast, sym, lhsvalue, mangle)  
             for (let l in lines) {
                 const line = lines[l]
@@ -547,6 +545,7 @@ function parse(input, mangle, packge) {
             t = data
         } else {
             const ext = require('../dish.json')
+            console.log(`Lookup ${packge} / ${name}`)
             t = ext[packge][name].data
         }
         for (let i in t) {

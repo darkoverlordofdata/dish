@@ -1,9 +1,9 @@
 
 class Entity {
 
-    const int ID        = 0;
-    const int ENABLED   = 1;
-    const int COUNT     = 2;
+    // const int ID        = 0;
+    // const int ENABLED   = 1;
+    // const int COUNT     = 2;
     const int COMPONENT = 3;
     const int MAX       = 20;
 
@@ -31,35 +31,33 @@ class Entity {
     }
 
     public void Entity(Entity self, int totalComponents) {
-        self[COUNT] = totalComponents;
+        self.count = totalComponents;
     }
 
     public int getId(Entity self) {
         int id;
         id = self.id;
-        //id = self[ID];
         return id;
     }
 
     public void setId(Entity self, int id) {
         self.id = id;
-        //self[ID] = id;
     }
 
     public int getEnabled(Entity self) {
         int enabled;
-        enabled = self[ENABLED];
-        //enabled = self.enabled;
+        enabled = self.enabled;
         return enabled;
     }
 
     public void setEnabled(Entity self, bool enabled) {
-        self[ENABLED] = enabled;
+        self.enabled = enabled;
     }
 
     public int getComponent(Entity self, int index) {
         int component;
-        component = self[index + COMPONENT];
+        //component = self[index + COMPONENT];
+        component = self.component[index];
         return component;
     }
 
