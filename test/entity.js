@@ -44,7 +44,7 @@ function getId(self) {
     self = self | 0;
     var __01__ = 0, __02__ = 0;
     var id = 0;
-    __01__ = self + ID | 0;
+    __01__ = self + 0 | 0;
     __02__ = __01__ << 2;
     id = HEAPI32[__02__ >> 2] | 0;
     return id | 0;
@@ -53,7 +53,7 @@ function setId(self, id) {
     self = self | 0;
     id = id | 0;
     var __01__ = 0, __02__ = 0;
-    __01__ = self + ID;
+    __01__ = self + 0;
     __02__ = __01__ << 2;
     HEAPI32[__02__ >> 2] = id;
 }

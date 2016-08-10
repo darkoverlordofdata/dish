@@ -36,19 +36,20 @@ class Entity {
 
     public int getId(Entity self) {
         int id;
-        //id = self.id;
-        id = self[ID];
+        id = self.id;
+        //id = self[ID];
         return id;
     }
 
     public void setId(Entity self, int id) {
-        //self.id = id;
-        self[ID] = id;
+        self.id = id;
+        //self[ID] = id;
     }
 
     public int getEnabled(Entity self) {
         int enabled;
         enabled = self[ENABLED];
+        //enabled = self.enabled;
         return enabled;
     }
 

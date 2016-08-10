@@ -60,7 +60,7 @@ if (packge) {
   api = require("../dish.json");
 }
 
-parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle);
+parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle, packge);
 
 parsed.heapi8 = true;
 

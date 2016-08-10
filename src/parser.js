@@ -75,7 +75,7 @@ function isInteger(n)       { return n === +n && n === (n|0); }
  * @param input lexer
  * @returns parsed document and flags
  */
-function parse(input, mangle) {
+function parse(input, mangle, packge) {
     const expression = require('./expression')
     const factory = require('./factory')
     const codegen = require('escodegen')
@@ -236,9 +236,8 @@ function parse(input, mangle) {
         if (matchKeyword('int'))        return parseInt32()
         if (matchKeyword('void'))       return parseVoid()
         if (matchKeyword('static'))     return parseStatic()
-        //=================================
         if (types[input.peek().value])  return parseType()
-
+        //=================================
         input.raise('Unexpected token: ')
     }
 
@@ -250,13 +249,16 @@ function parse(input, mangle) {
      * defined in procedure scope. 
      */
     function parseStatement(body) {
-        if (matchKeyword('bool'))   return parseBool(currentScope)
-        if (matchKeyword('const'))  return parseConst(currentScope)
-        if (matchKeyword('double')) return parseDouble(currentScope)
-        if (matchKeyword('float'))  return parseFloat32(currentScope)
-        if (matchKeyword('int'))    return parseInt32(currentScope)
-        if (matchKeyword('uint'))   return parseUint32(currentScope)
-        if (matchKeyword('void'))   return parseVoid(currentScope)
+        //=================================
+        if (matchKeyword('bool'))       return parseBool(currentScope)
+        if (matchKeyword('const'))      return parseConst(currentScope)
+        if (matchKeyword('double'))     return parseDouble(currentScope)
+        if (matchKeyword('float'))      return parseFloat32(currentScope)
+        if (matchKeyword('int'))        return parseInt32(currentScope)
+        if (matchKeyword('uint'))       return parseUint32(currentScope)
+        if (matchKeyword('void'))       return parseVoid(currentScope)
+        if (types[input.peek().value])  return parseType(currentScope)
+        //=================================
         if (currentScope !== priorScope) {
             expression.reset()
             priorScope = currentScope
@@ -289,30 +291,294 @@ function parse(input, mangle) {
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
         //=================================
-        if (input.peek().type === Token.Variable) {
-            input.next()
-            switch (input.peek().value) {
-                case '(':
-                    input.putBack()
-                    return parseCall()
-                case '=':  
-                    input.putBack()
-                    return parseVarAssignment(body)
-                case '[':
-                    input.putBack()
-                    return parseVarAssignment(body)
-                case '.':
-                    input.putBack()
-                    return parseMethod(body)                    
+        return parseExpression(body)
+
+    }    
+
+    /** parse an expression
+     * 
+     * x++
+     * x--
+     * x(...)
+     * x.member(...)
+     * x = new class(...)
+     * x = exp
+     * x.member = exp
+     * x[exp] = exp
+     * x[exp].member = exp
+     * 
+     */
+    function parseExpression(body) {
+
+        input.mark()
+        const name = input.next().value
+        if (match('+')) { /** AutoIncrement */
+            expect('+')
+            if (match('+')) {
+                expect('+')
+                return factory.AutoIncrement(name)
+            }
+            input.raise('Expected [++]')
+        }
+        if (match('-')) { /** AutoDecrement */
+            expect('-')
+            if (match('-')) {
+                expect('-')
+                return factory.AutoDecrement(name)
+            }
+            input.raise('Expected [--]')
+        }
+        if (match('(')) { /** Call Function */
+            input.putBack()
+            return parseCall()
+        }
+        /** assignment 
+         * 
+         * x            = exp / new class(...) / obj.method(...)
+         * x.member     = exp / new class(...) / obj.method(...)
+         * x[e*]        = exp / new class(...) / obj.method(...)
+         * x[e*].member = exp / new class(...) / obj.method(...)
+         *  
+         *  e* = simple expression - no members or sub-indexing
+         */
+        let lhs = name
+        const rhs = []
+        const index = []
+        let indexer = false
+        let property = false
+        let member = ''
+        let method = ''
+        let self = ''
+
+        /** LHS */
+        if (match('=')) {               /** x = */
+            expect('=')
+        } else if (match('.')) {        /** x.member = */
+            expect('.')
+            property = true
+            member = input.next().value
+            if (match('=')) expect('=')
+            else {
+                input.restore()
+                return parseMethod(body)
+            }
+        } else if (match('[')) {        /** x[exp] =  */
+            expect('[')
+            indexer = true
+            while (!match(']')) {
+                index.push(input.next().value)
+            }
+            expect(']')
+            if (match('.')) {           /** x[exp].member = */
+                expect('.')
+                property = true
+                member = input.next().value
+                if (match('=')) expect('=')
+                else input.raise('Invalid LHS(2) in assignment')
+            } else if (match('=')) expect('=')
+            else input.raise('Invalid LHS(3) in assignment')
+        } else input.raise('Invalid LHS(4) in assignment')
+
+        if (member !== '') { /** Encode lhsvalue */
+            const sym = symtbl[currentScope][name]
+            const def = lookupField(sym.type, member)
+            index.push(def.offset)
+            // console.log(sym, def)
+            //lhs = `${sym.heap}[self+${def.offset}<<${sym.size}>>${sym.size}]`
+        }
+
+        /** RHS */
+        while (!match(';')) {
+            //console.log('RHS', input.peek().value)
+            if (matchKeyword('new')) {
+                expectKeyword('new') 
+                let size = 0
+                let tokens = []
+                let token = null
+                if (matchKeyword('int')) {
+                    expectKeyword('int')
+                    size = 2
+                    heapi32 = true
+                } else if (matchKeyword('uint')) {
+                    expectKeyword('uint')
+                    size = 2
+                    heapu32 = true
+                } else if (matchKeyword('bool')) {
+                    expectKeyword('bool')
+                    size = 2
+                    heapu32 = true
+                } else if (matchKeyword('float')) {
+                    expectKeyword('float')
+                    size = 2
+                    heapf32 = true
+                } else if (matchKeyword('double')) {
+                    expectKeyword('double')
+                    size = 3
+                    heapf64 = true
+                } else {
+                    malloc = true
+                    let klass = input.next()
+                    klass.value = `${klass.value}_ctor`
+                    const arg = []
+                    let pos = 0
+                    expect('(')
+                    while (!match(')')) {
+                        if (match(',')) {
+                            expect(',')
+                            pos++
+                        } else {
+                            if (!arg[pos]) arg[pos] = []
+                            arg[pos].push(input.next())
+                        }
+
+                    }
+                    expect(')')
+                    const params = []
+                    for (let i=0; i<arg.length; i++) {
+                        //TODO: Coerce params - p1|0, +p2, fround(p3)
+                        let node = parseExp(arg[i])
+                        params.push(node)
+                    }
+                    return factory.NewClass(name, klass, params)
+                }
+                expect('[')
+                while (!match(']')) {
+                    token = input.next();
+                }
+                expect(']')
+                malloc = true
+                switch (token.type) {
+                    case Token.Variable:
+                        return factory.New(name, size, { "type": 'Identifier', "name": token.value })
+                    case Token.Number:
+                        return factory.New(name, size, { "type": "Literal", "value": token.value }) //, "raw": ""+token.value })
+                    default:
+                        input.raise('Expecting [Literal|Identifier]')
+                }
+            } else if (match('.')) {
+                expect('.')
+                method = input.next().value
+            } else rhs.push(input.next())
+        }
+
+        /** Decode RHS of object.field */
+        if (method !== '') {
+            self = rhs[0].value
+            let sym = symtbl[currentScope][self]
+            if (rhs.length === 1) {/** Property */
+                const def = lookupField(sym.type, method)
+                if (def.static) {
+                    input.raise(`Invalid static type ${sym.type}.${method}`)
+                } else {
+                    rhs.push(new Token(Token.Delimiter, '['))
+                    rhs.push(new Token(Token.Number, def.offset))
+                    rhs.push(new Token(Token.Delimiter, ']'))
+                }
+            } else {
+                rhs[0].value = `${sym.type}_${method}`
             }
         }
-        /** If we get here, it may be a custom type */
-        input.putBack()
-        if (types[input.peek().value]) {
-            return parseType(currentScope)
+
+        const ast = parseExp(fixExpression(rhs))
+        const sym = symtbl[currentScope][name]||symtbl['global'][name]
+
+        if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
+            const lhsvalue = index.length===0?null:parseExp(index.join(' '))
+            // console.log(sym.name, index)
+            // console.log(sym.name, lhsvalue)
+            const lines = expression.transpile(ast, sym, lhsvalue, mangle)  
+            for (let l in lines) {
+                const line = lines[l]
+                if (parseInt(l, 10) === lines.length-1) {
+                    createVar(body, line.name, 'int', 0)
+                    return factory.AssignmentStatement(line.name, parseExp(line.code))
+                } else {
+                    createVar(body, line.name, 'int', 0)
+                    body.push(factory.AssignmentStatement(line.name, parseExp(line.code)))
+                }
+
+            }
+        } else { /**  simple assignment */
+            let a;
+            switch (ast.type) {
+                case 'Literal': 
+                    switch (ast.raw) {
+                        case 'true': 
+                            ast.value = 1
+                            ast.raw = '1'
+                            break
+                        case 'false':
+                            ast.value = 0
+                            ast.raw = '0'
+                            break
+                    }
+                    a = factory.AssignmentStatement(name, ast)
+                    return a
+                case 'Identifier':
+                    a = factory.AssignmentStatement(name, ast)
+                    return a
+                case 'CallExpression':
+                    if (self !== '') {
+                        ast.arguments.unshift(
+                        { type: 'BinaryExpression',
+                            operator: '|',
+                            left: { type: 'Identifier', name: self },
+                            right: { type: 'Literal', value: 0, raw: '0' } } 
+                        )
+                    }
+                    switch (sym.type) {
+                        case 'int': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'uint': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'bool': return factory.AssignmentStatementCallInt(name, ast)
+                        //case 'float': return factory.AssignmentStatementCallFloat(name, ast)
+                        case 'double': return factory.AssignmentStatementCallDouble(name, ast)
+                        case 'float': throw new Error('WTF???')
+                        default: throw new Error(`Unknown Symbol ${sym.type}`)
+                    }
+            }
         }
-        input.raise('Unexpected token: ')
-    }    
+
+
+    }
+
+    function lookupField(type, name) {
+        let t = null
+        if (type === moduleName) {
+            t = data
+        } else {
+            const ext = require('../dish.json')
+            t = ext[packge][name].data
+        }
+        for (let i in t) {
+            if (t[i].name === name) return t[i]
+        }
+        input.raise(`Type ${type} not found`)
+
+    }
+
+    function fixExpression(tokens) {
+        const exp = []
+
+        for (let i in tokens) {
+
+            switch(tokens[i]) {
+                case 'to!double':
+                    tokens[i].value = '__double__'
+                    break
+                case 'to!int':
+                    tokens[i].value = '__int__'
+                    break
+                case 'to!float':
+                    tokens[i].value = 'fround'
+                    float = true
+                    break
+            }
+            
+            exp.push(tokens[i].value)
+        }
+        //console.log(exp.join(' '))
+        return exp.join(' ')
+    }
 
     /**
      * Constant 
@@ -357,7 +623,11 @@ function parse(input, mangle) {
 
 
     /**
-     * Parse an expression
+     * Parse an expression 
+     * 
+     * A wrapper around jsep
+     * converts ++ syntax in for update expression
+     * 
      * @param tokens the expression as string or as an array of tokens
      * @param conditional bool hint conditional or arithmetic
      * @returns esprima schema ast
@@ -517,211 +787,6 @@ function parse(input, mangle) {
         return factory.CallExpression(name, params)
     }
 
-    /**
-     * parse complex assignment statement
-     * including array indexing and new operator
-     * 
-     * @param body   
-     * @returns ast node  
-     */
-    function parseVarAssignment(body) {
-        let name = ''
-        let tokens = []
-        const index = []
-        let lhs = true
-        let indexer = false
-        let heapname = ''
-        let method = ''
-        let _this = ''
-
-        while (!match(';')) {
-            if (name === '') { /* next token MUST be the lhs, therefore it's the name */
-                if (input.peek().type === Token.Variable) {
-                    name = input.next().value
-                    tokens = []
-                } else {
-                    input.raise('Expecting lhs variable')
-                }
-            } else if (match('=')) { /** eat the equal operator */
-                expect('=')
-                lhs = false
-            } else if (lhs && match('[')) {
-                expect('[')
-                indexer = true
-            } else if (lhs && match(']')) {
-                expect(']')
-                indexer = false
-            } else if (lhs && match('.')) {
-                expect('.')
-                if (indexer) {
-                    index.push(input.next().value)
-                }
-                else {
-                    method = input.next().value
-                    tokens.push(input.next().value)
-                }
-            } else if (!lhs && match('.')) {
-                expect('.')
-                if (indexer) 
-                    index.push(input.next().value)
-                else {
-                    method = input.next().value
-                    tokens.push(input.next().value)
-                }
-            } else if (matchKeyword('new')) {
-                expectKeyword('new') 
-                let size = 0
-                let tokens = []
-                let token = null
-                if (matchKeyword('int')) {
-                    expectKeyword('int')
-                    size = 2
-                    heapi32 = true
-                } else if (matchKeyword('uint')) {
-                    expectKeyword('uint')
-                    size = 2
-                    heapu32 = true
-                } else if (matchKeyword('bool')) {
-                    expectKeyword('bool')
-                    size = 2
-                    heapu32 = true
-                } else if (matchKeyword('float')) {
-                    expectKeyword('float')
-                    size = 2
-                    heapf32 = true
-                } else if (matchKeyword('double')) {
-                    expectKeyword('double')
-                    size = 3
-                    heapf64 = true
-                } else {
-                    //input.raise('Expecting type: [bool|int|uint|float|double]')
-                    malloc = true
-                    let klass = input.next()
-                    klass.value = `${klass.value}_ctor`
-                    const arg = []
-                    let pos = 0
-                    expect('(')
-                    while (!match(')')) {
-                        if (match(',')) {
-                            expect(',')
-                            pos++
-                        } else {
-                            if (!arg[pos]) arg[pos] = []
-                            arg[pos].push(input.next())
-                        }
-
-                    }
-                    expect(')')
-                    const params = []
-                    for (let i=0; i<arg.length; i++) {
-                        //TODO: Coerce params - p1|0, +p2, fround(p3)
-                        let node = parseExp(arg[i])
-                        params.push(node)
-                    }
-                    return factory.NewClass(name, klass, params)
-                    
-                }
-                expect('[')
-                while (!match(']')) {
-                    token = input.next();
-                }
-                expect(']')
-                malloc = true
-                switch (token.type) {
-                    case Token.Variable:
-                        return factory.New(name, size, { "type": 'Identifier', "name": token.value })
-                    case Token.Number:
-                        return factory.New(name, size, { "type": "Literal", "value": token.value }) //, "raw": ""+token.value })
-                    default:
-                        input.raise('Expecting [Literal|Identifier]')
-                }
-
-            } else { /** just copy the token to the output stack */
-                if (indexer) 
-                    index.push(input.next().value)
-                else
-                    tokens.push(input.next().value)
-            }
-        }
-
-        if (method !== '') {
-            _this = tokens[0]
-            let sym = symtbl[currentScope][_this]
-            tokens[0] = `${sym.type}_${method}`
-        }
-
-        for (let i in tokens) {
-            switch(tokens[i]) {
-                case 'to!double':
-                    tokens[i] = '__double__'
-                    break
-                case 'to!int':
-                    tokens[i] = '__int__'
-                    break
-                case 'to!float':
-                    tokens[i] = 'fround'
-                    float = true
-                    break
-            }
-        }
-        const ast = parseExp(tokens.join(' '))
-        const sym = symtbl[currentScope][name]||symtbl['global'][name]
-
-        if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
-            const lhsvalue = index.length===0?null:parseExp(index.join(' '))
-            const lines = expression.transpile(ast, sym, lhsvalue, mangle)
-            for (let l in lines) {
-                const line = lines[l]
-                if (parseInt(l, 10) === lines.length-1) {
-                    createVar(body, line.name, 'int', 0)
-                    return factory.AssignmentStatement(line.name, parseExp(line.code))
-                } else {
-                    createVar(body, line.name, 'int', 0)
-                    body.push(factory.AssignmentStatement(line.name, parseExp(line.code)))
-                }
-
-            }
-        } else { /**  simple assignment */
-            let a;
-            switch (ast.type) {
-                case 'Literal': 
-                    switch (ast.raw) {
-                        case 'true': 
-                            ast.value = 1
-                            ast.raw = '1'
-                            break
-                        case 'false':
-                            ast.value = 0
-                            ast.raw = '0'
-                            break
-                    }
-                    a = factory.AssignmentStatement(name, ast)
-                    return a
-                case 'Identifier':
-                    a = factory.AssignmentStatement(name, ast)
-                    return a
-                case 'CallExpression':
-                    if (_this !== '') {
-                        ast.arguments.unshift(
-                        { type: 'BinaryExpression',
-                            operator: '|',
-                            left: { type: 'Identifier', name: _this },
-                            right: { type: 'Literal', value: 0, raw: '0' } } 
-                        )
-                    }
-                    switch (sym.type) {
-                        case 'int': return factory.AssignmentStatementCallInt(name, ast)
-                        case 'uint': return factory.AssignmentStatementCallInt(name, ast)
-                        case 'bool': return factory.AssignmentStatementCallInt(name, ast)
-                        //case 'float': return factory.AssignmentStatementCallFloat(name, ast)
-                        case 'double': return factory.AssignmentStatementCallDouble(name, ast)
-                        case 'float': throw new Error('WTF???')
-                        default: throw new Error(`Unknown Symbol ${sym.type}`)
-                    }
-            }
-        }
-
-    }
 
     /**
      * Create Variable
@@ -765,10 +830,11 @@ function parse(input, mangle) {
         }
     }
     /**
-     * returns a sequence of AssignmentExpressions - for loop header
+     * returns a sequence of AssignmentExpressions
+     * used in for loop header
      * 
      */
-    function parseAssignment() {
+    function parseForAssignment() {
         const names = []
         const inits = []
         let name = ''
@@ -1069,7 +1135,7 @@ function parse(input, mangle) {
         expect('(')
 
         while (!match(';')) { // Initialize
-            init.push(parseAssignment())
+            init.push(parseForAssignment())
         }
         expect(';')
         while (!match(';')) { // Test
@@ -1077,7 +1143,7 @@ function parse(input, mangle) {
         }
         expect(';')
         while (!match(')')) { // Update
-            update.push(parseAssignment())
+            update.push(parseForAssignment())
         }
         expect(')')
         expect('{')
