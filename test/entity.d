@@ -1,12 +1,6 @@
 
 class Entity {
 
-    // const int ID        = 0;
-    // const int ENABLED   = 1;
-    // const int COUNT     = 2;
-    const int COMPONENT = 3;
-    const int MAX       = 20;
-
     int id;
     bool enabled;
     int count;
@@ -24,7 +18,7 @@ class Entity {
         int e;
         int entitySize;
         
-        entitySize = MAX*4+4+4+4;
+        entitySize = 20*4+4+4+4;
         e = new int[entitySize];
         Entity(e, totalComponents);
         return e;

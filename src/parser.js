@@ -355,13 +355,13 @@ function parse(input, mangle, packge) {
      */
     function parseExpression(body) {
 
-        const EQ = isAssignment()
+        //const EQ = isAssignment()
         const name = input.next().value
         if (match('+')) { /** AutoIncrement */
             expect('+')
             if (match('+')) {
                 expect('+')
-                if (EQ) input.raise('Invalid LHS')
+                //if (EQ) input.raise('Invalid LHS')
                 return factory.AutoIncrement(name)
             }
             input.raise('Expected [++]')
@@ -370,13 +370,13 @@ function parse(input, mangle, packge) {
             expect('-')
             if (match('-')) {
                 expect('-')
-                if (EQ) input.raise('Invalid LHS')
+                //if (EQ) input.raise('Invalid LHS')
                 return factory.AutoDecrement(name)
             }
             input.raise('Expected [--]')
         }
         if (match('(')) { /** Call Function */
-            if (EQ) input.raise('Invalid LHS')
+            //if (EQ) input.raise('Invalid LHS')
             input.putBack()
             return parseCall()
         }
@@ -453,7 +453,7 @@ function parse(input, mangle, packge) {
                      * o.field[index] = value
                      * HEAPI32[o+field+index] = value
                      */
-                    if (!EQ) input.raise('Missing LHS')
+                    //if (!EQ) input.raise('Missing LHS')
                     expect('[')
                     while (!match(']')) {
                         index.push(input.next().value)
@@ -559,10 +559,10 @@ function parse(input, mangle, packge) {
                 
                 if (match('(')) { /** x = obj.method(...) */
                     expect('(')
-                    const varName = rhs[0].value
+                    const name = rhs[0].value
                     rhs[0].value = `${symtbl[currentScope][rhs[0].value].type}_${method}`
                     rhs.push(new Token(Token.Delimiter, '('))
-                    rhs.push(new Token(Token.Variable, varName))
+                    rhs.push(new Token(Token.Variable, name))
                     rhs.push(new Token(Token.Delimiter, '|'))
                     rhs.push(new Token(Token.Number, '0'))
                     let pos = 1
@@ -572,15 +572,13 @@ function parse(input, mangle, packge) {
                             expect(',')
                             rhs.push(new Token(Token.Delimiter, ','))
                         } else {
-                            rhs.push(input.next())
+                            //TODO: Coerce params - p1|0, +p2, fround(p3)
+                            rhs.push(input.next()) 
                         }
 
                     }
                     expect(')')
                     rhs.push(new Token(Token.Delimiter, ')'))
-                    // console.log(rhs)
-                    // console.log(parseExp(fixExpression(rhs)))
-                    // process.exit(0)
                     method = ''  
                 }
             } else {

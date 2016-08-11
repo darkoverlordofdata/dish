@@ -111,24 +111,15 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
         execute: function() {
             exports_3("Entity", Entity = (function (stdlib, foreign, heap) {
                 "use asm";
-                var HEAPI8 = new stdlib.Int8Array(heap);
-                var HEAPU8 = new stdlib.Uint8Array(heap);
-                var HEAPI16 = new stdlib.Int16Array(heap);
-                var HEAPU16 = new stdlib.Uint16Array(heap);
                 var HEAPI32 = new stdlib.Int32Array(heap);
-                var HEAPU32 = new stdlib.Uint32Array(heap);
-                var HEAPF32 = new stdlib.Float32Array(heap);
-                var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
-                var COMPONENT = 3;
-                var MAX = 20;
                 function ctor(totalComponents) {
                     totalComponents = totalComponents | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
                     var e = 0;
                     var entitySize = 0;
-                    __01__ = MAX * 4 | 0;
+                    __01__ = 20 * 4 | 0;
                     __02__ = __01__ + 4 | 0;
                     __03__ = __02__ + 4 | 0;
                     entitySize = __03__ + 4 | 0;
@@ -233,14 +224,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
         execute: function() {
             exports_4("pool", pool = (function (stdlib, foreign, heap) {
                 "use asm";
-                var HEAPI8 = new stdlib.Int8Array(heap);
-                var HEAPU8 = new stdlib.Uint8Array(heap);
-                var HEAPI16 = new stdlib.Int16Array(heap);
-                var HEAPU16 = new stdlib.Uint16Array(heap);
                 var HEAPI32 = new stdlib.Int32Array(heap);
-                var HEAPU32 = new stdlib.Uint32Array(heap);
-                var HEAPF32 = new stdlib.Float32Array(heap);
-                var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 var Entity_ctor = foreign.Entity_ctor;
