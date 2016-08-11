@@ -7,19 +7,6 @@ export const Entity = (function(stdlib, foreign, heap) {
 var HEAPI32 = new stdlib.Int32Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
-function ctor(totalComponents) {
-    totalComponents = totalComponents | 0;
-    var __01__ = 0, __02__ = 0, __03__ = 0;
-    var e = 0;
-    var entitySize = 0;
-    __01__ = 20 * 4 | 0;
-    __02__ = __01__ + 4 | 0;
-    __03__ = __02__ + 4 | 0;
-    entitySize = __03__ + 4 | 0;
-    e = (malloc(entitySize << 2) | 0) >> 2;
-    Entity(e, totalComponents);
-    return e | 0;
-}
 function Entity(self, totalComponents) {
     self = self | 0;
     totalComponents = totalComponents | 0;
@@ -84,7 +71,6 @@ function setComponent(self, index, value) {
     HEAPI32[__03__ >> 2] = value;
 }    
 return { 
-    ctor:ctor,
     Entity:Entity,
     getId:getId,
     setId:setId,

@@ -289,7 +289,7 @@ function parse(input, mangle, packge) {
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parseIf()
         if (matchKeyword('print'))      return parsePrint()
-        if (matchKeyword('return'))     return parseReturn()
+        if (matchKeyword('return'))     return parseReturn() //TODO: should use parseExpression
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
         //=================================
@@ -298,105 +298,11 @@ function parse(input, mangle, packge) {
         return parseExpression(body)
 
     }    
+    
 
-    function isAssignment() {
-        const tokens = []
-        let eq = false
-        input.mark()
-        while (!match(';')) {
-            if (match('=')) {
-                eq = true
-            } 
-            tokens.push(input.next().value)
-        }
-        input.restore()
-
-        current = tokens.join(' ')
-        return eq
-    }
-
-
-    /**
-     * Any of these RHS espressions
-     * 
-     * lhs = rhs
-     * lhs = rhs()
-     * lhs = rhs[0]
-     * lhs = rhs.field
-     * lhs = rhs[0].field
-     * lhs = rhs.method()
-     * 
-     * May be assiged to any of these LHS destinations
-     * 
-     * lhs = rhs
-     * lhs[0] = rhs
-     * lhs.field = rhs
-     * lhs[0].field = rhs
-     * 
-     * In these cases, LHS is optional
-     * 
-     * rhs()
-     * rhs.method()
-     * 
-     */
-
-    /** parse an expression
-     * 
-     * x++
-     * x--
-     * x(...)
-     * x.member(...)
-     * x = new class(...)
-     * x = exp
-     * x.member = exp
-     * x[exp] = exp
-     * x[exp].member = exp
-     * 
-     */
-    function parseExpression(body) {
+    function parseExpression(body, isReturn) {
 
         //const EQ = isAssignment()
-        const name = input.next().value
-        if (match('+')) { /** AutoIncrement */
-            expect('+')
-            if (match('+')) {
-                expect('+')
-                //if (EQ) input.raise('Invalid LHS')
-                return factory.AutoIncrement(name)
-            }
-            input.raise('Expected [++]')
-        }
-        if (match('-')) { /** AutoDecrement */
-            expect('-')
-            if (match('-')) {
-                expect('-')
-                //if (EQ) input.raise('Invalid LHS')
-                return factory.AutoDecrement(name)
-            }
-            input.raise('Expected [--]')
-        }
-        if (match('(')) { /** Call Function */
-            //if (EQ) input.raise('Invalid LHS')
-            input.putBack()
-            return parseCall()
-        }
-        /** assignment 
-         * lhs            rhs
-         * 
-         * x            = expression
-         * x.field      = expression
-         * x[e*]        = expression
-         * x[e*].field  = expression
-         *  
-         *  e* = simple expression - no members or sub-indexing
-         * 
-         * Expressions not working
-         * x = obj.method(...)
-         *  comp = entity.hasComponent(index)
-         *  comp = entity(index) sb comp = Entity_hasComponent(index)
-         * 
-         */
-        let lhs = name
         const rhs = []
         const index = []
         let indexer = false
@@ -404,88 +310,115 @@ function parse(input, mangle, packge) {
         let member = ''
         let method = ''
         let self = ''
-        let tmpast = null
+        const name = input.next().value
 
-        /** LHS */
-        if (match('=')) {               /** x = */
-            expect('=')
-        } else if (match('.')) {        /** x.member = */
-                                        /** x.member[index] = */
-                                        /** x.member(p) */
-            expect('.')
-            property = true
-            member = input.next().value
-            if (match('=')) {
+        if (isReturn)  {
+
+        } else {
+            if (match('+')) { /** AutoIncrement */
+                expect('+')
+                if (match('+')) {
+                    expect('+')
+                    //if (EQ) input.raise('Invalid LHS')
+                    return factory.AutoIncrement(name)
+                }
+                input.raise('Expected [++]')
+            }
+            if (match('-')) { /** AutoDecrement */
+                expect('-')
+                if (match('-')) {
+                    expect('-')
+                    //if (EQ) input.raise('Invalid LHS')
+                    return factory.AutoDecrement(name)
+                }
+                input.raise('Expected [--]')
+            }
+            if (match('(')) { /** Call Function */
+                //if (EQ) input.raise('Invalid LHS')
+                input.putBack()
+                return parseCall()
+            }
+
+            /** LHS */
+            if (match('=')) {               /** x = */
                 expect('=')
-            }
-            else {
-                const method = `${symtbl[currentScope][name].type}_${member}`
-                const arg = [[
-                    new Token(Token.Variable, name),
-                    new Token(Token.Delimiter, '|'),
-                    new Token(Token.Number, '0')
-                ]]
-                let pos = 1
-
-                if (match('(')) { /** Call Method: o.method(...) */
-                    expect('(')
-                    while (!match(')')) {
-                        if (match(',')) {
-                            expect(',')
-                            pos++
-                        } else {
-                            if (!arg[pos]) arg[pos] = []
-                            arg[pos].push(input.next())
-                        }
-
-                    }
-                    expect(')')
-                    const params = []
-                    for (let i=0; i<arg.length; i++) {
-                        //TODO: Coerce params - p1|0, +p2, fround(p3)
-                        let node = parseExp(arg[i])
-                        params.push(node)
-                    }
-                    return factory.CallExpression(method, params)
-
-                } else if (match('[')) { /** Property Array: o.field[index] = value; */
-                    /**
-                     * o.field[index] = value
-                     * HEAPI32[o+field+index] = value
-                     */
-                    //if (!EQ) input.raise('Missing LHS')
-                    expect('[')
-                    while (!match(']')) {
-                        index.push(input.next().value)
-                    }
-                    expect(']')
-                    expect('=')
-                } else input.raise('Invalid property/method')
-                
-            }
-        } else if (match('[')) {        /** x[exp] =  */
-            expect('[')
-            indexer = true
-            while (!match(']')) {
-                index.push(input.next().value)
-            }
-            expect(']')
-            if (match('.')) {           /** x[exp].member = */
+            } else if (match('.')) {        /** x.member = */
+                                            /** x.member[index] = */
+                                            /** x.member(p) */
                 expect('.')
                 property = true
                 member = input.next().value
-                if (match('=')) expect('=')
-                else input.raise('Invalid LHS(2) in assignment')
-            } else if (match('=')) expect('=')
-            else input.raise('Invalid LHS(3) in assignment')
-        } else input.raise('Invalid LHS(4) in assignment')
+                if (match('=')) {
+                    expect('=')
+                }
+                else {
+                    const method = `${symtbl[currentScope][name].type}_${member}`
+                    const arg = [[
+                        new Token(Token.Variable, name),
+                        new Token(Token.Delimiter, '|'),
+                        new Token(Token.Number, '0')
+                    ]]
+                    let pos = 1
 
-        if (member !== '') { /** Encode lhsvalue */
-            const sym = symtbl[currentScope][name]
-            const def = lookupField(sym.type, member)
-            index.push(def.offset/4)
+                    if (match('(')) { /** Call Method: o.method(...) */
+                        expect('(')
+                        while (!match(')')) {
+                            if (match(',')) {
+                                expect(',')
+                                pos++
+                            } else {
+                                if (!arg[pos]) arg[pos] = []
+                                arg[pos].push(input.next())
+                            }
+
+                        }
+                        expect(')')
+                        const params = []
+                        for (let i=0; i<arg.length; i++) {
+                            //TODO: Coerce params - p1|0, +p2, fround(p3)
+                            let node = parseExp(arg[i])
+                            params.push(node)
+                        }
+                        return factory.CallExpression(method, params)
+
+                    } else if (match('[')) { /** Property Array: o.field[index] = value; */
+                        /**
+                         * o.field[index] = value
+                         * HEAPI32[o+field+index] = value
+                         */
+                        //if (!EQ) input.raise('Missing LHS')
+                        expect('[')
+                        while (!match(']')) {
+                            index.push(input.next().value)
+                        }
+                        expect(']')
+                        expect('=')
+                    } else input.raise('Invalid property/method')
+                    
+                }
+            } else if (match('[')) {        /** x[exp] =  */
+                expect('[')
+                indexer = true
+                while (!match(']')) {
+                    index.push(input.next().value)
+                }
+                expect(']')
+                if (match('.')) {           /** x[exp].member = */
+                    expect('.')
+                    property = true
+                    member = input.next().value
+                    if (match('=')) expect('=')
+                    else input.raise('Invalid LHS(2) in assignment')
+                } else if (match('=')) expect('=')
+                else input.raise('Invalid LHS(3) in assignment')
+            } else input.raise('Invalid LHS(4) in assignment')
+
+            if (member !== '') { /** Encode lhsvalue */
+                const sym = symtbl[currentScope][name]
+                const def = lookupField(sym.type, member)
+                index.push(def.offset/4)
+            }
         }
-
         /** RHS */
         while (!match(';')) {
             if (matchKeyword('new')) {
@@ -516,9 +449,16 @@ function parse(input, mangle, packge) {
                 } else {
                     malloc = true
                     let klass = input.next()
-                    klass.value = `${klass.value}_ctor`
-                    const arg = []
-                    let pos = 0
+
+                    const ext = require('../dish.json')
+                    const size = ext[packge][klass.value].size
+                    const ctor = `${klass.value}_${klass.value}`
+                    const arg = [[
+                        new Token(Token.Variable, name),
+                        new Token(Token.Delimiter, '|'),
+                        new Token(Token.Number, '0')
+                    ]]
+                    let pos = 1
                     expect('(')
                     while (!match(')')) {
                         if (match(',')) {
@@ -532,12 +472,15 @@ function parse(input, mangle, packge) {
                     }
                     expect(')')
                     const params = []
+
                     for (let i=0; i<arg.length; i++) {
                         //TODO: Coerce params - p1|0, +p2, fround(p3)
                         let node = parseExp(arg[i])
                         params.push(node)
                     }
-                    return factory.NewClass(name, klass, params)
+
+                    body.push(factory.New(name, 2, { "type": "Literal", "value": size }))
+                    return factory.CallExpression(ctor, params)
                 }
                 expect('[')
                 while (!match(']')) {
@@ -672,7 +615,7 @@ function parse(input, mangle, packge) {
             t = data
         } else {
             const ext = require('../dish.json')
-            console.log(`Lookup ${packge} / ${name}`)
+            // console.log(`Lookup ${packge} / ${name}`)
             t = ext[packge][name].data
         }
         for (let i in t) {
@@ -855,11 +798,14 @@ function parse(input, mangle, packge) {
         api[currentScope] = {}
        
         const args = []
+        if (isClass) {
+            api[currentScope]['self'] = 'self'
+            args.push({type: new Token(Token.Variable, moduleName), name: new Token(Token.Variable, 'self')})
+        }
         expect('(')
         while (!match(')')) {
             const apiType = input.next()
             const apiName = input.next()
-
             api[currentScope][apiName.value] = apiType.value
             args.push({ type: apiType, name: apiName})
             if (match(',')) input.next()
@@ -1516,7 +1462,6 @@ function parse(input, mangle, packge) {
 
     function parseReturn() {
         let value
-        //altProc()
         expectKeyword('return')
         if (match(';')) {
             value = factory.Return()

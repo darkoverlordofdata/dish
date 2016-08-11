@@ -7,7 +7,6 @@ export const pool = (function(stdlib, foreign, heap) {
 var HEAPI32 = new stdlib.Int32Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
-var Entity_ctor = foreign.Entity_ctor;
 var Entity_Entity = foreign.Entity_Entity;
 var Entity_getId = foreign.Entity_getId;
 var Entity_setId = foreign.Entity_setId;
@@ -26,6 +25,7 @@ var index = 0;
 var uniqueId = 0;
 function initialize(count) {
     count = count | 0;
+    var __00__ = 0;
     if (init) {
         totalComponents = count;
         uniqueId = 0;
@@ -34,16 +34,20 @@ function initialize(count) {
     }
 }
 function getTotalComponents() {
+    var __00__ = 0;
     return totalComponents | 0;
 }
 function getCount() {
+    var __00__ = 0;
     return count | 0;
 }
 function createEntity() {
+    var __00__ = 0;
     var ent = 0;
     var i = 0;
     uniqueId = uniqueId + 1 | 0;
-    ent = Entity_ctor(totalComponents | 0) | 0;
+    ent = (malloc(116 << 2) | 0) >> 2;
+    Entity_Entity(ent | 0, totalComponents);
     Entity_setId(ent | 0, uniqueId | 0);
     Entity_setEnabled(ent | 0, 1 | 0);
     for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
@@ -53,37 +57,46 @@ function createEntity() {
 }
 function destroyEntity(entity) {
     entity = entity | 0;
+    var __00__ = 0;
     free(entity | 0);
 }
 function destroyAllEntities() {
+    var __00__ = 0;
 }
 function hasEntity(entity) {
     entity = entity | 0;
+    var __00__ = 0;
 }
 function getEntities(matching) {
     matching = matching | 0;
+    var __00__ = 0;
 }
 function getGroup(matching) {
     matching = matching | 0;
+    var __00__ = 0;
 }
 function updateGroupsComponentAddedOrRemoved(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
+    var __00__ = 0;
 }
 function updateGroupsComponentReplaced(entity, index, prevcomponent, newcomponent) {
     entity = entity | 0;
     index = index | 0;
     prevcomponent = prevcomponent | 0;
     newcomponent = newcomponent | 0;
+    var __00__ = 0;
 }
 function onEntityReleased(entity) {
     entity = entity | 0;
+    var __00__ = 0;
 }
 function addComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
+    var __00__ = 0;
     var enabled = 0;
     var comp = 0;
     enabled = Entity_getEnabled(entity | 0) | 0;
@@ -99,15 +112,18 @@ function addComponent(entity, index, component) {
 function removeComponent(entity, index) {
     entity = entity | 0;
     index = index | 0;
+    var __00__ = 0;
 }
 function replaceComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
+    var __00__ = 0;
 }
 function hasComponent(entity, index) {
     entity = entity | 0;
     index = index | 0;
+    var __00__ = 0;
 }    
 return { 
     initialize:initialize,

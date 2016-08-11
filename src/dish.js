@@ -101,8 +101,6 @@ out = out.replace(/\+fround/mg, 'fround');
 
 out = out.replace(/ \| 0 \| 0/mg, '|0');
 
-out = out.replace(/^\s*var __00__ = 0;/mg, '');
-
 while (/\n\n/.test(out)) {
   out = out.replace(/\n\n/mg, '\n');
 }

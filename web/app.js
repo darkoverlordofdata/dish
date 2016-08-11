@@ -114,19 +114,6 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
-                function ctor(totalComponents) {
-                    totalComponents = totalComponents | 0;
-                    var __01__ = 0, __02__ = 0, __03__ = 0;
-                    var e = 0;
-                    var entitySize = 0;
-                    __01__ = 20 * 4 | 0;
-                    __02__ = __01__ + 4 | 0;
-                    __03__ = __02__ + 4 | 0;
-                    entitySize = __03__ + 4 | 0;
-                    e = (malloc(entitySize << 2) | 0) >> 2;
-                    Entity(e, totalComponents);
-                    return e | 0;
-                }
                 function Entity(self, totalComponents) {
                     self = self | 0;
                     totalComponents = totalComponents | 0;
@@ -191,7 +178,6 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     HEAPI32[__03__ >> 2] = value;
                 }
                 return {
-                    ctor: ctor,
                     Entity: Entity,
                     getId: getId,
                     setId: setId,
@@ -227,7 +213,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
-                var Entity_ctor = foreign.Entity_ctor;
                 var Entity_Entity = foreign.Entity_Entity;
                 var Entity_getId = foreign.Entity_getId;
                 var Entity_setId = foreign.Entity_setId;
@@ -246,6 +231,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var uniqueId = 0;
                 function initialize(count) {
                     count = count | 0;
+                    var __00__ = 0;
                     if (init) {
                         totalComponents = count;
                         uniqueId = 0;
@@ -254,16 +240,20 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     }
                 }
                 function getTotalComponents() {
+                    var __00__ = 0;
                     return totalComponents | 0;
                 }
                 function getCount() {
+                    var __00__ = 0;
                     return count | 0;
                 }
                 function createEntity() {
+                    var __00__ = 0;
                     var ent = 0;
                     var i = 0;
                     uniqueId = uniqueId + 1 | 0;
-                    ent = Entity_ctor(totalComponents | 0) | 0;
+                    ent = (malloc(116 << 2) | 0) >> 2;
+                    Entity_Entity(ent | 0, totalComponents);
                     Entity_setId(ent | 0, uniqueId | 0);
                     Entity_setEnabled(ent | 0, 1 | 0);
                     for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
@@ -273,37 +263,46 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 }
                 function destroyEntity(entity) {
                     entity = entity | 0;
+                    var __00__ = 0;
                     free(entity | 0);
                 }
                 function destroyAllEntities() {
+                    var __00__ = 0;
                 }
                 function hasEntity(entity) {
                     entity = entity | 0;
+                    var __00__ = 0;
                 }
                 function getEntities(matching) {
                     matching = matching | 0;
+                    var __00__ = 0;
                 }
                 function getGroup(matching) {
                     matching = matching | 0;
+                    var __00__ = 0;
                 }
                 function updateGroupsComponentAddedOrRemoved(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
+                    var __00__ = 0;
                 }
                 function updateGroupsComponentReplaced(entity, index, prevcomponent, newcomponent) {
                     entity = entity | 0;
                     index = index | 0;
                     prevcomponent = prevcomponent | 0;
                     newcomponent = newcomponent | 0;
+                    var __00__ = 0;
                 }
                 function onEntityReleased(entity) {
                     entity = entity | 0;
+                    var __00__ = 0;
                 }
                 function addComponent(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
+                    var __00__ = 0;
                     var enabled = 0;
                     var comp = 0;
                     enabled = Entity_getEnabled(entity | 0) | 0;
@@ -319,15 +318,18 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 function removeComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
+                    var __00__ = 0;
                 }
                 function replaceComponent(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
+                    var __00__ = 0;
                 }
                 function hasComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
+                    var __00__ = 0;
                 }
                 return {
                     initialize: initialize,

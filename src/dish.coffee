@@ -51,14 +51,6 @@ if packge
     api = require("../dish.json")
 
 parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle, packge)
-# parsed.heapi8 = true
-# parsed.heapu8 = true
-# parsed.heapi16 = true
-# parsed.heapu16 = true
-# parsed.heapi32 = true
-# parsed.heapu32 = true
-# parsed.heapf32 = true
-# parsed.heapf64 = true
 
 tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
 code = escodegen.generate(parsed.ast, verbatim: 'verbatim')
@@ -89,7 +81,6 @@ out = out.replace(/__double__/mg, '')                       # fix-up type conver
 out = out.replace(/__int__/mg, '~~')                        # fix-up type conversions
 out = out.replace(/\+fround/mg, 'fround')                   # fix-up type conversions
 out = out.replace(/ \| 0 \| 0/mg, '|0')                     # fix-up redundant coercion
-out = out.replace(/^\s*var __00__ = 0;/mg, '')              # fix-up dead declaration
 out = out.replace(/\n\n/mg, '\n') while /\n\n/.test(out)    # fix-up empty lines
 
 if mangle

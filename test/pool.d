@@ -46,7 +46,7 @@ export Entity createEntity() {
 
     uniqueId = uniqueId+1;
 
-    ent = new Entity(totalComponents|0);
+    ent = new Entity(totalComponents);
     ent.setId(uniqueId|0);
     ent.setEnabled(1|0);
     for (i=0; i<(totalComponents|0); i++) {

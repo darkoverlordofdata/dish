@@ -5,33 +5,30 @@
       "class": true,
       "size": 116,
       "api": {
-        "ctor": {
-          "totalComponents": "int"
-        },
         "Entity": {
-          "self": "Entity",
+          "self": "self",
           "totalComponents": "int"
         },
         "getId": {
-          "self": "Entity"
+          "self": "self"
         },
         "setId": {
-          "self": "Entity",
+          "self": "self",
           "id": "int"
         },
         "getEnabled": {
-          "self": "Entity"
+          "self": "self"
         },
         "setEnabled": {
-          "self": "Entity",
+          "self": "self",
           "enabled": "bool"
         },
         "getComponent": {
-          "self": "Entity",
+          "self": "self",
           "index": "int"
         },
         "setComponent": {
-          "self": "Entity",
+          "self": "self",
           "index": "int",
           "value": "int"
         }
