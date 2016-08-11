@@ -81,6 +81,7 @@ function parse(input, mangle, packge) {
     const codegen = require('escodegen')
     const esprima = require('esprima')
     const Token = require('./Token')
+    //const alt = (require('./alt'))(input)
     const jsep = require('jsep')
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
@@ -291,9 +292,52 @@ function parse(input, mangle, packge) {
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
         //=================================
+        // const ex = alt.parseExpression(body)
+        // if (ex) return ex
         return parseExpression(body)
 
     }    
+
+    function isAssignment() {
+        const tokens = []
+        let eq = false
+        input.mark()
+        while (!match(';')) {
+            if (match('=')) {
+                eq = true
+            } 
+            tokens.push(input.next().value)
+        }
+        input.restore()
+
+        //console.log(tokens.join(' '))
+        return eq
+    }
+
+
+    /**
+     * Any of these RHS espressions
+     * 
+     * lhs = rhs
+     * lhs = rhs()
+     * lhs = rhs[0]
+     * lhs = rhs.field
+     * lhs = rhs[0].field
+     * lhs = rhs.method()
+     * 
+     * May be assiged to any of these LHS destinations
+     * 
+     * lhs = rhs
+     * lhs[0] = rhs
+     * lhs.field = rhs
+     * lhs[0].field = rhs
+     * 
+     * In these cases, LHS is optional
+     * 
+     * rhs()
+     * rhs.method()
+     * 
+     */
 
     /** parse an expression
      * 
@@ -310,12 +354,14 @@ function parse(input, mangle, packge) {
      */
     function parseExpression(body) {
 
-        input.mark()
+        const EQ = isAssignment()
+        //input.mark()
         const name = input.next().value
         if (match('+')) { /** AutoIncrement */
             expect('+')
             if (match('+')) {
                 expect('+')
+                if (EQ) input.raise('Invalid LHS')
                 return factory.AutoIncrement(name)
             }
             input.raise('Expected [++]')
@@ -324,11 +370,13 @@ function parse(input, mangle, packge) {
             expect('-')
             if (match('-')) {
                 expect('-')
+                if (EQ) input.raise('Invalid LHS')
                 return factory.AutoDecrement(name)
             }
             input.raise('Expected [--]')
         }
         if (match('(')) { /** Call Function */
+            if (EQ) input.raise('Invalid LHS')
             input.putBack()
             return parseCall()
         }
@@ -341,6 +389,13 @@ function parse(input, mangle, packge) {
          * x[e*].field  = expression
          *  
          *  e* = simple expression - no members or sub-indexing
+         * 
+         * Expressions not working
+         * x = obj.method()
+         * 
+         * LHS not working
+         * obj.property[index] = value;
+         * 
          */
         let lhs = name
         const rhs = []
@@ -355,13 +410,56 @@ function parse(input, mangle, packge) {
         if (match('=')) {               /** x = */
             expect('=')
         } else if (match('.')) {        /** x.member = */
+                                        /** x.member[index] = */
+                                        /** x.member(p) */
             expect('.')
             property = true
             member = input.next().value
             if (match('=')) expect('=')
             else {
-                input.restore()
-                return parseMethod(body)
+                const method = `${symtbl[currentScope][name].type}_${member}`
+                const arg = [[
+                    new Token(Token.Variable, name),
+                    new Token(Token.Delimiter, '|'),
+                    new Token(Token.Number, '0')
+                ]]
+                let pos = 1
+
+                if (match('(')) { /** Call Method: o.method(...) */
+                    expect('(')
+                    while (!match(')')) {
+                        if (match(',')) {
+                            expect(',')
+                            pos++
+                        } else {
+                            if (!arg[pos]) arg[pos] = []
+                            arg[pos].push(input.next())
+                        }
+
+                    }
+                    expect(')')
+                    const params = []
+                    for (let i=0; i<arg.length; i++) {
+                        //TODO: Coerce params - p1|0, +p2, fround(p3)
+                        let node = parseExp(arg[i])
+                        params.push(node)
+                    }
+                    return factory.CallExpression(method, params)
+
+                } else if (match('[')) { /** Property Array: o.field[index] = value; */
+                    /**
+                     * o.field[index] = value
+                     * HEAPI32[o+field+index] = value
+                     */
+                    if (!EQ) input.raise('Missing LHS')
+                    expect('[')
+                    while (!match(']')) {
+                        index.push(input.next().value)
+                    }
+                    expect(']')
+                    expect('=')
+                } else input.raise('Invalid property/method')
+                
             }
         } else if (match('[')) {        /** x[exp] =  */
             expect('[')
@@ -483,7 +581,7 @@ function parse(input, mangle, packge) {
         const sym = symtbl[currentScope][name]||symtbl['global'][name]
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
-            const lhsvalue = index.length===0?null:parseExp(index.join(' '))
+            const lhsvalue = index.length===0?null:parseExp(index.join('+'))
             const lines = expression.transpile(ast, sym, lhsvalue, mangle)  
             for (let l in lines) {
                 const line = lines[l]
@@ -633,7 +731,14 @@ function parse(input, mangle, packge) {
      */
     function parseExp(tokens, conditional) {
         if ('string' === typeof tokens) {
-            return jsep(tokens)
+            try {
+                return jsep(tokens)
+            } catch (ex) {
+                console.log(tokens)
+                console.log(ex.message)
+                console.log(ex.stack)
+                process.exit(0)
+            }
         } else {
             if (conditional) {
                 // coerce each term individually
@@ -751,8 +856,10 @@ function parse(input, mangle, packge) {
                     } else input.raise('Parameter type not found')        
             }
         }
-        expect('{')
+        /** Uncomment for alt processing  */
         body.push(body.vars = factory.IntDeclaration(mangle?'$00':'__00__'))
+
+        expect('{')
         while (!match('}')) {
             body.push(parseStatement(body))
             if (!input.eof()) if (match(';')) expect(';')
@@ -783,7 +890,7 @@ function parse(input, mangle, packge) {
             let node = parseExp(arg[i])
             params.push(node)
         }
-        return factory.CallExpression(name, params)
+        return factory.CallExpression(name.value, params)
     }
 
 
@@ -1304,31 +1411,52 @@ function parse(input, mangle, packge) {
 
         let sym = symtbl[currentScope][_this.value]
         name.value = `${sym.type}_${name.value}`
+        //console.log(currentScope, name.value)
         const arg = [[
             _this,
             new Token(Token.Delimiter, '|'),
             new Token(Token.Number, '0')
         ]]
         let pos = 1
-        expect('(')
-        while (!match(')')) {
-            if (match(',')) {
-                expect(',')
-                pos++
-            } else {
-                if (!arg[pos]) arg[pos] = []
-                arg[pos].push(input.next())
-            }
+        if (match('(')) {
+            /**
+             * Method Call:
+             * 
+             *      entity.setComponent(index|0, component|0);
+             */
+            expect('(')
+            while (!match(')')) {
+                if (match(',')) {
+                    expect(',')
+                    pos++
+                } else {
+                    if (!arg[pos]) arg[pos] = []
+                    arg[pos].push(input.next())
+                }
 
-        }
-        expect(')')
-        const params = []
-        for (let i=0; i<arg.length; i++) {
-            //TODO: Coerce params - p1|0, +p2, fround(p3)
-            let node = parseExp(arg[i])
-            params.push(node)
-        }
-        return factory.CallExpression(name, params)
+            }
+            expect(')')
+            const params = []
+            for (let i=0; i<arg.length; i++) {
+                //TODO: Coerce params - p1|0, +p2, fround(p3)
+                let node = parseExp(arg[i])
+                params.push(node)
+            }
+            return factory.CallExpression(name.value, params)
+        } else if (match('[')) {
+            /**
+             * Property Array
+             *         
+             *      self.component[index] = value;
+             */
+            expect('[')
+            const tokens = []
+            while (!match(']')) {
+                tokens.push(input.next().value)
+            }
+            expect(']')
+
+        } else input.raise('Invalid property/method')
     }
     /**
      * Print statement - wrapper for console.log
@@ -1359,6 +1487,7 @@ function parse(input, mangle, packge) {
 
     function parseReturn() {
         let value
+        //altProc()
         expectKeyword('return')
         if (match(';')) {
             value = factory.Return()
@@ -1546,4 +1675,299 @@ function parse(input, mangle, packge) {
         }
         return out
     }
+
+    function parseExpressiony(body) {
+
+        input.mark()
+        const name = input.next().value
+        if (match('+')) { /** AutoIncrement */
+            expect('+')
+            if (match('+')) {
+                expect('+')
+                return factory.AutoIncrement(name)
+            }
+            input.raise('Expected [++]')
+        }
+        if (match('-')) { /** AutoDecrement */
+            expect('-')
+            if (match('-')) {
+                expect('-')
+                return factory.AutoDecrement(name)
+            }
+            input.raise('Expected [--]')
+        }
+        if (match('(')) { /** Call Function */
+            input.putBack()
+            return parseCall()
+        }
+        /** assignment 
+         * lhs            rhs
+         * 
+         * x            = expression
+         * x.field      = expression
+         * x[e*]        = expression
+         * x[e*].field  = expression
+         *  
+         *  e* = simple expression - no members or sub-indexing
+         * 
+         * Expressions not working
+         * x = obj.method()
+         * 
+         * LHS not working
+         * obj.property[index] = value;
+         * 
+         */
+        let lhs = name
+        const rhs = []
+        const index = []
+        let indexer = false
+        let property = false
+        let member = ''
+        let method = ''
+        let self = ''
+
+        /** LHS */
+        if (match('=')) {               /** x = */
+            expect('=')
+        } else if (match('.')) {        /** x.member = */
+                                        /** x.member[index] = */
+                                        /** x.member(p) */
+            expect('.')
+            property = true
+            member = input.next().value
+            if (match('=')) expect('=')
+            else {
+                input.restore()
+                //return parseMethod(body)
+
+                const _this = input.next()
+                expect('.')
+                const name = input.next()
+
+                let sym = symtbl[currentScope][_this.value]
+                name.value = `${sym.type}_${name.value}`
+                //console.log(currentScope, name.value)
+                const arg = [[
+                    _this,
+                    new Token(Token.Delimiter, '|'),
+                    new Token(Token.Number, '0')
+                ]]
+                let pos = 1
+                if (match('(')) {
+                    /**
+                     * Method Call:
+                     * 
+                     *      entity.setComponent(index|0, component|0);
+                     */
+                    expect('(')
+                    while (!match(')')) {
+                        if (match(',')) {
+                            expect(',')
+                            pos++
+                        } else {
+                            if (!arg[pos]) arg[pos] = []
+                            arg[pos].push(input.next())
+                        }
+
+                    }
+                    expect(')')
+                    const params = []
+                    for (let i=0; i<arg.length; i++) {
+                        //TODO: Coerce params - p1|0, +p2, fround(p3)
+                        let node = parseExp(arg[i])
+                        params.push(node)
+                    }
+                    return factory.CallExpression(name.value, params)
+                } else if (match('[')) {
+                    /**
+                     * Property Array
+                     *         
+                     *      self.component[index] = value;
+                     */
+                    expect('[')
+                    const tokens = []
+                    while (!match(']')) {
+                        tokens.push(input.next().value)
+                    }
+                    expect(']')
+
+                } else input.raise('Invalid property/method')
+                
+            }
+        } else if (match('[')) {        /** x[exp] =  */
+            expect('[')
+            indexer = true
+            while (!match(']')) {
+                index.push(input.next().value)
+            }
+            expect(']')
+            if (match('.')) {           /** x[exp].member = */
+                expect('.')
+                property = true
+                member = input.next().value
+                if (match('=')) expect('=')
+                else input.raise('Invalid LHS(2) in assignment')
+            } else if (match('=')) expect('=')
+            else input.raise('Invalid LHS(3) in assignment')
+        } else input.raise('Invalid LHS(4) in assignment')
+
+        if (member !== '') { /** Encode lhsvalue */
+            const sym = symtbl[currentScope][name]
+            const def = lookupField(sym.type, member)
+            index.push(def.offset/4)
+        }
+
+        /** RHS */
+        while (!match(';')) {
+            if (matchKeyword('new')) {
+                expectKeyword('new') 
+                let size = 0
+                let tokens = []
+                let token = null
+                if (matchKeyword('int')) {
+                    expectKeyword('int')
+                    size = 2
+                    heapi32 = true
+                } else if (matchKeyword('uint')) {
+                    expectKeyword('uint')
+                    size = 2
+                    heapu32 = true
+                } else if (matchKeyword('bool')) {
+                    expectKeyword('bool')
+                    size = 2
+                    heapu32 = true
+                } else if (matchKeyword('float')) {
+                    expectKeyword('float')
+                    size = 2
+                    heapf32 = true
+                } else if (matchKeyword('double')) {
+                    expectKeyword('double')
+                    size = 3
+                    heapf64 = true
+                } else {
+                    malloc = true
+                    let klass = input.next()
+                    klass.value = `${klass.value}_ctor`
+                    const arg = []
+                    let pos = 0
+                    expect('(')
+                    while (!match(')')) {
+                        if (match(',')) {
+                            expect(',')
+                            pos++
+                        } else {
+                            if (!arg[pos]) arg[pos] = []
+                            arg[pos].push(input.next())
+                        }
+
+                    }
+                    expect(')')
+                    const params = []
+                    for (let i=0; i<arg.length; i++) {
+                        //TODO: Coerce params - p1|0, +p2, fround(p3)
+                        let node = parseExp(arg[i])
+                        params.push(node)
+                    }
+                    return factory.NewClass(name, klass, params)
+                }
+                expect('[')
+                while (!match(']')) {
+                    token = input.next();
+                }
+                expect(']')
+                malloc = true
+                switch (token.type) {
+                    case Token.Variable:
+                        return factory.New(name, size, { "type": 'Identifier', "name": token.value })
+                    case Token.Number:
+                        return factory.New(name, size, { "type": "Literal", "value": token.value }) //, "raw": ""+token.value })
+                    default:
+                        input.raise('Expecting [Literal|Identifier]')
+                }
+            } else if (match('.')) {
+                expect('.')
+                method = input.next().value
+            } else rhs.push(input.next())
+        }
+
+        /** Decode RHS of object.field */
+        if (method !== '') {
+            self = rhs[0].value
+            let sym = symtbl[currentScope][self]
+            if (rhs.length === 1) {/** Property */
+                const def = lookupField(sym.type, method)
+                if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
+
+                rhs.push(new Token(Token.Delimiter, '['))
+                rhs.push(new Token(Token.Number, def.offset/4))
+                rhs.push(new Token(Token.Delimiter, ']'))
+            } else {
+                if (rhs[1].value === '[') {
+                    const def = lookupField(sym.type, method)
+                    if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
+                    rhs[2].value = `${rhs[2].value} + ${def.offset/4}`
+                }
+            }
+        }
+
+        const ast = parseExp(fixExpression(rhs))
+        const sym = symtbl[currentScope][name]||symtbl['global'][name]
+
+        if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
+            const lhsvalue = index.length===0?null:parseExp(index.join(' '))
+            const lines = expression.transpile(ast, sym, lhsvalue, mangle)  
+            for (let l in lines) {
+                const line = lines[l]
+                if (parseInt(l, 10) === lines.length-1) {
+                    createVar(body, line.name, 'int', 0)
+                    return factory.AssignmentStatement(line.name, parseExp(line.code))
+                } else {
+                    createVar(body, line.name, 'int', 0)
+                    body.push(factory.AssignmentStatement(line.name, parseExp(line.code)))
+                }
+
+            }
+        } else { /**  simple assignment */
+            let a;
+            switch (ast.type) {
+                case 'Literal': 
+                    switch (ast.raw) {
+                        case 'true': 
+                            ast.value = 1
+                            ast.raw = '1'
+                            break
+                        case 'false':
+                            ast.value = 0
+                            ast.raw = '0'
+                            break
+                    }
+                    a = factory.AssignmentStatement(name, ast)
+                    return a
+                case 'Identifier':
+                    a = factory.AssignmentStatement(name, ast)
+                    return a
+                case 'CallExpression':
+                    if (self !== '') {
+                        ast.arguments.unshift(
+                        { type: 'BinaryExpression',
+                            operator: '|',
+                            left: { type: 'Identifier', name: self },
+                            right: { type: 'Literal', value: 0, raw: '0' } } 
+                        )
+                    }
+                    switch (sym.type) {
+                        case 'int': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'uint': return factory.AssignmentStatementCallInt(name, ast)
+                        case 'bool': return factory.AssignmentStatementCallInt(name, ast)
+                        //case 'float': return factory.AssignmentStatementCallFloat(name, ast)
+                        case 'double': return factory.AssignmentStatementCallDouble(name, ast)
+                        case 'float': throw new Error('WTF???')
+                        default: throw new Error(`Unknown Symbol ${sym.type}`)
+                    }
+            }
+        }
+
+
+    }
+
 }

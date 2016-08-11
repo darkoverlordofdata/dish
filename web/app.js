@@ -194,7 +194,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     index = index | 0;
                     value = value | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
-                    __01__ = index + COMPONENT;
+                    __01__ = index + 3;
                     __02__ = self + __01__;
                     __03__ = __02__ << 2;
                     HEAPI32[__03__ >> 2] = value;
@@ -282,9 +282,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     ent = Entity_ctor(totalComponents | 0) | 0;
                     Entity_setId(ent | 0, uniqueId | 0);
                     Entity_setEnabled(ent | 0, 1 | 0);
-                    for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
-                        Entity_setComponent(ent | 0, i | 0, 0 | 0);
-                    }
                     return ent | 0;
                 }
                 function destroyEntity(entity) {

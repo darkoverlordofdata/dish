@@ -16,14 +16,13 @@ module.exports = function(source) {
      */
     let tokens = []
     let index = 0;
-    let place = -1;
+    let mark = -1;
+    let save = -1;
     let input = Tokenizer(source)
     while (!input.eof()) tokens.push(input.next())
 
     function eof() { return index >= tokens.length; }
     function peek() { return tokens[index]; }
-    function mark() {place = index;}
-    function restore() {index = place;}
     function next() { return tokens[index++]; }
     function putBack() {index--; }
     function raise(msg) {
@@ -38,8 +37,12 @@ module.exports = function(source) {
         eof: eof,
         putBack: putBack,
         raise: raise,
-        mark: mark,
-        restore: restore
+        
+        mark: function() {mark = index;},
+        restore: function() {index = mark;},
+
+        set: function() {save = index;},
+        reset: function() {index = save;}
     }
 
 }

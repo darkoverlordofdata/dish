@@ -87,7 +87,7 @@ function setComponent(self, index, value) {
     index = index | 0;
     value = value | 0;
     var __01__ = 0, __02__ = 0, __03__ = 0;
-    __01__ = index + COMPONENT;
+    __01__ = index + 3;
     __02__ = self + __01__;
     __03__ = __02__ << 2;
     HEAPI32[__03__ >> 2] = value;

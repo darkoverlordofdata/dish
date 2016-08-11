@@ -34,6 +34,7 @@
     "esmangle": "^1.0.1",
     "esprima": "^2.7.2",
     "esrecurse": "^4.1.0",
+    "estraverse": "^4.2.0",
     "jsep": "^0.3.0",
     "liquid.coffee": "^0.1.6",
     "malloc": "^1.1.0",

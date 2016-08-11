@@ -56,13 +56,12 @@ class Entity {
 
     public int getComponent(Entity self, int index) {
         int component;
-        //component = self[index + COMPONENT];
         component = self.component[index];
         return component;
     }
 
     public void setComponent(Entity self, int index, int value) {
-        self[index + COMPONENT] = value;
+        self.component[index] = value;
     }
 
 }

@@ -53,9 +53,6 @@ function createEntity() {
     ent = Entity_ctor(totalComponents | 0) | 0;
     Entity_setId(ent | 0, uniqueId | 0);
     Entity_setEnabled(ent | 0, 1 | 0);
-    for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
-        Entity_setComponent(ent | 0, i | 0, 0 | 0);
-    }
     return ent | 0;
 }
 function destroyEntity(entity) {

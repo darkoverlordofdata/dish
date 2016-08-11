@@ -228,7 +228,7 @@ function CallExpression(name, args) {
             "type": "CallExpression",
             "callee": {
                 "type": "Identifier",
-                "name": name.value
+                "name": name
             },
             "arguments": args || []
         }
