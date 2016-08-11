@@ -282,6 +282,9 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     ent = Entity_ctor(totalComponents | 0) | 0;
                     Entity_setId(ent | 0, uniqueId | 0);
                     Entity_setEnabled(ent | 0, 1 | 0);
+                    for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
+                        Entity_setComponent(ent | 0, i | 0, 0 | 0);
+                    }
                     return ent | 0;
                 }
                 function destroyEntity(entity) {
@@ -319,11 +322,11 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     component = component | 0;
                     var enabled = 0;
                     var comp = 0;
-                    enabled = entity(entity | 0) | 0;
+                    enabled = Entity_getEnabled(entity | 0) | 0;
                     if (!enabled) {
                         EntityIsNotEnabledException();
                     }
-                    comp = entity(index) | 0;
+                    comp = Entity_hasComponent(entity | 0, index) | 0;
                     if (comp) {
                         EntityAlreadyHasComponentException(index | 0);
                     }

@@ -49,9 +49,9 @@ export Entity createEntity() {
     ent = new Entity(totalComponents|0);
     ent.setId(uniqueId|0);
     ent.setEnabled(1|0);
-    // for (i=0; i<(totalComponents|0); i++) {
-    //     ent.setComponent(i|0, 0|0);
-    // }
+    for (i=0; i<(totalComponents|0); i++) {
+        ent.setComponent(i|0, 0|0);
+    }
     return ent;
 }
 
@@ -96,7 +96,7 @@ export void addComponent(Entity entity, int index, int component) {
     if (!enabled) {
         EntityIsNotEnabledException();
     }
-    comp = entity.hasComponent(index)|0;
+    comp = entity.hasComponent(index);
     if (comp) {
         EntityAlreadyHasComponentException(index|0);
     }
