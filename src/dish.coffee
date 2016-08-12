@@ -77,11 +77,11 @@ out = tpl.render
 ###
  * Fix Ups
 ###
-out = out.replace(/var __ZZ__ = 0;/mg, '')                           # fix-up placeholder
+out = out.replace(/\n    var __ZZ__ = 0;/mg, '')            # delete placeholder
 out = out.replace(/__double__/mg, '')                       # fix-up type conversions
 out = out.replace(/__int__/mg, '~~')                        # fix-up type conversions
 out = out.replace(/\+fround/mg, 'fround')                   # fix-up type conversions
-out = out.replace(/ \| 0 \| 0/mg, '|0')                     # fix-up redundant coercion
+out = out.replace(/ \| 0 \| 0/mg, '|0')                     # remove redundant coercion
 out = out.replace(/\n\n/mg, '\n') while /\n\n/.test(out)    # fix-up empty lines
 
 if mangle

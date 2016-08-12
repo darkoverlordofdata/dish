@@ -25,7 +25,6 @@ var index = 0;
 var uniqueId = 0;
 function initialize(count) {
     count = count | 0;
-    
     if (init) {
         totalComponents = count;
         uniqueId = 0;
@@ -34,19 +33,16 @@ function initialize(count) {
     }
 }
 function getTotalComponents() {
-    
     var __00__ = 0;
     __00__ = totalComponents;
     return __00__ | 0;
 }
 function getCount() {
-    
     var __00__ = 0;
     __00__ = count;
     return __00__ | 0;
 }
 function createEntity() {
-    
     var __00__ = 0;
     var ent = 0;
     var i = 0;
@@ -63,49 +59,40 @@ function createEntity() {
 }
 function destroyEntity(entity) {
     entity = entity | 0;
-    
     free(entity | 0);
 }
 function destroyAllEntities() {
-    
 }
 function hasEntity(entity) {
     entity = entity | 0;
-    
     var __00__ = 0;
 }
 function getEntities(matching) {
     matching = matching | 0;
-    
     var __00__ = 0;
 }
 function getGroup(matching) {
     matching = matching | 0;
-    
     var __00__ = 0;
 }
 function updateGroupsComponentAddedOrRemoved(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    
 }
 function updateGroupsComponentReplaced(entity, index, prevcomponent, newcomponent) {
     entity = entity | 0;
     index = index | 0;
     prevcomponent = prevcomponent | 0;
     newcomponent = newcomponent | 0;
-    
 }
 function onEntityReleased(entity) {
     entity = entity | 0;
-    
 }
 function addComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    
     var enabled = 0;
     var comp = 0;
     enabled = Entity_getEnabled(entity | 0) | 0;
@@ -121,18 +108,15 @@ function addComponent(entity, index, component) {
 function removeComponent(entity, index) {
     entity = entity | 0;
     index = index | 0;
-    
 }
 function replaceComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    
 }
 function hasComponent(entity, index) {
     entity = entity | 0;
     index = index | 0;
-    
     var __00__ = 0;
 }    
 return { 

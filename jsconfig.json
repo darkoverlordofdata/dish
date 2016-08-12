@@ -2,17 +2,14 @@
     "compilerOptions": {
         "target": "es5",
         "module": "system",
-        "rootDir": "test",
+        "rootDir": "example",
         "outFile": "web/app.js"
     },
     "files": [
-        "test/ffi.js",
-        "test/stdlib.js",
-        "test/entity.js",
-        "test/pool.js",
-        "test/unit.js",
-        "test/mt19937.js",
-        "test/test-twister.js",
-        "test/load.js"
+        "example/ffi.js",
+        "example/stdlib.js",
+        "example/entity.js",
+        "example/pool.js",
+        "example/load.js"
     ]
 }

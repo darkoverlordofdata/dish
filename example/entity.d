@@ -16,9 +16,6 @@ class Entity {
     }
 
     public int getId() {
-        // int id;
-        // id = self.id;
-        // return id;
         return self.id;
     }
 
@@ -27,9 +24,6 @@ class Entity {
     }
 
     public int getEnabled() {
-        // int enabled;
-        // enabled = self.enabled;
-        // return enabled;
         return self.enabled;
     }
 
@@ -38,9 +32,7 @@ class Entity {
     }
 
     public int getComponent(int index) {
-        int component;
-        component = self.component[index];
-        return component;
+        return self.component[index];
     }
 
     public void setComponent(int index, int value) {

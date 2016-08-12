@@ -332,9 +332,7 @@ function parse(input, mangle, packge) {
         let method = ''
         let self = ''
 
-        if (isReturn)  {
-
-        } else {
+        if (!isReturn)  { /** process LHS */
             if (match('+')) { /** AutoIncrement */
                 expect('+')
                 if (match('+')) {

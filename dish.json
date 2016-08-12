@@ -79,7 +79,7 @@
           "const": false
         }
       ],
-      "source": "test/entity.d"
+      "source": "example/entity.d"
     },
     "pool": {
       "name": "pool",
@@ -139,64 +139,7 @@
         }
       },
       "data": [],
-      "source": "test/pool.d"
-    },
-    "": {
-      "name": "",
-      "source": "test/pool.d",
-      "api": {
-        "initialize": {
-          "count": "int"
-        },
-        "getTotalComponents": {},
-        "getCount": {},
-        "createEntity": {},
-        "destroyEntity": {
-          "entity": "Entity"
-        },
-        "destroyAllEntities": {},
-        "hasEntity": {
-          "entity": "Entity"
-        },
-        "getEntities": {
-          "matching": "int"
-        },
-        "getGroup": {
-          "matching": "int"
-        },
-        "updateGroupsComponentAddedOrRemoved": {
-          "entity": "Entity",
-          "index": "int",
-          "component": "int"
-        },
-        "updateGroupsComponentReplaced": {
-          "entity": "Entity",
-          "index": "int",
-          "prevcomponent": "int",
-          "newcomponent": "int"
-        },
-        "onEntityReleased": {
-          "entity": "Entity"
-        },
-        "addComponent": {
-          "entity": "Entity",
-          "index": "int",
-          "component": "int"
-        },
-        "removeComponent": {
-          "entity": "Entity",
-          "index": "int"
-        },
-        "replaceComponent": {
-          "entity": "Entity",
-          "index": "int",
-          "component": "int"
-        },
-        "hasComponent": {
-          "entity": "Entity",
-          "index": "int"
-        }
-      }
+      "source": "example/pool.d"
     }
   }
 }
