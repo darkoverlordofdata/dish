@@ -3,10 +3,15 @@
   "version": "0.0.1",
   "description": "d?ish is a dlike language that transpiles to asmjs (I hope)",
   "main": "index.js",
+  "bin": {
+    "dish": "./bin/dish"
+  },
   "scripts": {
-    "_vscode_build": "coffee -bc ./src/dish.coffee && coffee -bc ./example && node ./src/dish.js example/entity.d --package entitas --template example/asm.tpl.js  --output example/entity.js && node ./src/dish.js example/pool.d --package entitas --template example/asm.tpl.js --output example/pool.js && tsc -p ./jsconfig.json",
+    "_vscode_build": "coffee -o build -bc ./example && src/dish.coffee example/Position.d,example/Entity.d,example/pool.d --package entitas --template example/asm.tpl.js  --output build && tsc -p ./jsconfig.json",
+    "_vscode_buildz": "coffee -bc ./src/dish.coffee && coffee -bc ./example && node ./src/dish.js example/entity.d --package entitas --template example/asm.tpl.js  --output example/entity.js && node ./src/dish.js example/pool.d --package entitas --template example/asm.tpl.js --output example/pool.js && tsc -p ./jsconfig.json",
     "_vscode_test": "coffee -bc ./src/dish.coffee && coffee -bc ./test && node ./src/dish.js test/test1.d --template test/test.tpl.js --output test/test1.js && node ./src/dish.js test/test2.d --template test/test.tpl.js --output test/test2.js && node ./src/dish.js test/test-twister.d --template test/test.tpl.js --output test/test-twister.js && tsc -p ./jsconfig.json",
     "publish": "gulp publish",
+    "frodo": "src/dish.coffee",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -47,7 +47,7 @@ function createEntity() {
     var ent = 0;
     var i = 0;
     uniqueId = uniqueId + 1 | 0;
-    ent = (malloc(116 << 2) | 0) >> 2;
+    ent = (malloc(80 << 2) | 0) >> 2;
     Entity_Entity(ent | 0, totalComponents);
     Entity_setId(ent | 0, uniqueId | 0);
     Entity_setEnabled(ent | 0, 1 | 0);

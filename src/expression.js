@@ -115,6 +115,10 @@ function reset() {
 }
 
 /**
+ * 
+ * TODO: pass the symtbl, not sym
+ *       lookup member, not self
+ * 
  * transpile an expression
  * 
  * @param tokens input ast

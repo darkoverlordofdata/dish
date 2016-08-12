@@ -1,9 +1,46 @@
 {
   "entitas": {
+    "Position": {
+      "name": "Position",
+      "class": true,
+      "size": 8,
+      "api": {
+        "Position": {
+          "self": "self",
+          "x": "double",
+          "y": "double"
+        }
+      },
+      "data": [
+        {
+          "name": "x",
+          "type": "double",
+          "array": false,
+          "size": 1,
+          "index": 0,
+          "offset": 0,
+          "public": true,
+          "static": false,
+          "const": false
+        },
+        {
+          "name": "y",
+          "type": "double",
+          "array": false,
+          "size": 1,
+          "index": 1,
+          "offset": 8,
+          "public": true,
+          "static": false,
+          "const": false
+        }
+      ],
+      "source": "example/Position.d"
+    },
     "Entity": {
       "name": "Entity",
       "class": true,
-      "size": 116,
+      "size": 80,
       "api": {
         "Entity": {
           "self": "self",
@@ -38,7 +75,7 @@
           "name": "id",
           "type": "int",
           "array": false,
-          "size": 0,
+          "size": 1,
           "index": 0,
           "offset": 0,
           "public": true,
@@ -49,7 +86,7 @@
           "name": "enabled",
           "type": "bool",
           "array": false,
-          "size": 0,
+          "size": 1,
           "index": 1,
           "offset": 4,
           "public": true,
@@ -60,7 +97,7 @@
           "name": "count",
           "type": "int",
           "array": false,
-          "size": 0,
+          "size": 1,
           "index": 2,
           "offset": 8,
           "public": true,
@@ -69,7 +106,7 @@
         },
         {
           "name": "component",
-          "type": "uint",
+          "type": "int",
           "array": true,
           "size": 20,
           "index": 3,
@@ -79,7 +116,7 @@
           "const": false
         }
       ],
-      "source": "example/entity.d"
+      "source": "example/Entity.d"
     },
     "pool": {
       "name": "pool",

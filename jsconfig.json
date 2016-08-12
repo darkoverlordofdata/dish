@@ -2,14 +2,14 @@
     "compilerOptions": {
         "target": "es5",
         "module": "system",
-        "rootDir": "example",
+        "rootDir": "build",
         "outFile": "web/app.js"
     },
     "files": [
-        "example/ffi.js",
-        "example/stdlib.js",
-        "example/entity.js",
-        "example/pool.js",
-        "example/load.js"
+        "build/ffi.js",
+        "build/stdlib.js",
+        "build/entity.js",
+        "build/pool.js",
+        "build/load.js"
     ]
 }

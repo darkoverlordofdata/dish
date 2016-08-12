@@ -15,6 +15,20 @@ module.exports = {
 
 class Field {
     constructor(_public, _static, _const,  name, type, array, size) {
+        switch (type) {
+            case 'double': 
+                Field.offset = Field.last 
+                Field.last += (8*(size||1))
+                Field.size = (8*(size||1))
+                console.log(Field.index, name, Field.offset, Field.last, Field.size)
+                break
+            default: 
+                Field.offset = Field.last 
+                Field.last += (4*(size||1))
+                Field.size = (4*(size||1))
+                console.log(Field.index, name, Field.offset, Field.last, Field.size)
+                break
+        }
         this.name = name
         this.type = type
         this.array = array
@@ -25,19 +39,14 @@ class Field {
         this.static = _static
         this.const = _const
 
-        switch (type) {
-            case 'char': Field.offset += (2*(size||1))
-            case 'double': Field.offset += (8*(size||1))
-            default: Field.offset += (4*(size||1))
-        }
         Field.index++
-        Field.size += Field.offset
     }
 
 }
 Field.offset = 0
 Field.index = 0
 Field.size = 0
+Field.last = 0
 
 class Symbol {
     constructor(name, type, func, init, array, immutable) {
@@ -110,6 +119,10 @@ function parse(input, mangle, packge) {
     let heapu32 = false
     let heapf32 = false
     let heapf64 = false
+    Field.offset = 0
+    Field.index = 0
+    Field.size = 0
+    Field.last = 0
 
     try {
 
@@ -990,7 +1003,7 @@ function parse(input, mangle, packge) {
     function parseBool(scope) {
         scope = scope || 'global'
         let isArray = false
-        let alloc = 0
+        let alloc = 1
         expectKeyword('bool')
         if (match('[')) {
             expect('[')
@@ -1075,7 +1088,7 @@ function parse(input, mangle, packge) {
     function parseDouble(scope) {
         scope = scope || 'global'
         let isArray = false
-        let alloc = 0
+        let alloc = 1
         expectKeyword('double')
         if (match('[')) {
             expect('[')
@@ -1188,7 +1201,7 @@ function parse(input, mangle, packge) {
     function parseFloat32(scope) {
         scope = scope || 'global'
         let isArray = false
-        let alloc = 0
+        let alloc = 1
         expectKeyword('float')
         if (match('[')) {
             expect('[')
@@ -1273,7 +1286,7 @@ function parse(input, mangle, packge) {
     function parseInt32(scope) {
         scope = scope || 'global'
         let isArray = false
-        let alloc = 0
+        let alloc = 1
         expectKeyword('int')
         if (match('[')) {
             expect('[')
@@ -1562,7 +1575,7 @@ function parse(input, mangle, packge) {
     function parseUint32(scope) {
         scope = scope || 'global'
         let isArray = false
-        let alloc = 0
+        let alloc = 1
         expectKeyword('uint')
         if (match('[')) {
             expect('[')

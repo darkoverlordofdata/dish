@@ -16,8 +16,6 @@ module.exports = function(source) {
      */
     let tokens = []
     let index = 0;
-    let mark = -1;
-    let save = -1;
     let input = Tokenizer(source)
     while (!input.eof()) tokens.push(input.next())
 
@@ -38,11 +36,6 @@ module.exports = function(source) {
         putBack: putBack,
         raise: raise,
         
-        mark: function() {mark = index;},
-        restore: function() {index = mark;},
-
-        set: function() {save = index;},
-        reset: function() {index = save;}
     }
 
 }

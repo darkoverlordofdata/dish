@@ -4,7 +4,7 @@ class Entity {
     int id;
     bool enabled;
     int count;
-    uint[20] component;
+    int[20] component;
 
     /**
      * constructor
