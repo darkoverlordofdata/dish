@@ -93,6 +93,8 @@ out = tpl.render({
  * Fix Ups
  */
 
+out = out.replace(/var __ZZ__ = 0;/mg, '');
+
 out = out.replace(/__double__/mg, '');
 
 out = out.replace(/__int__/mg, '~~');

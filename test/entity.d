@@ -16,9 +16,10 @@ class Entity {
     }
 
     public int getId() {
-        int id;
-        id = self.id;
-        return id;
+        // int id;
+        // id = self.id;
+        // return id;
+        return self.id;
     }
 
     public void setId(int id) {
@@ -26,9 +27,10 @@ class Entity {
     }
 
     public int getEnabled() {
-        int enabled;
-        enabled = self.enabled;
-        return enabled;
+        // int enabled;
+        // enabled = self.enabled;
+        // return enabled;
+        return self.enabled;
     }
 
     public void setEnabled(bool enabled) {

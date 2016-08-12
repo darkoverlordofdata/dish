@@ -124,12 +124,11 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 }
                 function getId(self) {
                     self = self | 0;
-                    var __01__ = 0, __02__ = 0;
-                    var id = 0;
-                    __01__ = self + 0 | 0;
+                    var __00__ = 0, __01__ = 0, __02__ = 0;
+                    __01__ = self + 0;
                     __02__ = __01__ << 2;
-                    id = HEAPI32[__02__ >> 2] | 0;
-                    return id | 0;
+                    __00__ = HEAPI32[__02__ >> 2];
+                    return __00__ | 0;
                 }
                 function setId(self, id) {
                     self = self | 0;
@@ -141,12 +140,11 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 }
                 function getEnabled(self) {
                     self = self | 0;
-                    var __01__ = 0, __02__ = 0;
-                    var enabled = 0;
-                    __01__ = self + 1 | 0;
+                    var __00__ = 0, __01__ = 0, __02__ = 0;
+                    __01__ = self + 1;
                     __02__ = __01__ << 2;
-                    enabled = HEAPI32[__02__ >> 2] | 0;
-                    return enabled | 0;
+                    __00__ = HEAPI32[__02__ >> 2];
+                    return __00__ | 0;
                 }
                 function setEnabled(self, enabled) {
                     self = self | 0;
@@ -159,13 +157,14 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 function getComponent(self, index) {
                     self = self | 0;
                     index = index | 0;
-                    var __01__ = 0, __02__ = 0, __03__ = 0;
+                    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
                     var component = 0;
                     __01__ = index + 3 | 0;
                     __02__ = self + __01__ | 0;
                     __03__ = __02__ << 2;
                     component = HEAPI32[__03__ >> 2] | 0;
-                    return component | 0;
+                    __00__ = component;
+                    return __00__ | 0;
                 }
                 function setComponent(self, index, value) {
                     self = self | 0;
@@ -231,7 +230,6 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var uniqueId = 0;
                 function initialize(count) {
                     count = count | 0;
-                    var __00__ = 0;
                     if (init) {
                         totalComponents = count;
                         uniqueId = 0;
@@ -241,11 +239,13 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 }
                 function getTotalComponents() {
                     var __00__ = 0;
-                    return totalComponents | 0;
+                    __00__ = totalComponents;
+                    return __00__ | 0;
                 }
                 function getCount() {
                     var __00__ = 0;
-                    return count | 0;
+                    __00__ = count;
+                    return __00__ | 0;
                 }
                 function createEntity() {
                     var __00__ = 0;
@@ -259,15 +259,14 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
                         Entity_setComponent(ent | 0, i | 0, 0 | 0);
                     }
-                    return ent | 0;
+                    __00__ = ent;
+                    return __00__ | 0;
                 }
                 function destroyEntity(entity) {
                     entity = entity | 0;
-                    var __00__ = 0;
                     free(entity | 0);
                 }
                 function destroyAllEntities() {
-                    var __00__ = 0;
                 }
                 function hasEntity(entity) {
                     entity = entity | 0;
@@ -285,24 +284,20 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    var __00__ = 0;
                 }
                 function updateGroupsComponentReplaced(entity, index, prevcomponent, newcomponent) {
                     entity = entity | 0;
                     index = index | 0;
                     prevcomponent = prevcomponent | 0;
                     newcomponent = newcomponent | 0;
-                    var __00__ = 0;
                 }
                 function onEntityReleased(entity) {
                     entity = entity | 0;
-                    var __00__ = 0;
                 }
                 function addComponent(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    var __00__ = 0;
                     var enabled = 0;
                     var comp = 0;
                     enabled = Entity_getEnabled(entity | 0) | 0;
@@ -318,13 +313,11 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 function removeComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
-                    var __00__ = 0;
                 }
                 function replaceComponent(entity, index, component) {
                     entity = entity | 0;
                     index = index | 0;
                     component = component | 0;
-                    var __00__ = 0;
                 }
                 function hasComponent(entity, index) {
                     entity = entity | 0;

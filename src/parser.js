@@ -289,20 +289,41 @@ function parse(input, mangle, packge) {
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parseIf()
         if (matchKeyword('print'))      return parsePrint()
-        if (matchKeyword('return'))     return parseReturn() //TODO: should use parseExpression
+        if (matchKeyword('return'))     return parseReturn(body)
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
         //=================================
         // const ex = alt.parseExpression(body)
         // if (ex) return ex
-        return parseExpression(body)
-
+       return parseExpression(body, input.next().value, false)
+ 
     }    
     
+    function parseReturn(body) {
+        expectKeyword('return')
+        if (match(';')) return factory.Return()
 
-    function parseExpression(body, isReturn) {
+        /** parse the return expression */
+        const ast = parseExpression(body, mangle?'$00':'__00__', true)
 
-        //const EQ = isAssignment()
+        let castExpression = ''
+        switch(symtbl.global[currentScope].type) {
+            case 'bool':    castExpression = `((${mangle?'$00':'__00__'})|0)`; break
+            case 'uint':    castExpression = `((${mangle?'$00':'__00__'})|0)`; break
+            case 'int':     castExpression = `((${mangle?'$00':'__00__'})|0)`; break
+            case 'double':  castExpression = `+(${mangle?'$00':'__00__'})`; break
+            case 'float':   castExpression = `fround(${mangle?'$00':'__00__'})`; break
+            case 'void':    castExpression = 'void 0'; break
+            default:        castExpression = `((${mangle?'$00':'__00__'})|0)`; break
+        }
+        let value = factory.Return(parseExp(castExpression))
+        body.push(ast)
+        return value
+
+    }
+
+    function parseExpression(body, name, isReturn) {
+
         const rhs = []
         const index = []
         let indexer = false
@@ -310,7 +331,6 @@ function parse(input, mangle, packge) {
         let member = ''
         let method = ''
         let self = ''
-        const name = input.next().value
 
         if (isReturn)  {
 
@@ -319,7 +339,6 @@ function parse(input, mangle, packge) {
                 expect('+')
                 if (match('+')) {
                     expect('+')
-                    //if (EQ) input.raise('Invalid LHS')
                     return factory.AutoIncrement(name)
                 }
                 input.raise('Expected [++]')
@@ -328,13 +347,11 @@ function parse(input, mangle, packge) {
                 expect('-')
                 if (match('-')) {
                     expect('-')
-                    //if (EQ) input.raise('Invalid LHS')
                     return factory.AutoDecrement(name)
                 }
                 input.raise('Expected [--]')
             }
             if (match('(')) { /** Call Function */
-                //if (EQ) input.raise('Invalid LHS')
                 input.putBack()
                 return parseCall()
             }
@@ -386,7 +403,6 @@ function parse(input, mangle, packge) {
                          * o.field[index] = value
                          * HEAPI32[o+field+index] = value
                          */
-                        //if (!EQ) input.raise('Missing LHS')
                         expect('[')
                         while (!match(']')) {
                             index.push(input.next().value)
@@ -615,7 +631,6 @@ function parse(input, mangle, packge) {
             t = data
         } else {
             const ext = require('../dish.json')
-            // console.log(`Lookup ${packge} / ${name}`)
             t = ext[packge][name].data
         }
         for (let i in t) {
@@ -645,7 +660,6 @@ function parse(input, mangle, packge) {
             
             exp.push(tokens[i].value)
         }
-        //console.log(exp.join(' '))
         return exp.join(' ')
     }
 
@@ -831,8 +845,25 @@ function parse(input, mangle, packge) {
                     } else input.raise('Parameter type not found')        
             }
         }
-        /** Uncomment for alt processing  */
-        body.push(body.vars = factory.IntDeclaration(mangle?'$00':'__00__'))
+
+        /** placeholder for variables */
+        body.push(body.vars = factory.IntDeclaration(mangle?'$ZZ':'__ZZ__'))
+
+        /** use for return processing */
+        switch (type) {
+            case 'void': break
+            case 'double':  
+                body.push(body.vars = factory.DoubleDeclaration(mangle?'$00':'__00__')); 
+                symtbl[name.value][mangle?'$00':'__00__'] = new Symbol(mangle?'$00':'__00__', 0)
+                break
+            case 'float':   
+                body.push(body.vars = factory.FloatDeclaration(mangle?'$00':'__00__')); 
+                symtbl[name.value][mangle?'$00':'__00__'] = new Symbol(mangle?'$00':'__00__', 0)
+                break
+            default:
+                body.push(body.vars = factory.IntDeclaration(mangle?'$00':'__00__'))
+                symtbl[name.value][mangle?'$00':'__00__'] = new Symbol(mangle?'$00':'__00__', 0)
+        }
 
         expect('{')
         while (!match('}')) {
@@ -881,7 +912,7 @@ function parse(input, mangle, packge) {
         if (name.substr(0,(mangle?1:2)) !== (mangle?'$':'__')) return
         if (!symtbl[currentScope][name]) {
             symtbl[currentScope][name] = new Symbol(name, type)
-            if (name === (mangle?'$01':'__01__') && block.vars.declarations[0].id.name === (mangle?'$00':'__00__')) { 
+            if (name === (mangle?'$01':'__01__') && block.vars.declarations[0].id.name === (mangle?'$ZZ':'__ZZ__')) { 
                 block.vars.declarations[0] = {
                     "type": "VariableDeclarator",
                     "id": {
@@ -1386,7 +1417,6 @@ function parse(input, mangle, packge) {
 
         let sym = symtbl[currentScope][_this.value]
         name.value = `${sym.type}_${name.value}`
-        //console.log(currentScope, name.value)
         const arg = [[
             _this,
             new Token(Token.Delimiter, '|'),
@@ -1458,32 +1488,6 @@ function parse(input, mangle, packge) {
         }
         expect(')')
         return factory.Print(args)
-    }
-
-    function parseReturn() {
-        let value
-        expectKeyword('return')
-        if (match(';')) {
-            value = factory.Return()
-        } else {
-            const tokens = []
-            while (!match(';')) {
-                tokens.push(input.next().value)
-            }
-
-            let castExpression = ''
-            switch(symtbl.global[currentScope].type) {
-                case 'bool':    castExpression = '(('+tokens.join(' ')+')|0)'; break
-                case 'uint':    castExpression = '(('+tokens.join(' ')+')|0)'; break
-                case 'int':     castExpression = '(('+tokens.join(' ')+')|0)'; break
-                case 'double':  castExpression = '+('+tokens.join(' ')+')'; break
-                case 'float':   castExpression = 'fround('+tokens.join(' ')+')'; break
-                case 'void':    castExpression = 'void 0'; break
-                default:        castExpression = '(('+tokens.join(' ')+')|0)'; break
-            }
-            value = factory.Return(parseExp(castExpression))
-        }
-        return value
     }
 
     function parseSwitch() {

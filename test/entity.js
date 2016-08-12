@@ -17,12 +17,12 @@ function Entity(self, totalComponents) {
 }
 function getId(self) {
     self = self | 0;
-    var __01__ = 0, __02__ = 0;
-    var id = 0;
-    __01__ = self + 0 | 0;
+    
+    var __00__ = 0, __01__ = 0, __02__ = 0;
+    __01__ = self + 0;
     __02__ = __01__ << 2;
-    id = HEAPI32[__02__ >> 2] | 0;
-    return id | 0;
+    __00__ = HEAPI32[__02__ >> 2];
+    return __00__ | 0;
 }
 function setId(self, id) {
     self = self | 0;
@@ -34,12 +34,12 @@ function setId(self, id) {
 }
 function getEnabled(self) {
     self = self | 0;
-    var __01__ = 0, __02__ = 0;
-    var enabled = 0;
-    __01__ = self + 1 | 0;
+    
+    var __00__ = 0, __01__ = 0, __02__ = 0;
+    __01__ = self + 1;
     __02__ = __01__ << 2;
-    enabled = HEAPI32[__02__ >> 2] | 0;
-    return enabled | 0;
+    __00__ = HEAPI32[__02__ >> 2];
+    return __00__ | 0;
 }
 function setEnabled(self, enabled) {
     self = self | 0;
@@ -52,13 +52,15 @@ function setEnabled(self, enabled) {
 function getComponent(self, index) {
     self = self | 0;
     index = index | 0;
-    var __01__ = 0, __02__ = 0, __03__ = 0;
+    
+    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
     var component = 0;
     __01__ = index + 3 | 0;
     __02__ = self + __01__ | 0;
     __03__ = __02__ << 2;
     component = HEAPI32[__03__ >> 2] | 0;
-    return component | 0;
+    __00__ = component;
+    return __00__ | 0;
 }
 function setComponent(self, index, value) {
     self = self | 0;
