@@ -8,7 +8,7 @@
     "files": [
         "build/ffi.js",
         "build/stdlib.js",
-        "build/entity.js",
+        "build/Entity.js",
         "build/pool.js",
         "build/load.js"
     ]

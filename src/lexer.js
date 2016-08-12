@@ -7,7 +7,7 @@
  */
 'use strict'
 
-const Token = require('./Token')
+const Token = require('./classes/Token')
 
 module.exports = function(source) {
 

@@ -3,7 +3,7 @@
     "Position": {
       "name": "Position",
       "class": true,
-      "size": 8,
+      "size": 16,
       "api": {
         "Position": {
           "self": "self",
@@ -40,7 +40,7 @@
     "Entity": {
       "name": "Entity",
       "class": true,
-      "size": 80,
+      "size": 92,
       "api": {
         "Entity": {
           "self": "self",

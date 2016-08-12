@@ -13,70 +13,6 @@ module.exports = {
     parse: parse
 }
 
-class Field {
-    constructor(_public, _static, _const,  name, type, array, size) {
-        switch (type) {
-            case 'double': 
-                Field.offset = Field.last 
-                Field.last += (8*(size||1))
-                Field.size = (8*(size||1))
-                console.log(Field.index, name, Field.offset, Field.last, Field.size)
-                break
-            default: 
-                Field.offset = Field.last 
-                Field.last += (4*(size||1))
-                Field.size = (4*(size||1))
-                console.log(Field.index, name, Field.offset, Field.last, Field.size)
-                break
-        }
-        this.name = name
-        this.type = type
-        this.array = array
-        this.size = size
-        this.index = Field.index
-        this.offset = Field.offset
-        this.public = _public
-        this.static = _static
-        this.const = _const
-
-        Field.index++
-    }
-
-}
-Field.offset = 0
-Field.index = 0
-Field.size = 0
-Field.last = 0
-
-class Symbol {
-    constructor(name, type, func, init, array, immutable) {
-        this.name = name
-        this.type = type
-        this.func = func || false
-        this.init = init || ''
-        this.array = array || false
-        this.immutable = immutable || false
-        switch(type) {
-            case 'bool': this.size = 2; break
-            case 'uint': this.size = 2; break
-            case 'int': this.size = 2; break
-            case 'float': this.size = 2; break
-            case 'double': this.size = 3; break
-            default: this.size = 2; break
-        }
-        switch(type) {
-            case 'bool': this.heap = 'HEAPI32'; break
-            case 'uint': this.heap = 'HEAPU32'; break
-            case 'int': this.heap = 'HEAPI32'; break
-            case 'float': this.heap = 'HEAPF32'; break
-            case 'double': this.heap = 'HEAPF64'; break
-            default: this.heap = 'HEAPI32'; break
-        }
-    }
-}
-
-function isFloat(n)         { return n === +n && n !== (n|0); }
-function isInteger(n)       { return n === +n && n === (n|0); }
 
 /**
  * Parse tokens from the input lexer
@@ -85,13 +21,17 @@ function isInteger(n)       { return n === +n && n === (n|0); }
  * @returns parsed document and flags
  */
 function parse(input, mangle, packge) {
-    const expression = require('./expression')
-    const factory = require('./factory')
+    const jsep = require('jsep')
     const codegen = require('escodegen')
     const esprima = require('esprima')
-    const Token = require('./Token')
-    //const alt = (require('./alt'))(input)
-    const jsep = require('jsep')
+    const Ast = require('./classes/Ast')
+    const Term = require('./classes/Term')
+    const Triad = require('./classes/Triad')
+    const Token = require('./classes/Token')
+    const Field = require('./classes/Field')
+    const Symbol = require('./classes/Symbol')
+    const expression = require('./expression')
+    const factory = require('./factory')
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
     const exporting = {}
@@ -99,6 +39,7 @@ function parse(input, mangle, packge) {
     const api = {}
     const data = []
 
+    let uniqueId = 1
     let moduleName = ''
     let current = ''
     let block = [] // current output block
@@ -151,7 +92,7 @@ function parse(input, mangle, packge) {
             exports: exporting,  //  exported API
             api: api,
             data: data,
-            size: Field.size,
+            size: Field.last,
             'class': isClass
         }
         
@@ -192,6 +133,10 @@ function parse(input, mangle, packge) {
     function expectKeyword(kw) {
         if (matchKeyword(kw)) input.next()
         else input.raise(`Expecting keyword: [${kw}]`)
+    }
+
+    function reset() {
+        uniqueId = 1
     }
 
     function parseModule(body) {
@@ -275,7 +220,7 @@ function parse(input, mangle, packge) {
         if (types[input.peek().value])  return parseType(currentScope)
         //=================================
         if (currentScope !== priorScope) {
-            expression.reset()
+            reset()
             priorScope = currentScope
             for (let name in symtbl[currentScope]) {
                 let sym = symtbl[currentScope][name]
@@ -443,7 +388,7 @@ function parse(input, mangle, packge) {
             if (member !== '') { /** Encode lhsvalue */
                 const sym = symtbl[currentScope][name]
                 const def = lookupField(sym.type, member)
-                index.push(def.offset/4)
+                index.push(def.offset>>2)
             }
         }
         /** RHS */
@@ -565,13 +510,13 @@ function parse(input, mangle, packge) {
                 if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
 
                 rhs.push(new Token(Token.Delimiter, '['))
-                rhs.push(new Token(Token.Number, def.offset/4))
+                rhs.push(new Token(Token.Number, (def.offset>>2)))
                 rhs.push(new Token(Token.Delimiter, ']'))
             } else {
                 if (rhs[1].value === '[') {
                     const def = lookupField(sym.type, method)
                     if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
-                    rhs[2].value = `${rhs[2].value} + ${def.offset/4}`
+                    rhs[2].value = `${rhs[2].value} + ${def.offset>>2}`
                 }
             }
         }
@@ -581,7 +526,7 @@ function parse(input, mangle, packge) {
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const lhsvalue = index.length===0?null:parseExp(index.join('+'))
-            const lines = expression.transpile(ast, sym, lhsvalue, mangle)  
+            const lines = transpile(currentScope, sym, ast, symtbl, lhsvalue, mangle)  
             for (let l in lines) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
@@ -1665,5 +1610,143 @@ function parse(input, mangle, packge) {
         return out
     }
 
+    /**
+     * 
+     * TODO: pass the symtbl, not sym
+     *       lookup member, not self
+     * 
+     * transpile an expression
+     * 
+     * @param tokens input ast
+     * @param symbol lhs symbol being assigned to
+     * @param index optional ast of index for lhs
+     * @returns array of output lines
+     */
+    function transpile(scope, symbol, tokens, symtbl, index, mangle) {
+
+        let ptr = 0
+        let curr = ''
+        let prev = ''
+        let stack = []
+        let nodes = []
+        const code = []
+
+        let name = symbol.name
+        const heap = symbol.heap
+        const size = symbol.size
+        const type = symbol.type
+        console.log(scope, name, heap)
+        if (index != null) {
+            switch (index.type) {
+                case 'Literal':
+                    createVar()
+                    code.push(new Triad(curr, type, name, '+', index.value))
+                    createVar()
+                    code.push(new Triad(curr, type, prev, '<<', size))
+                    break
+                case 'Identifier':
+                    createVar()
+                    code.push(new Triad(curr, type, name, '+', index.name))
+                    createVar()
+                    code.push(new Triad(curr, type, prev, '<<', size))
+                    break
+                case 'BinaryExpression':
+                    traverse(index)
+                    nodes = nodes.reverse()
+                    codegen()
+                    createVar()
+                    code.push(new Triad(curr, type, name, '+', prev))
+                    createVar()
+                    code.push(new Triad(curr, type, prev, '<<', size))
+                    break
+            }
+            name = `${heap}[${curr} >> ${size}]`
+        }
+
+        ptr = 0
+        nodes = []
+        stack = []
+        traverse(tokens)
+        nodes = nodes.reverse()
+        codegen()
+        let result = stack.pop()
+
+        if (index == null) {
+            code[code.length-1].name = name
+        } else {
+            code.push(new Triad(name, type, result.node.name || result.node.value))
+        }
+        return code
+
+        function createVar() {
+            prev = curr
+            if (mangle) {
+                curr = `$${uniqueId}`
+                curr = curr.length === 2 ? `$0${uniqueId}` : curr
+            } else {
+                curr = `__${uniqueId}__`
+                curr = curr.length === 5 ? `__0${uniqueId}__` : curr
+            }
+            uniqueId++
+        }
+
+        /**
+         * Put the ast nodes into an ordered list
+         */
+        function traverse(node) {
+            switch (node.type) {
+                case 'BinaryExpression':
+                    nodes.push(new Ast('Operator', node.operator))
+                    traverse(node.left)
+                    traverse(node.right)
+                    break
+                case 'MemberExpression':
+                    nodes.push(new Ast('Operator', '+', true))
+                    traverse(node.object)
+                    traverse(node.property)
+                    break
+                case 'Identifier':
+                case 'Literal':
+                case 'CallExpression':
+                    nodes.push(node)
+                    break
+            }
+        }
+
+        /**
+         * iterate the ast node list
+         */
+        function codegen() {
+            while (ptr<nodes.length) {
+                const node = nodes[ptr]
+                switch (node.type) {
+                    case 'Literal':
+                    case 'Identifier':
+                    case 'CallExpression':
+                        stack.push(new Term(node))
+                        break
+                    case 'Operator':
+                        createVar()
+                        const op1 = stack.pop()
+                        const op2 = stack.pop()
+                        code.push(new Triad(curr, type, op1.toString(), node.op, op2.toString()))
+                        stack.push(new Term({type: 'Identifier', name: curr})) 
+                        if (node.array) {
+                            createVar()
+                            code.push(new Triad(curr, type, prev, '<<', 2))
+                            createVar()
+                            code.push(new Triad(curr, type, `${heap}[${prev} >> 2]`))
+                            stack.pop() //# pop off the prev, replace with curr
+                            stack.push(new Term({type: 'Identifier', name: curr})) 
+                        }
+                }
+                ptr++
+            }
+
+        }
+        
+    }
+ 
 
 }
+

@@ -126,7 +126,7 @@ function reset() {
  * @param index optional ast of index for lhs
  * @returns array of output lines
  */
-function transpile(tokens, symbol, index, mangle) {
+function transpile(scope, symbol, tokens, symtbl, index, mangle) {
 
     let ptr = 0
     let curr = ''
@@ -139,6 +139,7 @@ function transpile(tokens, symbol, index, mangle) {
     const heap = symbol.heap
     const size = symbol.size
     const type = symbol.type
+    console.log(scope, name, heap)
     if (index != null) {
         switch (index.type) {
             case 'Literal':

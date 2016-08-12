@@ -1,7 +1,7 @@
 ###
  * Run tests
 ###
-Promise.all(['entity', 'pool'].map((x) -> 
+Promise.all(['Entity', 'pool'].map((x) -> 
   System.import(x))).then ([{Entity}, {pool}]) ->
 
     describe 'Entitas / asm.js', ->

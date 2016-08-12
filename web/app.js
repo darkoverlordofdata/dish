@@ -94,7 +94,7 @@ System.register("stdlib", [], function(exports_2, context_2) {
         }
     }
 });
-System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
+System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
     "use strict";
     var __moduleName = context_3 && context_3.id;
     var ffi_1, ffi_2, stdlib_1;
@@ -118,7 +118,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     self = self | 0;
                     totalComponents = totalComponents | 0;
                     var __01__ = 0, __02__ = 0;
-                    __01__ = self + 0.5;
+                    __01__ = self + 2;
                     __02__ = __01__ << 2;
                     HEAPI32[__02__ >> 2] = totalComponents;
                 }
@@ -141,7 +141,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 function getEnabled(self) {
                     self = self | 0;
                     var __00__ = 0, __01__ = 0, __02__ = 0;
-                    __01__ = self + 0.25;
+                    __01__ = self + 1;
                     __02__ = __01__ << 2;
                     __00__ = HEAPI32[__02__ >> 2];
                     return __00__ | 0;
@@ -150,7 +150,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     self = self | 0;
                     enabled = enabled | 0;
                     var __01__ = 0, __02__ = 0;
-                    __01__ = self + 0.25;
+                    __01__ = self + 1;
                     __02__ = __01__ << 2;
                     HEAPI32[__02__ >> 2] = enabled;
                 }
@@ -158,7 +158,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     self = self | 0;
                     index = index | 0;
                     var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
-                    __01__ = index + 0.75;
+                    __01__ = index + 3;
                     __02__ = self + __01__;
                     __03__ = __02__ << 2;
                     __00__ = HEAPI32[__03__ >> 2];
@@ -169,7 +169,7 @@ System.register("entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     index = index | 0;
                     value = value | 0;
                     var __01__ = 0, __02__ = 0, __03__ = 0;
-                    __01__ = index + 0.75;
+                    __01__ = index + 3;
                     __02__ = self + __01__;
                     __03__ = __02__ << 2;
                     HEAPI32[__03__ >> 2] = value;
@@ -250,7 +250,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var ent = 0;
                     var i = 0;
                     uniqueId = uniqueId + 1 | 0;
-                    ent = (malloc(80 << 2) | 0) >> 2;
+                    ent = (malloc(92 << 2) | 0) >> 2;
                     Entity_Entity(ent | 0, totalComponents);
                     Entity_setId(ent | 0, uniqueId | 0);
                     Entity_setEnabled(ent | 0, 1 | 0);
@@ -351,7 +351,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
 /*
  * Run tests
  */
-Promise.all(['entity', 'pool'].map(function (x) {
+Promise.all(['Entity', 'pool'].map(function (x) {
     return System["import"](x);
 })).then(function (arg) {
     var Entity, pool, ref, ref1;

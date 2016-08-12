@@ -3,7 +3,7 @@
 /*
  * Run tests
  */
-Promise.all(['entity', 'pool'].map(function(x) {
+Promise.all(['Entity', 'pool'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
   var Entity, pool, ref, ref1;
