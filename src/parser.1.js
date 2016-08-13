@@ -387,7 +387,7 @@ function parse(input, mangle, packge) {
             if (member !== '') { /** Encode lhsvalue */
                 const sym = symtbl[currentScope][name]
                 const def = lookupField(sym.type, member)
-                index.push(def.offset)
+                index.push(def.offset>>2)
             }
         }
         /** RHS */
@@ -509,13 +509,13 @@ function parse(input, mangle, packge) {
                 if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
 
                 rhs.push(new Token(Token.Delimiter, '['))
-                rhs.push(new Token(Token.Number, (def.offset)))
+                rhs.push(new Token(Token.Number, (def.offset>>2)))
                 rhs.push(new Token(Token.Delimiter, ']'))
             } else {
                 if (rhs[1].value === '[') {
                     const def = lookupField(sym.type, method)
                     if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
-                    rhs[2].value = `${rhs[2].value} + ${def.offset}`
+                    rhs[2].value = `${rhs[2].value} + ${def.offset>>2}`
                 }
             }
         }
@@ -530,6 +530,7 @@ function parse(input, mangle, packge) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
                     createVar(body, line.name, 'int', 0)
+                    console.log(line)
                     return factory.AssignmentStatement(line.name, parseExp(line.code))
                 } else {
                     createVar(body, line.name, 'int', 0)
@@ -1632,17 +1633,21 @@ function parse(input, mangle, packge) {
 
         let name = symbol.name
         let heap = symbol.heap
-        let size = symbol.size
+        const size = symbol.size
         const type = symbol.type
         if (index != null) {
             switch (index.type) {
                 case 'Literal':
                     createVar()
                     code.push(new Triad(curr, type, name, '+', index.value))
+                    createVar()
+                    code.push(new Triad(curr, type, prev, '<<', size))
                     break
                 case 'Identifier':
                     createVar()
                     code.push(new Triad(curr, type, name, '+', index.name))
+                    createVar()
+                    code.push(new Triad(curr, type, prev, '<<', size))
                     break
                 case 'BinaryExpression':
                     traverse(index)
@@ -1650,6 +1655,8 @@ function parse(input, mangle, packge) {
                     codegen()
                     createVar()
                     code.push(new Triad(curr, type, name, '+', prev))
+                    createVar()
+                    code.push(new Triad(curr, type, prev, '<<', size))
                     break
             }
             name = `${heap}[${curr} >> ${size}]`
@@ -1676,7 +1683,7 @@ function parse(input, mangle, packge) {
                         case 'uint':    heap = 'HEAPUI32'; break
                         case 'bool':    heap = 'HEAPI32'; break
                         case 'float':   heap = 'HEAPF32'; break
-                        case 'double':  heap = 'HEAPF64'; size=3; break
+                        case 'double':  heap = 'HEAPF64'; break
                     }
                 } 
             }
@@ -1740,7 +1747,9 @@ function parse(input, mangle, packge) {
                         stack.push(new Term({type: 'Identifier', name: curr})) 
                         if (node.array) {
                             createVar()
-                            code.push(new Triad(curr, type, `${heap}[${prev} >> ${size}]`))
+                            code.push(new Triad(curr, type, prev, '<<', 2))
+                            createVar()
+                            code.push(new Triad(curr, type, `${heap}[${prev} >> 2]`))
                             stack.pop() //# pop off the prev, replace with curr
                             stack.push(new Term({type: 'Identifier', name: curr})) 
                         }
