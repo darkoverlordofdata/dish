@@ -9,6 +9,20 @@
           "self": "self",
           "x": "double",
           "y": "double"
+        },
+        "getX": {
+          "self": "self"
+        },
+        "setX": {
+          "self": "self",
+          "x": "double"
+        },
+        "getY": {
+          "self": "self"
+        },
+        "setY": {
+          "self": "self",
+          "y": "double"
         }
       },
       "data": [
@@ -68,6 +82,10 @@
           "self": "self",
           "index": "int",
           "value": "int"
+        },
+        "hasComponent": {
+          "self": "self",
+          "index": "int"
         }
       },
       "data": [
@@ -126,6 +144,10 @@
         "initialize": {
           "count": "int"
         },
+        "createPos": {
+          "x": "double",
+          "y": "double"
+        },
         "getTotalComponents": {},
         "getCount": {},
         "createEntity": {},
@@ -169,6 +191,10 @@
           "entity": "Entity",
           "index": "int",
           "component": "int"
+        },
+        "getComponent": {
+          "entity": "Entity",
+          "index": "int"
         },
         "hasComponent": {
           "entity": "Entity",

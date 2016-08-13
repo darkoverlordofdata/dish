@@ -4,6 +4,7 @@
 module pool;
 
 import Entity = entitas.Entity;
+import Position = entitas.Position;
 
 extern EntityIsNotEnabledException;
 extern EntityAlreadyHasComponentException;
@@ -30,6 +31,10 @@ export void initialize(int count) {
         pool = new int[POOL_SIZE];
         init = false;
     }
+}
+
+export Position createPos(double x, double y) {
+    return new Position(x, y);
 }
 
 export int getTotalComponents() {
@@ -111,9 +116,9 @@ export void removeComponent(Entity entity, int index) {
 export void replaceComponent(Entity entity, int index, int component) {
 }
 
-// export int getComponent(Entity entity, int index) {
+export int getComponent(Entity entity, int index) {
 
-// }
+}
 
 export bool hasComponent(Entity entity, int index) {
 

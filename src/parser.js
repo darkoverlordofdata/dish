@@ -25,12 +25,11 @@ function parse(input, mangle, packge) {
     const codegen = require('escodegen')
     const esprima = require('esprima')
     const Ast = require('./classes/Ast')
-    const Term = require('./classes/Term')
-    const Triad = require('./classes/Triad')
-    const Token = require('./classes/Token')
     const Field = require('./classes/Field')
     const Symbol = require('./classes/Symbol')
-    const expression = require('./expression')
+    const Term = require('./classes/Term')
+    const Token = require('./classes/Token')
+    const Triad = require('./classes/Triad')
     const factory = require('./factory')
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
@@ -88,7 +87,7 @@ function parse(input, mangle, packge) {
             heapi32: heapi32,
             heapu32: heapu32,
             heapf32: heapf32,
-            heapf64: heapf64,
+            heapf64: true, // heapf64,
             exports: exporting,  //  exported API
             api: api,
             data: data,
@@ -526,11 +525,12 @@ function parse(input, mangle, packge) {
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const lhsvalue = index.length===0?null:parseExp(index.join('+'))
-            const lines = transpile(currentScope, sym, ast, symtbl, lhsvalue, mangle)  
+            const lines = transpile(sym, ast, lhsvalue, mangle)  
             for (let l in lines) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
                     createVar(body, line.name, 'int', 0)
+                    console.log(line)
                     return factory.AssignmentStatement(line.name, parseExp(line.code))
                 } else {
                     createVar(body, line.name, 'int', 0)
@@ -1622,7 +1622,7 @@ function parse(input, mangle, packge) {
      * @param index optional ast of index for lhs
      * @returns array of output lines
      */
-    function transpile(scope, symbol, tokens, symtbl, index, mangle) {
+    function transpile(symbol, tokens, index, mangle) {
 
         let ptr = 0
         let curr = ''
@@ -1632,10 +1632,9 @@ function parse(input, mangle, packge) {
         const code = []
 
         let name = symbol.name
-        const heap = symbol.heap
+        let heap = symbol.heap
         const size = symbol.size
         const type = symbol.type
-        console.log(scope, name, heap)
         if (index != null) {
             switch (index.type) {
                 case 'Literal':
@@ -1673,8 +1672,23 @@ function parse(input, mangle, packge) {
 
         if (index == null) {
             code[code.length-1].name = name
-        } else {
-            code.push(new Triad(name, type, result.node.name || result.node.value))
+        } else { /** patch to use the correct heap for class members */
+            const left = result.node.name || result.node.value0
+            const api = require('../dish.json')
+            const data = api[packge][type].data
+            for (let ix in data) {
+                if (data[ix].name === left) {
+                    switch (data[ix].type) {
+                        case 'int':     heap = 'HEAPI32'; break
+                        case 'uint':    heap = 'HEAPUI32'; break
+                        case 'bool':    heap = 'HEAPI32'; break
+                        case 'float':   heap = 'HEAPF32'; break
+                        case 'double':  heap = 'HEAPF64'; break
+                    }
+                } 
+            }
+            name = `${heap}[${curr} >> ${size}]`
+            code.push(new Triad(name, type, left))
         }
         return code
 

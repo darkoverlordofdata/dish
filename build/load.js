@@ -3,26 +3,59 @@
 /*
  * Run tests
  */
-Promise.all(['Entity', 'pool'].map(function(x) {
+Promise.all(['Entity', 'Position', 'pool'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var Entity, pool, ref, ref1;
-  (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], pool = ref1.pool);
+  var Entity, Position, pool, ref, ref1, ref2;
+  (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], pool = ref2.pool);
   return describe('Entitas / asm.js', function() {
     console.log('hello');
-    return it('Create entity', function() {
-      var MAX, e1, e2, i, j, ref2;
-      MAX = 400;
+    it('Create entity', function() {
+      var MAX, e1, e2, i, j, ref3;
+      MAX = 4;
       console.log(MAX);
       pool.initialize(10);
       e1 = pool.createEntity();
       expect(Entity.getId(e1)).to.equal(1);
       Entity.setEnabled(e1, 0);
       expect(Entity.getEnabled(e1)).to.equal(0);
-      for (i = j = 0, ref2 = MAX; 0 <= ref2 ? j <= ref2 : j >= ref2; i = 0 <= ref2 ? ++j : --j) {
+      for (i = j = 0, ref3 = MAX; 0 <= ref3 ? j <= ref3 : j >= ref3; i = 0 <= ref3 ? ++j : --j) {
         e2 = pool.createEntity();
       }
       return expect(Entity.getId(e2)).to.equal(MAX + 2);
+    });
+    it('Create Position', function() {
+      var fm, pos;
+      pool.initialize(10);
+      pos = pool.createPos(95.0, 96.0);
+      fm = pool.createPos(99.9, 107.7);
+      expect(Position.getX(pos)).to.equal(95);
+      return expect(Position.getY(pos)).to.equal(96);
+    });
+    it('Create Entity with Position', function() {
+      var e3, pos, poz;
+      pool.initialize(10);
+      e3 = pool.createEntity();
+      pos = pool.createPos(95.0, 96.0);
+      pool.addComponent(e3, 1, pos);
+      poz = Entity.getComponent(e3, 1);
+      expect(Position.getX(poz)).to.equal(95);
+      return expect(Position.getY(poz)).to.equal(96);
+    });
+    return it('Raise EntityAlreadyHasComponentException', function() {
+      var e4, error, ex, fm, pos, poz;
+      pool.initialize(10);
+      e4 = pool.createEntity();
+      pos = pool.createPos(95.0, 96.0);
+      pool.addComponent(e4, 2, pos);
+      poz = Entity.getComponent(e4, 2);
+      fm = pool.createPos(99.9, 107.7);
+      try {
+        return pool.addComponent(e4, 2, fm);
+      } catch (error) {
+        ex = error;
+        return expect(ex.message).to.equal("EntityAlreadyHasComponentException - 2");
+      }
     });
   });
 }, function(err) {

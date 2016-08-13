@@ -7,13 +7,13 @@ class Field {
                 Field.offset = Field.last 
                 Field.last += (8*(size||1))
                 Field.size = (8*(size||1))
-                console.log(Field.index, name, Field.offset, Field.last, Field.size)
+                // console.log(Field.index, name, Field.offset, Field.last, Field.size)
                 break
             default: 
                 Field.offset = Field.last 
                 Field.last += (4*(size||1))
                 Field.size = (4*(size||1))
-                console.log(Field.index, name, Field.offset, Field.last, Field.size)
+                // console.log(Field.index, name, Field.offset, Field.last, Field.size)
                 break
         }
         this.name = name

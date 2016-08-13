@@ -68,6 +68,18 @@ return {
 
 ```
 
+## Interop
+
+```coffee
+    it 'Create Position Object', ->
+
+        pool.initialize(10)
+        pos = pool.createPos(95.0, 96.0)
+        fm = pool.createPos(99.9, 107.7)
+        expect(Position.getX(pos)).to.equal(95)
+        expect(Position.getY(pos)).to.equal(96)
+```
+
 ## Status
 Not yet robust, the MersenneTwister demo code is on the 'happy path'.
 It runs about 20% faster than the original pojs code. (545 vs 405ms)

@@ -112,6 +112,7 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
             exports_3("Entity", Entity = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
+                var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 function Entity(self, totalComponents) {
@@ -174,6 +175,24 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     __03__ = __02__ << 2;
                     HEAPI32[__03__ >> 2] = value;
                 }
+                function hasComponent(self, index) {
+                    self = self | 0;
+                    index = index | 0;
+                    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
+                    var comp = 0;
+                    __01__ = index + 3 | 0;
+                    __02__ = self + __01__ | 0;
+                    __03__ = __02__ << 2;
+                    comp = HEAPI32[__03__ >> 2] | 0;
+                    if (comp > 0) {
+                        __00__ = 1;
+                        return __00__ | 0;
+                    }
+                    else {
+                        __00__ = 0;
+                        return __00__ | 0;
+                    }
+                }
                 return {
                     Entity: Entity,
                     getId: getId,
@@ -182,6 +201,7 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     setEnabled: setEnabled,
                     getComponent: getComponent,
                     setComponent: setComponent,
+                    hasComponent: hasComponent,
                 };
             }(stdlib_1.default, ffi_1.default, ffi_2.buffer)));
             for (var k in Entity) {
@@ -190,11 +210,11 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
         }
     }
 });
-System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
+System.register("Position", ["ffi", "stdlib"], function(exports_4, context_4) {
     "use strict";
     var __moduleName = context_4 && context_4.id;
     var ffi_3, ffi_4, stdlib_2;
-    var pool;
+    var Position;
     return {
         setters:[
             function (ffi_3_1) {
@@ -205,9 +225,90 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 stdlib_2 = stdlib_2_1;
             }],
         execute: function() {
-            exports_4("pool", pool = (function (stdlib, foreign, heap) {
+            exports_4("Position", Position = (function (stdlib, foreign, heap) {
+                "use asm";
+                var HEAPF64 = new stdlib.Float64Array(heap);
+                function Position(self, x, y) {
+                    self = self | 0;
+                    x = +x;
+                    y = +y;
+                    var __01__ = 0, __02__ = 0, __03__ = 0, __04__ = 0;
+                    __01__ = self + 0;
+                    __02__ = __01__ << 2;
+                    HEAPF64[__02__ >> 2] = x;
+                    __03__ = self + 2;
+                    __04__ = __03__ << 2;
+                    HEAPF64[__04__ >> 2] = y;
+                }
+                function getX(self) {
+                    self = self | 0;
+                    var __00__ = 0.0, __01__ = 0, __02__ = 0;
+                    var x = 0.0;
+                    __01__ = +(self + 0);
+                    __02__ = +(__01__ << 2);
+                    x = +HEAPF64[__02__ >> 2];
+                    __00__ = x;
+                    return +__00__;
+                }
+                function setX(self, x) {
+                    self = self | 0;
+                    x = +x;
+                    var __01__ = 0, __02__ = 0;
+                    __01__ = self + 0;
+                    __02__ = __01__ << 2;
+                    HEAPF64[__02__ >> 2] = x;
+                }
+                function getY(self) {
+                    self = self | 0;
+                    var __00__ = 0.0, __01__ = 0, __02__ = 0;
+                    var y = 0.0;
+                    __01__ = +(self + 2);
+                    __02__ = +(__01__ << 2);
+                    y = +HEAPF64[__02__ >> 2];
+                    __00__ = y;
+                    return +__00__;
+                }
+                function setY(self, y) {
+                    self = self | 0;
+                    y = +y;
+                    var __01__ = 0, __02__ = 0;
+                    __01__ = self + 2;
+                    __02__ = __01__ << 2;
+                    HEAPF64[__02__ >> 2] = y;
+                }
+                return {
+                    Position: Position,
+                    getX: getX,
+                    setX: setX,
+                    getY: getY,
+                    setY: setY,
+                };
+            }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
+            for (var k in Position) {
+                ffi_3.default['Position_' + k] = Position[k];
+            }
+        }
+    }
+});
+System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
+    "use strict";
+    var __moduleName = context_5 && context_5.id;
+    var ffi_5, ffi_6, stdlib_3;
+    var pool;
+    return {
+        setters:[
+            function (ffi_5_1) {
+                ffi_5 = ffi_5_1;
+                ffi_6 = ffi_5_1;
+            },
+            function (stdlib_3_1) {
+                stdlib_3 = stdlib_3_1;
+            }],
+        execute: function() {
+            exports_5("pool", pool = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
+                var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 var Entity_Entity = foreign.Entity_Entity;
@@ -217,6 +318,12 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 var Entity_setEnabled = foreign.Entity_setEnabled;
                 var Entity_getComponent = foreign.Entity_getComponent;
                 var Entity_setComponent = foreign.Entity_setComponent;
+                var Entity_hasComponent = foreign.Entity_hasComponent;
+                var Position_Position = foreign.Position_Position;
+                var Position_getX = foreign.Position_getX;
+                var Position_setX = foreign.Position_setX;
+                var Position_getY = foreign.Position_getY;
+                var Position_setY = foreign.Position_setY;
                 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
                 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
                 var POOL_SIZE = 4096;
@@ -234,6 +341,14 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                         pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
                         init = 0;
                     }
+                }
+                function createPos(x, y) {
+                    x = +x;
+                    y = +y;
+                    var __00__ = 0;
+                    __00__ = (malloc(16 << 2) | 0) >> 2;
+                    Position_Position(__00__ | 0, x, y);
+                    return __00__ | 0;
                 }
                 function getTotalComponents() {
                     var __00__ = 0;
@@ -317,6 +432,11 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     index = index | 0;
                     component = component | 0;
                 }
+                function getComponent(entity, index) {
+                    entity = entity | 0;
+                    index = index | 0;
+                    var __00__ = 0;
+                }
                 function hasComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
@@ -324,6 +444,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                 }
                 return {
                     initialize: initialize,
+                    createPos: createPos,
                     getTotalComponents: getTotalComponents,
                     getCount: getCount,
                     createEntity: createEntity,
@@ -338,11 +459,12 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
                     addComponent: addComponent,
                     removeComponent: removeComponent,
                     replaceComponent: replaceComponent,
+                    getComponent: getComponent,
                     hasComponent: hasComponent,
                 };
-            }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
+            }(stdlib_3.default, ffi_5.default, ffi_6.buffer)));
             for (var k in pool) {
-                ffi_3.default['pool_' + k] = pool[k];
+                ffi_5.default['pool_' + k] = pool[k];
             }
         }
     }
@@ -351,26 +473,60 @@ System.register("pool", ["ffi", "stdlib"], function(exports_4, context_4) {
 /*
  * Run tests
  */
-Promise.all(['Entity', 'pool'].map(function (x) {
+Promise.all(['Entity', 'Position', 'pool'].map(function (x) {
     return System["import"](x);
 })).then(function (arg) {
-    var Entity, pool, ref, ref1;
-    (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], pool = ref1.pool);
+    var Entity, Position, pool, ref, ref1, ref2;
+    (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], pool = ref2.pool);
     return describe('Entitas / asm.js', function () {
         console.log('hello');
-        return it('Create entity', function () {
-            var MAX, e1, e2, i, j, ref2;
-            MAX = 400;
+        it('Create entity', function () {
+            var MAX, e1, e2, i, j, ref3;
+            MAX = 4;
             console.log(MAX);
             pool.initialize(10);
             e1 = pool.createEntity();
             expect(Entity.getId(e1)).to.equal(1);
             Entity.setEnabled(e1, 0);
             expect(Entity.getEnabled(e1)).to.equal(0);
-            for (i = j = 0, ref2 = MAX; 0 <= ref2 ? j <= ref2 : j >= ref2; i = 0 <= ref2 ? ++j : --j) {
+            for (i = j = 0, ref3 = MAX; 0 <= ref3 ? j <= ref3 : j >= ref3; i = 0 <= ref3 ? ++j : --j) {
                 e2 = pool.createEntity();
             }
             return expect(Entity.getId(e2)).to.equal(MAX + 2);
+        });
+        it('Create Position', function () {
+            var fm, pos;
+            pool.initialize(10);
+            pos = pool.createPos(95.0, 96.0);
+            fm = pool.createPos(99.9, 107.7);
+            expect(Position.getX(pos)).to.equal(95);
+            return expect(Position.getY(pos)).to.equal(96);
+        });
+        it('Create Entity with Position', function () {
+            var e3, pos, poz;
+            pool.initialize(10);
+            e3 = pool.createEntity();
+            pos = pool.createPos(95.0, 96.0);
+            pool.addComponent(e3, 1, pos);
+            poz = Entity.getComponent(e3, 1);
+            expect(Position.getX(poz)).to.equal(95);
+            return expect(Position.getY(poz)).to.equal(96);
+        });
+        return it('Raise EntityAlreadyHasComponentException', function () {
+            var e4, error, ex, fm, pos, poz;
+            pool.initialize(10);
+            e4 = pool.createEntity();
+            pos = pool.createPos(95.0, 96.0);
+            pool.addComponent(e4, 2, pos);
+            poz = Entity.getComponent(e4, 2);
+            fm = pool.createPos(99.9, 107.7);
+            try {
+                return pool.addComponent(e4, 2, fm);
+            }
+            catch (error) {
+                ex = error;
+                return expect(ex.message).to.equal("EntityAlreadyHasComponentException - 2");
+            }
         });
     });
 }, function (err) {

@@ -5,6 +5,7 @@ import Stdlib from 'stdlib'
 export const Entity = (function(stdlib, foreign, heap) {
 "use asm";
 var HEAPI32 = new stdlib.Int32Array(heap);
+var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
 function Entity(self, totalComponents) {
@@ -66,6 +67,23 @@ function setComponent(self, index, value) {
     __02__ = self + __01__;
     __03__ = __02__ << 2;
     HEAPI32[__03__ >> 2] = value;
+}
+function hasComponent(self, index) {
+    self = self | 0;
+    index = index | 0;
+    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
+    var comp = 0;
+    __01__ = index + 3 | 0;
+    __02__ = self + __01__ | 0;
+    __03__ = __02__ << 2;
+    comp = HEAPI32[__03__ >> 2] | 0;
+    if (comp > 0) {
+        __00__ = 1;
+        return __00__ | 0;
+    } else {
+        __00__ = 0;
+        return __00__ | 0;
+    }
 }    
 return { 
     Entity:Entity,
@@ -74,7 +92,8 @@ return {
     getEnabled:getEnabled,
     setEnabled:setEnabled,
     getComponent:getComponent,
-    setComponent:setComponent, 
+    setComponent:setComponent,
+    hasComponent:hasComponent, 
 };
 }(Stdlib, Ffi, buffer))
 for (let k in Entity) { 

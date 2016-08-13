@@ -9,6 +9,7 @@
         "build/ffi.js",
         "build/stdlib.js",
         "build/Entity.js",
+        "build/Position.js",
         "build/pool.js",
         "build/load.js"
     ]

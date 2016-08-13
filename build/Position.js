@@ -4,6 +4,7 @@ import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
 export const Position = (function(stdlib, foreign, heap) {
 "use asm";
+var HEAPF64 = new stdlib.Float64Array(heap);
 function Position(self, x, y) {
     self = self | 0;
     x = +x;
@@ -11,13 +12,53 @@ function Position(self, x, y) {
     var __01__ = 0, __02__ = 0, __03__ = 0, __04__ = 0;
     __01__ = self + 0;
     __02__ = __01__ << 2;
-    HEAPI32[__02__ >> 2] = x;
+    HEAPF64[__02__ >> 2] = x;
     __03__ = self + 2;
     __04__ = __03__ << 2;
-    HEAPI32[__04__ >> 2] = y;
+    HEAPF64[__04__ >> 2] = y;
+}
+function getX(self) {
+    self = self | 0;
+    var __00__ = 0.0, __01__ = 0, __02__ = 0;
+    var x = 0.0;
+    __01__ = +(self + 0);
+    __02__ = +(__01__ << 2);
+    x = +HEAPF64[__02__ >> 2];
+    __00__ = x;
+    return +__00__;
+}
+function setX(self, x) {
+    self = self | 0;
+    x = +x;
+    var __01__ = 0, __02__ = 0;
+    __01__ = self + 0;
+    __02__ = __01__ << 2;
+    HEAPF64[__02__ >> 2] = x;
+}
+function getY(self) {
+    self = self | 0;
+    var __00__ = 0.0, __01__ = 0, __02__ = 0;
+    var y = 0.0;
+    __01__ = +(self + 2);
+    __02__ = +(__01__ << 2);
+    y = +HEAPF64[__02__ >> 2];
+    __00__ = y;
+    return +__00__;
+}
+function setY(self, y) {
+    self = self | 0;
+    y = +y;
+    var __01__ = 0, __02__ = 0;
+    __01__ = self + 2;
+    __02__ = __01__ << 2;
+    HEAPF64[__02__ >> 2] = y;
 }    
 return { 
-    Position:Position, 
+    Position:Position,
+    getX:getX,
+    setX:setX,
+    getY:getY,
+    setY:setY, 
 };
 }(Stdlib, Ffi, buffer))
 for (let k in Position) { 

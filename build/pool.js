@@ -5,6 +5,7 @@ import Stdlib from 'stdlib'
 export const pool = (function(stdlib, foreign, heap) {
 "use asm";
 var HEAPI32 = new stdlib.Int32Array(heap);
+var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
 var Entity_Entity = foreign.Entity_Entity;
@@ -14,6 +15,12 @@ var Entity_getEnabled = foreign.Entity_getEnabled;
 var Entity_setEnabled = foreign.Entity_setEnabled;
 var Entity_getComponent = foreign.Entity_getComponent;
 var Entity_setComponent = foreign.Entity_setComponent;
+var Entity_hasComponent = foreign.Entity_hasComponent;
+var Position_Position = foreign.Position_Position;
+var Position_getX = foreign.Position_getX;
+var Position_setX = foreign.Position_setX;
+var Position_getY = foreign.Position_getY;
+var Position_setY = foreign.Position_setY;
 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
 var POOL_SIZE = 4096;
@@ -31,6 +38,14 @@ function initialize(count) {
         pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
         init = 0;
     }
+}
+function createPos(x, y) {
+    x = +x;
+    y = +y;
+    var __00__ = 0;
+    __00__ = (malloc(16 << 2) | 0) >> 2;
+    Position_Position(__00__ | 0, x, y);
+    return __00__ | 0;
 }
 function getTotalComponents() {
     var __00__ = 0;
@@ -114,6 +129,11 @@ function replaceComponent(entity, index, component) {
     index = index | 0;
     component = component | 0;
 }
+function getComponent(entity, index) {
+    entity = entity | 0;
+    index = index | 0;
+    var __00__ = 0;
+}
 function hasComponent(entity, index) {
     entity = entity | 0;
     index = index | 0;
@@ -121,6 +141,7 @@ function hasComponent(entity, index) {
 }    
 return { 
     initialize:initialize,
+    createPos:createPos,
     getTotalComponents:getTotalComponents,
     getCount:getCount,
     createEntity:createEntity,
@@ -135,6 +156,7 @@ return {
     addComponent:addComponent,
     removeComponent:removeComponent,
     replaceComponent:replaceComponent,
+    getComponent:getComponent,
     hasComponent:hasComponent, 
 };
 }(Stdlib, Ffi, buffer))

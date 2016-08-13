@@ -39,4 +39,15 @@ class Entity {
         self.component[index] = value;
     }
 
+    public bool hasComponent(int index) {
+        int comp;
+
+        comp = self.component[index];
+        if (comp > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
