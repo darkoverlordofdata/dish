@@ -110,16 +110,13 @@ export void addComponent(Entity entity, int index, int component) {
 }
 
 export void removeComponent(Entity entity, int index) {
-
 }
 
 export void replaceComponent(Entity entity, int index, int component) {
 }
 
 export int getComponent(Entity entity, int index) {
-
 }
 
 export bool hasComponent(Entity entity, int index) {
-
 }
