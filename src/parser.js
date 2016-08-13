@@ -24,13 +24,13 @@ function parse(input, mangle, packge) {
     const jsep = require('jsep')
     const codegen = require('escodegen')
     const esprima = require('esprima')
+    const factory = require('./factory')
     const Ast = require('./classes/Ast')
     const Field = require('./classes/Field')
     const Symbol = require('./classes/Symbol')
     const Term = require('./classes/Term')
     const Token = require('./classes/Token')
     const Triad = require('./classes/Triad')
-    const factory = require('./factory')
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
     const exporting = {}
@@ -87,7 +87,7 @@ function parse(input, mangle, packge) {
             heapi32: heapi32,
             heapu32: heapu32,
             heapf32: heapf32,
-            heapf64: true, // heapf64,
+            heapf64: heapf64,
             exports: exporting,  //  exported API
             api: api,
             data: data,
@@ -279,10 +279,14 @@ function parse(input, mangle, packge) {
 
     }
 
+    /**
+     * The guts are here in the expression parser
+     */
     function parseExpression(body, name, isReturn) {
 
         const rhs = []
         const index = []
+        let isArray = false
         let indexer = false
         let property = false
         let member = ''
@@ -358,6 +362,7 @@ function parse(input, mangle, packge) {
                          * o.field[index] = value
                          * HEAPI32[o+field+index] = value
                          */
+                        isArray = true
                         expect('[')
                         while (!match(']')) {
                             index.push(input.next().value)
@@ -525,7 +530,7 @@ function parse(input, mangle, packge) {
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const lhsvalue = index.length===0?null:parseExp(index.join('+'))
-            const lines = transpile(sym, ast, lhsvalue, mangle)  
+            const lines = transpile(sym, ast, lhsvalue, isArray, mangle)  
             for (let l in lines) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
@@ -1621,7 +1626,7 @@ function parse(input, mangle, packge) {
      * @param index optional ast of index for lhs
      * @returns array of output lines
      */
-    function transpile(symbol, tokens, index, mangle) {
+    function transpile(symbol, tokens, index, isArray, mangle) {
 
         let ptr = 0
         let curr = ''
@@ -1639,10 +1644,18 @@ function parse(input, mangle, packge) {
                 case 'Literal':
                     createVar()
                     code.push(new Triad(curr, type, name, '+', index.value))
+                    if (isArray) {
+                        createVar()
+                        code.push(new Triad(curr, type, prev, '<<', size))
+                    }
                     break
                 case 'Identifier':
                     createVar()
                     code.push(new Triad(curr, type, name, '+', index.name))
+                    if (isArray) {
+                        createVar()
+                        code.push(new Triad(curr, type, prev, '<<', size))
+                    }
                     break
                 case 'BinaryExpression':
                     traverse(index)
@@ -1650,6 +1663,10 @@ function parse(input, mangle, packge) {
                     codegen()
                     createVar()
                     code.push(new Triad(curr, type, name, '+', prev))
+                    if (isArray) {
+                        createVar()
+                        code.push(new Triad(curr, type, prev, '<<', size))
+                    }
                     break
             }
             name = `${heap}[${curr} >> ${size}]`
@@ -1676,7 +1693,11 @@ function parse(input, mangle, packge) {
                         case 'uint':    heap = 'HEAPUI32'; break
                         case 'bool':    heap = 'HEAPI32'; break
                         case 'float':   heap = 'HEAPF32'; break
-                        case 'double':  heap = 'HEAPF64'; size=3; break
+                        case 'double':  
+                            heap = 'HEAPF64'
+                            size=3
+                            heapf64 = true
+                            break
                     }
                 } 
             }
@@ -1739,6 +1760,10 @@ function parse(input, mangle, packge) {
                         code.push(new Triad(curr, type, op1.toString(), node.op, op2.toString()))
                         stack.push(new Term({type: 'Identifier', name: curr})) 
                         if (node.array) {
+                            if (isArray) {
+                                createVar()
+                                code.push(new Triad(curr, type, prev, '<<', 2))
+                            }
                             createVar()
                             code.push(new Triad(curr, type, `${heap}[${prev} >> ${size}]`))
                             stack.pop() //# pop off the prev, replace with curr
