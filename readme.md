@@ -14,6 +14,7 @@ The goal of dish is to insulate me from the twiddly aspects of asm.js.
 
 ## Features
 
+* transpiles to 'asm.js'
 * similar restrictions as asm.js:
     * no strings.
     * module level only allows declarations - import, export, int, float, double, void. 

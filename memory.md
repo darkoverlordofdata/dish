@@ -1,8 +1,8 @@
     ## Memory model
     
-    Objects should begin on q-word boundary - (n+8) >> 3 << 3
+    Objects must begin on q-word boundary - (size+7) >> 3 << 3
 
-    may need to pad unused space between fields
+    may need to pad unused space between fields to mix types in a struc
 
     variable           address      heap location
     ====================================================================

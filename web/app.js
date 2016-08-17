@@ -112,86 +112,61 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
             exports_3("Entity", Entity = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
-                var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 function Entity(self, totalComponents) {
                     self = self | 0;
                     totalComponents = totalComponents | 0;
-                    var __01__ = 0, __02__ = 0;
-                    __01__ = self + 2;
-                    __02__ = __01__ << 2;
-                    HEAPI32[__02__ >> 2] = totalComponents;
+                    HEAPI32[self + 8 >> 2] = totalComponents | 0;
                 }
                 function getId(self) {
                     self = self | 0;
-                    var __00__ = 0, __01__ = 0, __02__ = 0;
-                    __01__ = self + 0;
-                    __02__ = __01__ << 2;
-                    __00__ = HEAPI32[__02__ >> 2];
-                    return __00__ | 0;
+                    return HEAPI32[self + 0 >> 2] | 0;
                 }
                 function setId(self, id) {
                     self = self | 0;
                     id = id | 0;
-                    var __01__ = 0, __02__ = 0;
-                    __01__ = self + 0;
-                    __02__ = __01__ << 2;
-                    HEAPI32[__02__ >> 2] = id;
+                    HEAPI32[self + 0 >> 2] = id | 0;
                 }
                 function getEnabled(self) {
                     self = self | 0;
-                    var __00__ = 0, __01__ = 0, __02__ = 0;
-                    __01__ = self + 1;
-                    __02__ = __01__ << 2;
-                    __00__ = HEAPI32[__02__ >> 2];
-                    return __00__ | 0;
+                    return HEAPI32[self + 4 >> 2] | 0;
                 }
                 function setEnabled(self, enabled) {
                     self = self | 0;
                     enabled = enabled | 0;
-                    var __01__ = 0, __02__ = 0;
-                    __01__ = self + 1;
-                    __02__ = __01__ << 2;
-                    HEAPI32[__02__ >> 2] = enabled;
+                    HEAPI32[self + 4 >> 2] = enabled | 0;
                 }
                 function getComponent(self, index) {
                     self = self | 0;
                     index = index | 0;
-                    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
-                    __01__ = index + 3;
-                    __02__ = self + __01__;
-                    __03__ = __02__ << 2;
-                    __00__ = HEAPI32[__03__ >> 2];
-                    return __00__ | 0;
+                    return HEAPI32[self + 12 + (index << 2) >> 2] | 0;
                 }
                 function setComponent(self, index, value) {
                     self = self | 0;
                     index = index | 0;
                     value = value | 0;
-                    var __01__ = 0, __02__ = 0, __03__ = 0;
-                    __01__ = index + 3;
-                    __02__ = self + __01__;
-                    __03__ = __02__ << 2;
-                    HEAPI32[__03__ >> 2] = value;
+                    HEAPI32[self + 12 + (index << 2) >> 2] = value | 0;
                 }
                 function hasComponent(self, index) {
                     self = self | 0;
                     index = index | 0;
-                    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
                     var comp = 0;
-                    __01__ = index + 3 | 0;
-                    __02__ = self + __01__ | 0;
-                    __03__ = __02__ << 2;
-                    comp = HEAPI32[__03__ >> 2] | 0;
-                    if (comp > 0) {
-                        __00__ = 1;
-                        return __00__ | 0;
+                    var retval = 0;
+                    if ((comp | 0) > (0 | 0)) {
+                        retval = 1 | 0;
                     }
                     else {
-                        __00__ = 0;
-                        return __00__ | 0;
+                        retval = 0 | 0;
                     }
+                    return retval | 0;
+                }
+                function ctor(totalComponents) {
+                    totalComponents = totalComponents | 0;
+                    var self = 0;
+                    self = malloc(92 | 0) | 0;
+                    Entity(self | 0, totalComponents | 0);
+                    return self | 0;
                 }
                 return {
                     Entity: Entity,
@@ -202,6 +177,7 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     getComponent: getComponent,
                     setComponent: setComponent,
                     hasComponent: hasComponent,
+                    ctor: ctor,
                 };
             }(stdlib_1.default, ffi_1.default, ffi_2.buffer)));
             for (var k in Entity) {
@@ -228,53 +204,40 @@ System.register("Position", ["ffi", "stdlib"], function(exports_4, context_4) {
             exports_4("Position", Position = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPF64 = new stdlib.Float64Array(heap);
+                var malloc = foreign.malloc;
+                var free = foreign.free;
                 function Position(self, x, y) {
                     self = self | 0;
                     x = +x;
                     y = +y;
-                    var __01__ = 0, __02__ = 0, __03__ = 0, __04__ = 0;
-                    __01__ = self + 0;
-                    __02__ = __01__ << 2;
-                    HEAPF64[__02__ >> 2] = x;
-                    __03__ = self + 2;
-                    __04__ = __03__ << 2;
-                    HEAPF64[__04__ >> 2] = y;
+                    HEAPF64[self + 0 >> 3] = +x;
+                    HEAPF64[self + 8 >> 3] = +y;
                 }
                 function getX(self) {
                     self = self | 0;
-                    var __00__ = 0.0, __01__ = 0, __02__ = 0;
-                    var x = 0.0;
-                    __01__ = +(self + 0);
-                    __02__ = +(__01__ << 2);
-                    x = +HEAPF64[__02__ >> 2];
-                    __00__ = x;
-                    return +__00__;
+                    return +HEAPF64[self + 0 >> 3];
                 }
                 function setX(self, x) {
                     self = self | 0;
                     x = +x;
-                    var __01__ = 0, __02__ = 0;
-                    __01__ = self + 0;
-                    __02__ = __01__ << 2;
-                    HEAPF64[__02__ >> 2] = x;
+                    HEAPF64[self + 0 >> 3] = +x;
                 }
                 function getY(self) {
                     self = self | 0;
-                    var __00__ = 0.0, __01__ = 0, __02__ = 0;
-                    var y = 0.0;
-                    __01__ = +(self + 2);
-                    __02__ = +(__01__ << 2);
-                    y = +HEAPF64[__02__ >> 2];
-                    __00__ = y;
-                    return +__00__;
+                    return +HEAPF64[self + 8 >> 3];
                 }
                 function setY(self, y) {
                     self = self | 0;
                     y = +y;
-                    var __01__ = 0, __02__ = 0;
-                    __01__ = self + 2;
-                    __02__ = __01__ << 2;
-                    HEAPF64[__02__ >> 2] = y;
+                    HEAPF64[self + 8 >> 3] = +y;
+                }
+                function ctor(x, y) {
+                    x = +x;
+                    y = +y;
+                    var self = 0;
+                    self = malloc(16 | 0) | 0;
+                    Position(self | 0, +x, +y);
+                    return self | 0;
                 }
                 return {
                     Position: Position,
@@ -282,6 +245,7 @@ System.register("Position", ["ffi", "stdlib"], function(exports_4, context_4) {
                     setX: setX,
                     getY: getY,
                     setY: setY,
+                    ctor: ctor,
                 };
             }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
             for (var k in Position) {
@@ -308,10 +272,10 @@ System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
             exports_5("pool", pool = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
-                var HEAPF64 = new stdlib.Float64Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 var Entity_Entity = foreign.Entity_Entity;
+                var Entity_ctor = foreign.Entity_ctor;
                 var Entity_getId = foreign.Entity_getId;
                 var Entity_setId = foreign.Entity_setId;
                 var Entity_getEnabled = foreign.Entity_getEnabled;
@@ -320,6 +284,7 @@ System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
                 var Entity_setComponent = foreign.Entity_setComponent;
                 var Entity_hasComponent = foreign.Entity_hasComponent;
                 var Position_Position = foreign.Position_Position;
+                var Position_ctor = foreign.Position_ctor;
                 var Position_getX = foreign.Position_getX;
                 var Position_setX = foreign.Position_setX;
                 var Position_getY = foreign.Position_getY;
@@ -336,62 +301,48 @@ System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
                 function initialize(count) {
                     count = count | 0;
                     if (init) {
-                        totalComponents = count;
-                        uniqueId = 0;
-                        pool = (malloc(POOL_SIZE << 2) | 0) >> 2;
-                        init = 0;
+                        totalComponents = count | 0;
+                        uniqueId = 0 | 0;
+                        pool = malloc(POOL_SIZE << 2) | 0;
+                        init = 0 | 0;
                     }
                 }
                 function createPos(x, y) {
                     x = +x;
                     y = +y;
-                    var __00__ = 0;
-                    __00__ = (malloc(16 << 2) | 0) >> 2;
-                    Position_Position(__00__ | 0, x, y);
-                    return __00__ | 0;
+                    return Position_ctor(+x, +y) | 0;
                 }
                 function getTotalComponents() {
-                    var __00__ = 0;
-                    __00__ = totalComponents;
-                    return __00__ | 0;
+                    return totalComponents | 0;
                 }
                 function getCount() {
-                    var __00__ = 0;
-                    __00__ = count;
-                    return __00__ | 0;
+                    return count | 0;
                 }
                 function createEntity() {
-                    var __00__ = 0;
                     var ent = 0;
                     var i = 0;
                     uniqueId = uniqueId + 1 | 0;
-                    ent = (malloc(92 << 2) | 0) >> 2;
-                    Entity_Entity(ent | 0, totalComponents);
-                    Entity_setId(ent | 0, uniqueId | 0);
-                    Entity_setEnabled(ent | 0, 1 | 0);
+                    ent = Entity_ctor(totalComponents | 0) | 0;
+                    Entity_setId(ent | 0, uniqueId | 0) | 0;
+                    Entity_setEnabled(ent | 0, 1 | 0) | 0;
                     for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
-                        Entity_setComponent(ent | 0, i | 0, 0 | 0);
+                        Entity_setComponent(ent | 0, i | 0, 0 | 0) | 0;
                     }
-                    __00__ = ent;
-                    return __00__ | 0;
+                    return ent | 0;
                 }
                 function destroyEntity(entity) {
                     entity = entity | 0;
-                    free(entity | 0);
                 }
                 function destroyAllEntities() {
                 }
                 function hasEntity(entity) {
                     entity = entity | 0;
-                    var __00__ = 0;
                 }
                 function getEntities(matching) {
                     matching = matching | 0;
-                    var __00__ = 0;
                 }
                 function getGroup(matching) {
                     matching = matching | 0;
-                    var __00__ = 0;
                 }
                 function updateGroupsComponentAddedOrRemoved(entity, index, component) {
                     entity = entity | 0;
@@ -415,13 +366,13 @@ System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
                     var comp = 0;
                     enabled = Entity_getEnabled(entity | 0) | 0;
                     if (!enabled) {
-                        EntityIsNotEnabledException();
+                        EntityIsNotEnabledException() | 0;
                     }
-                    comp = Entity_hasComponent(entity | 0, index) | 0;
+                    comp = Entity_hasComponent(entity | 0, index | 0) | 0;
                     if (comp) {
-                        EntityAlreadyHasComponentException(index | 0);
+                        EntityAlreadyHasComponentException(index | 0) | 0;
                     }
-                    Entity_setComponent(entity | 0, index | 0, component | 0);
+                    Entity_setComponent(entity | 0, index | 0, component | 0) | 0;
                 }
                 function removeComponent(entity, index) {
                     entity = entity | 0;
@@ -435,12 +386,10 @@ System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
                 function getComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
-                    var __00__ = 0;
                 }
                 function hasComponent(entity, index) {
                     entity = entity | 0;
                     index = index | 0;
-                    var __00__ = 0;
                 }
                 return {
                     initialize: initialize,
@@ -495,14 +444,14 @@ Promise.all(['Entity', 'Position', 'pool'].map(function (x) {
             return expect(Entity.getId(e2)).to.equal(MAX + 2);
         });
         it('Create Position', function () {
-            var fm, pos;
+            var pos;
             pool.initialize(10);
             pos = pool.createPos(95.0, 96.0);
-            fm = pool.createPos(99.9, 107.7);
+            console.log('Pos', Position.getX(pos), ',', Position.getY(pos));
             expect(Position.getX(pos)).to.equal(95);
             return expect(Position.getY(pos)).to.equal(96);
         });
-        it('Create Entity with Position', function () {
+        return it('Create Entity with Position', function () {
             var e3, pos, poz;
             pool.initialize(10);
             e3 = pool.createEntity();
@@ -511,22 +460,6 @@ Promise.all(['Entity', 'Position', 'pool'].map(function (x) {
             poz = Entity.getComponent(e3, 1);
             expect(Position.getX(poz)).to.equal(95);
             return expect(Position.getY(poz)).to.equal(96);
-        });
-        return it('Raise EntityAlreadyHasComponentException', function () {
-            var e4, error, ex, fm, pos, poz;
-            pool.initialize(10);
-            e4 = pool.createEntity();
-            pos = pool.createPos(95.0, 96.0);
-            pool.addComponent(e4, 2, pos);
-            poz = Entity.getComponent(e4, 2);
-            fm = pool.createPos(99.9, 107.7);
-            try {
-                return pool.addComponent(e4, 2, fm);
-            }
-            catch (error) {
-                ex = error;
-                return expect(ex.message).to.equal("EntityAlreadyHasComponentException - 2");
-            }
         });
     });
 }, function (err) {

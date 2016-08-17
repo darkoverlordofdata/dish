@@ -1,6 +1,5 @@
 /**
- * parse.js - standard version
- * 
+ * parse.js - newer version
  * 
  * Recursive Descent Parser for D`ish
  * Parses the statements and builds linkage infrastructure 
@@ -10,10 +9,21 @@
  */
 'use strict'
 
+
 module.exports = {
     parse: parse
 }
 
+const mem = {
+    byte:   {size: 0, heap: 'HEAPU8',   name: 'heapi8'},
+    char:   {size: 1, heap: 'HEAPI16',  name: 'heapu8'},
+    bool:   {size: 2, heap: 'HEAPI32',  name: 'heapi16'},
+    int:    {size: 2, heap: 'HEAPI32',  name: 'heapu16'},
+    uint:   {size: 2, heap: 'HEAPU32',  name: 'heapi32'},
+    object: {size: 2, heap: 'HEAPI32',  name: 'heapu32'},
+    float:  {size: 2, heap: 'HEAPF32',  name: 'heapf32'},
+    double: {size: 3, heap: 'HEAPF64',  name: 'heapf64'}
+}
 
 /**
  * Parse tokens from the input lexer
@@ -25,19 +35,29 @@ function parse(input, mangle, packge) {
     const jsep = require('jsep')
     const codegen = require('escodegen')
     const esprima = require('esprima')
+    const factory = require('./factory')
     const Ast = require('./classes/Ast')
     const Field = require('./classes/Field')
     const Symbol = require('./classes/Symbol')
     const Term = require('./classes/Term')
     const Token = require('./classes/Token')
     const Triad = require('./classes/Triad')
-    const factory = require('./factory')
     const ast = { type: 'Program', body: [] }
     const symtbl = { global: {} }
     const exporting = {}
     const types = {}
     const api = {}
     const data = []
+    const heaps = {
+        heapi8: false,
+        heapu8: false,
+        heapi16: false,
+        heapu16: false,
+        heapi32: false,
+        heapu32: false,
+        heapf32: false,
+        heapf64: false
+    }
 
     let uniqueId = 1
     let moduleName = ''
@@ -52,14 +72,6 @@ function parse(input, mangle, packge) {
     let isConst = false
     let float = false
     let malloc = false
-    let heapi8 = false
-    let heapu8 = false
-    let heapi16 = false
-    let heapu16 = false
-    let heapi32 = false
-    let heapu32 = false
-    let heapf32 = false
-    let heapf64 = false
     Field.offset = 0
     Field.index = 0
     Field.size = 0
@@ -81,14 +93,14 @@ function parse(input, mangle, packge) {
             name: moduleName,   //  module name
             float: float,       //  uses floats?
             malloc: malloc,     //  use heap?
-            heapi8: heapi8,     //  heap views:
-            heapu8: heapu8,
-            heapi16: heapi16,
-            heapu16: heapu16,
-            heapi32: heapi32,
-            heapu32: heapu32,
-            heapf32: heapf32,
-            heapf64: true, // heapf64,
+            heapi8: heaps.heapi8,     //  heap views:
+            heapu8: heaps.heapu8,
+            heapi16: heaps.heapi16,
+            heapu16: heaps.heapu16,
+            heapi32: heaps.heapi32,
+            heapu32: heaps.heapu32,
+            heapf32: heaps.heapf32,
+            heapf64: heaps.heapf64,
             exports: exporting,  //  exported API
             api: api,
             data: data,
@@ -145,7 +157,7 @@ function parse(input, mangle, packge) {
         expect(';')
 
         while (!input.eof()) {
-            let node = parseGlobal(body)
+            const node = parseGlobal(body)
             if (node) body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
         }
@@ -159,7 +171,7 @@ function parse(input, mangle, packge) {
             isPublic = true
             isStatic = false
             isConst = false
-            let node = parseGlobal(body)
+            const node = parseGlobal(body)
             if (node) body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
             if (match('}')) break
@@ -230,8 +242,8 @@ function parse(input, mangle, packge) {
                         const tokens = tokens2Array(sym.init)
                         body.push(factory.New(name, sym.size, { "type": "Literal", "value": tokens.length }))
                         for (let t in tokens) {
-                            let sname = `${sym.heap}[(${name}+${t})<<2>>2]`
-                            let value = parseExp(''+tokens[t])
+                            const sname = `${sym.heap}[(${name}+${t})<<2>>2]`
+                            const value = parseExp(''+tokens[t])
                             body.push(factory.AssignmentStatement(sname, value))
                         }
                     } else {
@@ -280,10 +292,14 @@ function parse(input, mangle, packge) {
 
     }
 
+    /**
+     * The guts are here in the expression parser
+     */
     function parseExpression(body, name, isReturn) {
 
         const rhs = []
         const index = []
+        let isArray = false
         let indexer = false
         let property = false
         let member = ''
@@ -349,7 +365,7 @@ function parse(input, mangle, packge) {
                         const params = []
                         for (let i=0; i<arg.length; i++) {
                             //TODO: Coerce params - p1|0, +p2, fround(p3)
-                            let node = parseExp(arg[i])
+                            const node = parseExp(arg[i])
                             params.push(node)
                         }
                         return factory.CallExpression(method, params)
@@ -359,6 +375,7 @@ function parse(input, mangle, packge) {
                          * o.field[index] = value
                          * HEAPI32[o+field+index] = value
                          */
+                        isArray = true
                         expect('[')
                         while (!match(']')) {
                             index.push(input.next().value)
@@ -388,7 +405,7 @@ function parse(input, mangle, packge) {
             if (member !== '') { /** Encode lhsvalue */
                 const sym = symtbl[currentScope][name]
                 const def = lookupField(sym.type, member)
-                index.push(def.offset>>2)
+                index.push(def.offset)
             }
         }
         /** RHS */
@@ -400,27 +417,27 @@ function parse(input, mangle, packge) {
                 let token = null
                 if (matchKeyword('int')) {
                     expectKeyword('int')
-                    size = 2
-                    heapi32 = true
+                    size = mem.int.size
+                    heaps[mem.int.name] = true
                 } else if (matchKeyword('uint')) {
                     expectKeyword('uint')
-                    size = 2
-                    heapu32 = true
+                    size = mem.uint.size
+                    heaps[mem.uint.name] = true
                 } else if (matchKeyword('bool')) {
                     expectKeyword('bool')
-                    size = 2
-                    heapu32 = true
+                    size = mem.bool.size
+                    heaps[mem.bool.name] = true
                 } else if (matchKeyword('float')) {
                     expectKeyword('float')
-                    size = 2
-                    heapf32 = true
+                    size = mem.float.size
+                    heaps[mem.float.name] = true
                 } else if (matchKeyword('double')) {
                     expectKeyword('double')
-                    size = 3
-                    heapf64 = true
+                    size = mem.double.size
+                    heaps[mem.double.name] = true
                 } else {
                     malloc = true
-                    let klass = input.next()
+                    const klass = input.next()
 
                     const ext = require('../dish.json')
                     const size = ext[packge][klass.value].size
@@ -447,11 +464,12 @@ function parse(input, mangle, packge) {
 
                     for (let i=0; i<arg.length; i++) {
                         //TODO: Coerce params - p1|0, +p2, fround(p3)
-                        let node = parseExp(arg[i])
+                        const node = parseExp(arg[i])
                         params.push(node)
                     }
 
-                    body.push(factory.New(name, 2, { "type": "Literal", "value": size }))
+                    /** create on q-word boundary */
+                    body.push(factory.New(name, 2, { "type": "Literal", "value": (size+7) >> 3 << 3 }))
                     return factory.CallExpression(ctor, params)
                 }
                 expect('[')
@@ -504,19 +522,19 @@ function parse(input, mangle, packge) {
         /** Decode RHS of object.field */
         if (method !== '') {
             self = rhs[0].value
-            let sym = symtbl[currentScope][self]
+            const sym = symtbl[currentScope][self]
             if (rhs.length === 1) {/** Property */
                 const def = lookupField(sym.type, method)
                 if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
 
                 rhs.push(new Token(Token.Delimiter, '['))
-                rhs.push(new Token(Token.Number, (def.offset>>2)))
+                rhs.push(new Token(Token.Number, (def.offset)))
                 rhs.push(new Token(Token.Delimiter, ']'))
             } else {
                 if (rhs[1].value === '[') {
                     const def = lookupField(sym.type, method)
                     if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
-                    rhs[2].value = `${rhs[2].value} + ${def.offset>>2}`
+                    rhs[2].value = `${rhs[2].value} + ${def.offset}`
                 }
             }
         }
@@ -526,12 +544,11 @@ function parse(input, mangle, packge) {
 
         if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
             const lhsvalue = index.length===0?null:parseExp(index.join('+'))
-            const lines = transpile(sym, ast, lhsvalue, mangle)  
+            const lines = transpile(sym, ast, lhsvalue, isArray, mangle)  
             for (let l in lines) {
                 const line = lines[l]
                 if (parseInt(l, 10) === lines.length-1) {
                     createVar(body, line.name, 'int', 0)
-                    console.log(line)
                     return factory.AssignmentStatement(line.name, parseExp(line.code))
                 } else {
                     createVar(body, line.name, 'int', 0)
@@ -959,7 +976,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.heapi32 = true
         }
         const name = input.next()
         if (match('(')) {   /** function definition */
@@ -1044,7 +1061,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.heapf64 = true
         }
         const name = input.next()
         if (match('(')) { /** function definition */
@@ -1157,7 +1174,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.heapf32 = true
         }
         const name = input.next()
         if (match('(')) { /** function definition */
@@ -1242,7 +1259,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.heapi32 = true
         }
         const name = input.next()
         if (match('(')) {   /** function definition */
@@ -1309,8 +1326,7 @@ function parse(input, mangle, packge) {
         const _then = consequent.length === 0 ? null :  { "type": "BlockStatement", "body": consequent }
         const _else = alternate.length === 0 ? null : { "type": "BlockStatement", "body": alternate }
 
-        let c = factory.IfStatement(parseExp(tokens, false), _then, _else)
-        return c;
+        return factory.IfStatement(parseExp(tokens, false), _then, _else)
     }
 
     /**
@@ -1484,7 +1500,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.heapi32 = true
         }
         const name = input.next()
         if (input.peek().value === '(') { /** function definition */
@@ -1531,7 +1547,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.heapui32 = true
         }
         const name = input.next()
         if (match('(')) { /** function definition */
@@ -1623,7 +1639,7 @@ function parse(input, mangle, packge) {
      * @param index optional ast of index for lhs
      * @returns array of output lines
      */
-    function transpile(symbol, tokens, index, mangle) {
+    function transpile(symbol, tokens, index, isArray, mangle) {
 
         let ptr = 0
         let curr = ''
@@ -1634,21 +1650,25 @@ function parse(input, mangle, packge) {
 
         let name = symbol.name
         let heap = symbol.heap
-        const size = symbol.size
+        let size = symbol.size
         const type = symbol.type
         if (index != null) {
             switch (index.type) {
                 case 'Literal':
                     createVar()
                     code.push(new Triad(curr, type, name, '+', index.value))
-                    createVar()
-                    code.push(new Triad(curr, type, prev, '<<', size))
+                    if (isArray) {
+                        createVar()
+                        code.push(new Triad(curr, type, prev, '<<', size))
+                    }
                     break
                 case 'Identifier':
                     createVar()
                     code.push(new Triad(curr, type, name, '+', index.name))
-                    createVar()
-                    code.push(new Triad(curr, type, prev, '<<', size))
+                    if (isArray) {
+                        createVar()
+                        code.push(new Triad(curr, type, prev, '<<', size))
+                    }
                     break
                 case 'BinaryExpression':
                     traverse(index)
@@ -1656,8 +1676,10 @@ function parse(input, mangle, packge) {
                     codegen()
                     createVar()
                     code.push(new Triad(curr, type, name, '+', prev))
-                    createVar()
-                    code.push(new Triad(curr, type, prev, '<<', size))
+                    if (isArray) {
+                        createVar()
+                        code.push(new Triad(curr, type, prev, '<<', size))
+                    }
                     break
             }
             name = `${heap}[${curr} >> ${size}]`
@@ -1679,13 +1701,9 @@ function parse(input, mangle, packge) {
             const data = api[packge][type].data
             for (let ix in data) {
                 if (data[ix].name === left) {
-                    switch (data[ix].type) {
-                        case 'int':     heap = 'HEAPI32'; break
-                        case 'uint':    heap = 'HEAPUI32'; break
-                        case 'bool':    heap = 'HEAPI32'; break
-                        case 'float':   heap = 'HEAPF32'; break
-                        case 'double':  heap = 'HEAPF64'; break
-                    }
+                    heap = mem[data[ix].type].heap
+                    size = mem[data[ix].type].size
+                    heaps[mem[data[ix].type].name] = true
                 } 
             }
             name = `${heap}[${curr} >> ${size}]`
@@ -1747,10 +1765,12 @@ function parse(input, mangle, packge) {
                         code.push(new Triad(curr, type, op1.toString(), node.op, op2.toString()))
                         stack.push(new Term({type: 'Identifier', name: curr})) 
                         if (node.array) {
+                            if (isArray) {
+                                createVar()
+                                code.push(new Triad(curr, type, prev, '<<', 2))
+                            }
                             createVar()
-                            code.push(new Triad(curr, type, prev, '<<', 2))
-                            createVar()
-                            code.push(new Triad(curr, type, `${heap}[${prev} >> 2]`))
+                            code.push(new Triad(curr, type, `${heap}[${prev} >> ${size}]`))
                             stack.pop() //# pop off the prev, replace with curr
                             stack.push(new Term({type: 'Identifier', name: curr})) 
                         }

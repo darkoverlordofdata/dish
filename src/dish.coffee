@@ -44,7 +44,7 @@ main = ->
 
     source      = args()
     for file in source.split(',')
-        compile file, template, output, packge, mangle, whitespace     
+        compile file, template, output, packge, mangle, whitespace
 
 ###
  * compile each source file
@@ -62,9 +62,18 @@ compile = (source, template, output, packge, mangle, whitespace) ->
 
     parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle, packge)
 
-    tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
-    code = escodegen.generate(parsed.ast, verbatim: 'verbatim')
 
+    tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
+
+    try
+        code = escodegen.generate(parsed.ast, verbatim: 'verbatim')
+    catch ex
+        console.log '============================='
+        console.log "Error from escodegen:", ex.message
+        console.log '============================='
+        fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.json", JSON.stringify(parsed, null, 2)
+        return
+    
     out = tpl.render
         name:       parsed.name
         version:    manifest.version
@@ -119,10 +128,10 @@ compile = (source, template, output, packge, mangle, whitespace) ->
             size:   parsed.size
             api:    parsed.api
             data:   parsed.data
+            symtbl: parsed.symtbl
             source: source
         }
         fs.writeFileSync "./dish.json", JSON.stringify(api, null, 2)
-
 
 
 

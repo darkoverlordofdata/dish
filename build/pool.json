@@ -1,0 +1,3473 @@
+{
+  "ast": {
+    "type": "Program",
+    "body": [
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_Entity"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_Entity"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_getId"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_getId"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_setId"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_setId"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_getEnabled"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_getEnabled"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_setEnabled"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_setEnabled"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_getComponent"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_getComponent"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_setComponent"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_setComponent"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Entity_hasComponent"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Entity_hasComponent"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Position_Position"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Position_Position"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Position_getX"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Position_getX"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Position_setX"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Position_setX"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Position_getY"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Position_getY"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "Position_setY"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "Position_setY"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "EntityIsNotEnabledException"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "EntityIsNotEnabledException"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "EntityAlreadyHasComponentException"
+            },
+            "init": {
+              "type": "MemberExpression",
+              "computed": false,
+              "object": {
+                "type": "Identifier",
+                "name": "foreign"
+              },
+              "property": {
+                "type": "Identifier",
+                "name": "EntityAlreadyHasComponentException"
+              }
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "POOL_SIZE"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 4096,
+              "raw": 4096
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "init"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 1,
+              "raw": 1
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "pool"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "totalComponents"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "count"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "index"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "VariableDeclaration",
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "uniqueId"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        ],
+        "kind": "var"
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "initialize"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "count"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "count"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "count"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "IfStatement",
+              "test": {
+                "type": "Identifier",
+                "name": "init"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                      "type": "AssignmentExpression",
+                      "operator": "=",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "totalComponents"
+                      },
+                      "right": {
+                        "type": "Identifier",
+                        "name": "count"
+                      }
+                    }
+                  },
+                  {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                      "type": "AssignmentExpression",
+                      "operator": "=",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "uniqueId"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                      }
+                    }
+                  },
+                  null,
+                  {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                      "type": "AssignmentExpression",
+                      "operator": "=",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "init"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": false,
+                        "raw": "false"
+                      }
+                    }
+                  }
+                ]
+              },
+              "alternate": null
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "createPos"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "x"
+          },
+          {
+            "type": "Identifier",
+            "name": "y"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "x"
+                },
+                "right": {
+                  "type": "UnaryExpression",
+                  "operator": "+",
+                  "argument": {
+                    "type": "Identifier",
+                    "name": "x"
+                  },
+                  "prefix": true
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "y"
+                },
+                "right": {
+                  "type": "UnaryExpression",
+                  "operator": "+",
+                  "argument": {
+                    "type": "Identifier",
+                    "name": "y"
+                  },
+                  "prefix": true
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "getTotalComponents"
+        },
+        "params": [],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "ReturnStatement",
+              "argument": {
+                "type": "Identifier",
+                "name": "totalComponents"
+              }
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "getCount"
+        },
+        "params": [],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "ReturnStatement",
+              "argument": {
+                "type": "Identifier",
+                "name": "count"
+              }
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "createEntity"
+        },
+        "params": [],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "ent"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "i"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "uniqueId"
+                },
+                "right": {
+                  "type": "Identifier",
+                  "name": "uniqueId"
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "CallExpression",
+                "callee": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": "ent"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "name": "setId"
+                  }
+                },
+                "arguments": [
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                      "type": "Identifier",
+                      "name": "uniqueId"
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 0,
+                      "raw": "0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "CallExpression",
+                "callee": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": "ent"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "name": "setEnabled"
+                  }
+                },
+                "arguments": [
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                      "type": "Literal",
+                      "value": 1,
+                      "raw": "1"
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 0,
+                      "raw": "0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "ForStatement",
+              "init": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "i"
+                },
+                "right": {
+                  "type": "Literal",
+                  "value": 0,
+                  "raw": "0"
+                }
+              },
+              "test": {
+                "type": "BinaryExpression",
+                "operator": "<",
+                "left": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "i"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                },
+                "right": {
+                  "type": "Identifier",
+                  "name": "totalComponents"
+                }
+              },
+              "update": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "i"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "BinaryExpression",
+                    "operator": "+",
+                    "left": {
+                      "type": "Identifier",
+                      "name": "i"
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 1,
+                      "raw": "1"
+                    }
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              },
+              "body": {
+                "type": "BlockStatement",
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                      "type": "CallExpression",
+                      "callee": {
+                        "type": "MemberExpression",
+                        "computed": false,
+                        "object": {
+                          "type": "Identifier",
+                          "name": "ent"
+                        },
+                        "property": {
+                          "type": "Identifier",
+                          "name": "setComponent"
+                        }
+                      },
+                      "arguments": [
+                        {
+                          "type": "BinaryExpression",
+                          "operator": "|",
+                          "left": {
+                            "type": "Identifier",
+                            "name": "i"
+                          },
+                          "right": {
+                            "type": "Literal",
+                            "value": 0,
+                            "raw": "0"
+                          }
+                        },
+                        {
+                          "type": "BinaryExpression",
+                          "operator": "|",
+                          "left": {
+                            "type": "Literal",
+                            "value": 0,
+                            "raw": "0"
+                          },
+                          "right": {
+                            "type": "Literal",
+                            "value": 0,
+                            "raw": "0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "ReturnStatement",
+              "argument": {
+                "type": "Identifier",
+                "name": "ent"
+              }
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "destroyEntity"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "destroyAllEntities"
+        },
+        "params": [],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "hasEntity"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "getEntities"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "matching"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "matching"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "matching"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "getGroup"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "matching"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "matching"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "matching"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "updateGroupsComponentAddedOrRemoved"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          },
+          {
+            "type": "Identifier",
+            "name": "index"
+          },
+          {
+            "type": "Identifier",
+            "name": "component"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "index"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "index"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "component"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "component"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "updateGroupsComponentReplaced"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          },
+          {
+            "type": "Identifier",
+            "name": "index"
+          },
+          {
+            "type": "Identifier",
+            "name": "prevcomponent"
+          },
+          {
+            "type": "Identifier",
+            "name": "newcomponent"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "index"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "index"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "prevcomponent"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "prevcomponent"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "newcomponent"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "newcomponent"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "onEntityReleased"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "addComponent"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          },
+          {
+            "type": "Identifier",
+            "name": "index"
+          },
+          {
+            "type": "Identifier",
+            "name": "component"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "index"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "index"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "component"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "component"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "enabled"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "comp"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "enabled"
+                },
+                "right": {
+                  "type": "CallExpression",
+                  "callee": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                      "type": "Identifier",
+                      "name": "entity"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "name": "getEnabled"
+                    }
+                  },
+                  "arguments": []
+                }
+              }
+            },
+            {
+              "type": "IfStatement",
+              "test": {
+                "type": "UnaryExpression",
+                "operator": "!",
+                "argument": {
+                  "type": "Identifier",
+                  "name": "enabled"
+                },
+                "prefix": true
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                      "type": "CallExpression",
+                      "callee": {
+                        "type": "Identifier",
+                        "name": "EntityIsNotEnabledException"
+                      },
+                      "arguments": []
+                    }
+                  }
+                ]
+              },
+              "alternate": null
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "comp"
+                },
+                "right": {
+                  "type": "CallExpression",
+                  "callee": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                      "type": "Identifier",
+                      "name": "entity"
+                    },
+                    "property": {
+                      "type": "Identifier",
+                      "name": "hasComponent"
+                    }
+                  },
+                  "arguments": [
+                    {
+                      "type": "BinaryExpression",
+                      "operator": "|",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "index"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "IfStatement",
+              "test": {
+                "type": "Identifier",
+                "name": "comp"
+              },
+              "consequent": {
+                "type": "BlockStatement",
+                "body": [
+                  {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                      "type": "CallExpression",
+                      "callee": {
+                        "type": "Identifier",
+                        "name": "EntityAlreadyHasComponentException"
+                      },
+                      "arguments": [
+                        {
+                          "type": "BinaryExpression",
+                          "operator": "|",
+                          "left": {
+                            "type": "BinaryExpression",
+                            "operator": "|",
+                            "left": {
+                              "type": "Identifier",
+                              "name": "index"
+                            },
+                            "right": {
+                              "type": "Literal",
+                              "value": 0,
+                              "raw": "0"
+                            }
+                          },
+                          "right": {
+                            "type": "Literal",
+                            "value": 0,
+                            "raw": "0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "alternate": null
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "CallExpression",
+                "callee": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "property": {
+                    "type": "Identifier",
+                    "name": "setComponent"
+                  }
+                },
+                "arguments": [
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                      "type": "BinaryExpression",
+                      "operator": "|",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "index"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                      }
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 0,
+                      "raw": "0"
+                    }
+                  },
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                      "type": "BinaryExpression",
+                      "operator": "|",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "component"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                      }
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 0,
+                      "raw": "0"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "CallExpression",
+                "callee": {
+                  "type": "Identifier",
+                  "name": "entity_onComponentAdded"
+                },
+                "arguments": [
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                      "type": "BinaryExpression",
+                      "operator": "|",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "entity"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                      }
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 0,
+                      "raw": "0"
+                    }
+                  },
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                      "type": "BinaryExpression",
+                      "operator": "|",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "index"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                      }
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 0,
+                      "raw": "0"
+                    }
+                  },
+                  {
+                    "type": "BinaryExpression",
+                    "operator": "|",
+                    "left": {
+                      "type": "BinaryExpression",
+                      "operator": "|",
+                      "left": {
+                        "type": "Identifier",
+                        "name": "component"
+                      },
+                      "right": {
+                        "type": "Literal",
+                        "value": 0,
+                        "raw": "0"
+                      }
+                    },
+                    "right": {
+                      "type": "Literal",
+                      "value": 0,
+                      "raw": "0"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "removeComponent"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          },
+          {
+            "type": "Identifier",
+            "name": "index"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "index"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "index"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "replaceComponent"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          },
+          {
+            "type": "Identifier",
+            "name": "index"
+          },
+          {
+            "type": "Identifier",
+            "name": "component"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "index"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "index"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "component"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "component"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "getComponent"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          },
+          {
+            "type": "Identifier",
+            "name": "index"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "index"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "index"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      },
+      {
+        "type": "FunctionDeclaration",
+        "id": {
+          "type": "Identifier",
+          "name": "hasComponent"
+        },
+        "params": [
+          {
+            "type": "Identifier",
+            "name": "entity"
+          },
+          {
+            "type": "Identifier",
+            "name": "index"
+          }
+        ],
+        "defaults": [],
+        "body": {
+          "type": "BlockStatement",
+          "body": [
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "entity"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "entity"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "ExpressionStatement",
+              "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                  "type": "Identifier",
+                  "name": "index"
+                },
+                "right": {
+                  "type": "BinaryExpression",
+                  "operator": "|",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "index"
+                  },
+                  "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              }
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__ZZ__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            },
+            {
+              "type": "VariableDeclaration",
+              "declarations": [
+                {
+                  "type": "VariableDeclarator",
+                  "id": {
+                    "type": "Identifier",
+                    "name": "__00__"
+                  },
+                  "init": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                  }
+                }
+              ],
+              "kind": "var"
+            }
+          ]
+        },
+        "generator": false,
+        "expression": false
+      }
+    ]
+  },
+  "name": "pool",
+  "float": false,
+  "malloc": true,
+  "heapi8": false,
+  "heapu8": false,
+  "heapi16": false,
+  "heapu16": false,
+  "heapi32": true,
+  "heapu32": false,
+  "heapf32": false,
+  "heapf64": false,
+  "exports": {
+    "initialize": "initialize",
+    "createPos": "createPos",
+    "getTotalComponents": "getTotalComponents",
+    "getCount": "getCount",
+    "createEntity": "createEntity",
+    "destroyEntity": "destroyEntity",
+    "destroyAllEntities": "destroyAllEntities",
+    "hasEntity": "hasEntity",
+    "getEntities": "getEntities",
+    "getGroup": "getGroup",
+    "updateGroupsComponentAddedOrRemoved": "updateGroupsComponentAddedOrRemoved",
+    "updateGroupsComponentReplaced": "updateGroupsComponentReplaced",
+    "onEntityReleased": "onEntityReleased",
+    "addComponent": "addComponent",
+    "removeComponent": "removeComponent",
+    "replaceComponent": "replaceComponent",
+    "getComponent": "getComponent",
+    "hasComponent": "hasComponent"
+  },
+  "api": {
+    "initialize": {
+      "count": "int"
+    },
+    "createPos": {
+      "x": "double",
+      "y": "double"
+    },
+    "getTotalComponents": {},
+    "getCount": {},
+    "createEntity": {},
+    "destroyEntity": {
+      "entity": "Entity"
+    },
+    "destroyAllEntities": {},
+    "hasEntity": {
+      "entity": "Entity"
+    },
+    "getEntities": {
+      "matching": "int"
+    },
+    "getGroup": {
+      "matching": "int"
+    },
+    "updateGroupsComponentAddedOrRemoved": {
+      "entity": "Entity",
+      "index": "int",
+      "component": "int"
+    },
+    "updateGroupsComponentReplaced": {
+      "entity": "Entity",
+      "index": "int",
+      "prevcomponent": "int",
+      "newcomponent": "int"
+    },
+    "onEntityReleased": {
+      "entity": "Entity"
+    },
+    "addComponent": {
+      "entity": "Entity",
+      "index": "int",
+      "component": "int"
+    },
+    "removeComponent": {
+      "entity": "Entity",
+      "index": "int"
+    },
+    "replaceComponent": {
+      "entity": "Entity",
+      "index": "int",
+      "component": "int"
+    },
+    "getComponent": {
+      "entity": "Entity",
+      "index": "int"
+    },
+    "hasComponent": {
+      "entity": "Entity",
+      "index": "int"
+    }
+  },
+  "data": [],
+  "size": 0,
+  "class": false,
+  "symtbl": {
+    "global": {
+      "POOL_SIZE": {
+        "name": "POOL_SIZE",
+        "type": "int",
+        "func": false,
+        "init": [
+          4096
+        ],
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "init": {
+        "name": "init",
+        "type": "bool",
+        "func": false,
+        "init": [
+          "1"
+        ],
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "pool": {
+        "name": "pool",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": true,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "totalComponents": {
+        "name": "totalComponents",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "count": {
+        "name": "count",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "uniqueId": {
+        "name": "uniqueId",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "initialize": {
+        "name": "initialize",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "createPos": {
+        "name": "createPos",
+        "type": "Position",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "getTotalComponents": {
+        "name": "getTotalComponents",
+        "type": "int",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "getCount": {
+        "name": "getCount",
+        "type": "int",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "createEntity": {
+        "name": "createEntity",
+        "type": "Entity",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "destroyEntity": {
+        "name": "destroyEntity",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "destroyAllEntities": {
+        "name": "destroyAllEntities",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "hasEntity": {
+        "name": "hasEntity",
+        "type": "bool",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "getEntities": {
+        "name": "getEntities",
+        "type": "int",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "getGroup": {
+        "name": "getGroup",
+        "type": "int",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "updateGroupsComponentAddedOrRemoved": {
+        "name": "updateGroupsComponentAddedOrRemoved",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "updateGroupsComponentReplaced": {
+        "name": "updateGroupsComponentReplaced",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "onEntityReleased": {
+        "name": "onEntityReleased",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "addComponent": {
+        "name": "addComponent",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "removeComponent": {
+        "name": "removeComponent",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "replaceComponent": {
+        "name": "replaceComponent",
+        "type": "void",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "getComponent": {
+        "name": "getComponent",
+        "type": "int",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "hasComponent": {
+        "name": "hasComponent",
+        "type": "bool",
+        "func": true,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "initialize": {
+      "count": {
+        "name": "count",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "createPos": {
+      "x": {
+        "name": "x",
+        "type": "double",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 3,
+        "heap": "HEAPF64"
+      },
+      "y": {
+        "name": "y",
+        "type": "double",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 3,
+        "heap": "HEAPF64"
+      },
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "getTotalComponents": {
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "getCount": {
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "createEntity": {
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "ent": {
+        "name": "ent",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "i": {
+        "name": "i",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "destroyEntity": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "destroyAllEntities": {},
+    "hasEntity": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "getEntities": {
+      "matching": {
+        "name": "matching",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "getGroup": {
+      "matching": {
+        "name": "matching",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "updateGroupsComponentAddedOrRemoved": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "component": {
+        "name": "component",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "updateGroupsComponentReplaced": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "prevcomponent": {
+        "name": "prevcomponent",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "newcomponent": {
+        "name": "newcomponent",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "onEntityReleased": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "addComponent": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "component": {
+        "name": "component",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "enabled": {
+        "name": "enabled",
+        "type": "bool",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "comp": {
+        "name": "comp",
+        "type": "bool",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "removeComponent": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "replaceComponent": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "component": {
+        "name": "component",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "getComponent": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    },
+    "hasComponent": {
+      "entity": {
+        "name": "entity",
+        "type": "Entity",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "index": {
+        "name": "index",
+        "type": "int",
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      },
+      "__00__": {
+        "name": "__00__",
+        "type": 0,
+        "func": false,
+        "init": "",
+        "array": false,
+        "immutable": false,
+        "size": 2,
+        "heap": "HEAPI32"
+      }
+    }
+  }
+}

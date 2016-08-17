@@ -41,13 +41,14 @@ class Entity {
 
     public bool hasComponent(int index) {
         int comp;
+        bool retval;
 
-        comp = self.component[index];
-        if (comp > 0) {
-            return true;
+        if ((comp|0) > (0|0)) {
+            retval = true;
         } else {
-            return false;
+            retval = false;
         }
+        return retval;
     }
 
 }

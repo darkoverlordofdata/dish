@@ -52,16 +52,16 @@ export Entity createEntity() {
     uniqueId = uniqueId+1;
 
     ent = new Entity(totalComponents);
-    ent.setId(uniqueId|0);
-    ent.setEnabled(1|0);
+    ent.setId(uniqueId);
+    ent.setEnabled(1);
     for (i=0; i<(totalComponents|0); i++) {
-        ent.setComponent(i|0, 0|0);
+        ent.setComponent(i, 0);
     }
     return ent;
 }
 
 export void destroyEntity(Entity entity) {
-    free(entity|0);
+    //free(entity|0);
 }
 
 export void destroyAllEntities() {
@@ -103,10 +103,10 @@ export void addComponent(Entity entity, int index, int component) {
     }
     comp = entity.hasComponent(index);
     if (comp) {
-        EntityAlreadyHasComponentException(index|0);
+        EntityAlreadyHasComponentException(index);
     }
-    entity.setComponent(index|0, component|0);
-    // entity_onComponentAdded(entity|0, index|0, component|0);
+    entity.setComponent(index, component);
+    //entity_onComponentAdded(entity|0, index|0, component|0);
 }
 
 export void removeComponent(Entity entity, int index) {

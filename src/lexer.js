@@ -14,29 +14,75 @@ module.exports = function(source) {
     /**
      * load all the tokens into an array for simple put-back
      */
-    let tokens = []
+    const tokens = Array.isArray(source)?source:[];
     let index = 0;
-    let input = Tokenizer(source)
-    while (!input.eof()) tokens.push(input.next())
+    let save = -1;
+    if (typeof source === 'string') {
+        const input = Tokenizer(source)
+        while (!input.eof()) tokens.push(input.next())
+    }
 
+    function mark() {save = index;}
+    function restore() {index = save;}
+    function current() {return index;}
     function eof() { return index >= tokens.length; }
     function peek() { return tokens[index]; }
     function next() { return tokens[index++]; }
     function putBack() {index--; }
     function raise(msg) {
-        let t = tokens[index];
+        const t = tokens[index];
         console.log(`${msg} found ${Token[t.type]} '${t.value}' at line ${t.line}, col ${t.col}`)
         process.exit(0)
     }
+    /**
+     * test if the token is a delimiter  
+     */
+    function match(ch) {
+        const tok = peek()
+        return tok.type === Token.Delimiter && tok.value === ch
+    }
+
+    /**
+     * test if the token is a keyword  
+     */
+    function matchKeyword(kw) {
+        const tok = peek()
+        return tok.type === Token.Keyword && tok.value === kw
+    }
+
+    /**
+     * Token MUST match the delimiter
+     */
+    function expect(ch) {
+        if (match(ch)) next()
+        else raise(`Expecting delimiter: [${ch}]`)
+    }
+
+    /**
+     * Token MUST match the keyword
+     */
+    function expectKeyword(kw) {
+        if (matchKeyword(kw)) next()
+        else raise(`Expecting keyword: [${kw}]`)
+    }
+
 
     return {
+        mark: mark,
+        restore: restore,
+        current: current,
         next: next,
         peek: peek,
         eof: eof,
         putBack: putBack,
         raise: raise,
-        
+        match: match,
+        matchKeyword: matchKeyword,
+        expect: expect,
+        expectKeyword: expectKeyword,
     }
+
+    
 
 }
 

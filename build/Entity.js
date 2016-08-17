@@ -5,85 +5,60 @@ import Stdlib from 'stdlib'
 export const Entity = (function(stdlib, foreign, heap) {
 "use asm";
 var HEAPI32 = new stdlib.Int32Array(heap);
-var HEAPF64 = new stdlib.Float64Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
 function Entity(self, totalComponents) {
     self = self | 0;
     totalComponents = totalComponents | 0;
-    var __01__ = 0, __02__ = 0;
-    __01__ = self + 2;
-    __02__ = __01__ << 2;
-    HEAPI32[__02__ >> 2] = totalComponents;
+    HEAPI32[self + 8 >> 2] = totalComponents | 0;
 }
 function getId(self) {
     self = self | 0;
-    var __00__ = 0, __01__ = 0, __02__ = 0;
-    __01__ = self + 0;
-    __02__ = __01__ << 2;
-    __00__ = HEAPI32[__02__ >> 2];
-    return __00__ | 0;
+    return HEAPI32[self + 0 >> 2] | 0;
 }
 function setId(self, id) {
     self = self | 0;
     id = id | 0;
-    var __01__ = 0, __02__ = 0;
-    __01__ = self + 0;
-    __02__ = __01__ << 2;
-    HEAPI32[__02__ >> 2] = id;
+    HEAPI32[self + 0 >> 2] = id | 0;
 }
 function getEnabled(self) {
     self = self | 0;
-    var __00__ = 0, __01__ = 0, __02__ = 0;
-    __01__ = self + 1;
-    __02__ = __01__ << 2;
-    __00__ = HEAPI32[__02__ >> 2];
-    return __00__ | 0;
+    return HEAPI32[self + 4 >> 2] | 0;
 }
 function setEnabled(self, enabled) {
     self = self | 0;
     enabled = enabled | 0;
-    var __01__ = 0, __02__ = 0;
-    __01__ = self + 1;
-    __02__ = __01__ << 2;
-    HEAPI32[__02__ >> 2] = enabled;
+    HEAPI32[self + 4 >> 2] = enabled | 0;
 }
 function getComponent(self, index) {
     self = self | 0;
     index = index | 0;
-    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
-    __01__ = index + 3;
-    __02__ = self + __01__;
-    __03__ = __02__ << 2;
-    __00__ = HEAPI32[__03__ >> 2];
-    return __00__ | 0;
+    return HEAPI32[self + 12 + (index << 2) >> 2] | 0;
 }
 function setComponent(self, index, value) {
     self = self | 0;
     index = index | 0;
     value = value | 0;
-    var __01__ = 0, __02__ = 0, __03__ = 0;
-    __01__ = index + 3;
-    __02__ = self + __01__;
-    __03__ = __02__ << 2;
-    HEAPI32[__03__ >> 2] = value;
+    HEAPI32[self + 12 + (index << 2) >> 2] = value | 0;
 }
 function hasComponent(self, index) {
     self = self | 0;
     index = index | 0;
-    var __00__ = 0, __01__ = 0, __02__ = 0, __03__ = 0;
     var comp = 0;
-    __01__ = index + 3 | 0;
-    __02__ = self + __01__ | 0;
-    __03__ = __02__ << 2;
-    comp = HEAPI32[__03__ >> 2] | 0;
-    if (comp > 0) {
-        __00__ = 1;
-        return __00__ | 0;
+    var retval = 0;
+    if ((comp | 0) > (0 | 0)) {
+        retval = 1 | 0;
     } else {
-        __00__ = 0;
-        return __00__ | 0;
+        retval = 0 | 0;
     }
+    return retval | 0;
+}
+function ctor(totalComponents) {
+    totalComponents = totalComponents | 0;
+    var self = 0;
+    self = malloc(92 | 0) | 0;
+    Entity(self | 0, totalComponents | 0);
+    return self | 0;
 }    
 return { 
     Entity:Entity,
@@ -93,7 +68,8 @@ return {
     setEnabled:setEnabled,
     getComponent:getComponent,
     setComponent:setComponent,
-    hasComponent:hasComponent, 
+    hasComponent:hasComponent,
+    ctor:ctor, 
 };
 }(Stdlib, Ffi, buffer))
 for (let k in Entity) { 

@@ -25,14 +25,14 @@ Promise.all(['Entity', 'Position', 'pool'].map(function(x) {
       return expect(Entity.getId(e2)).to.equal(MAX + 2);
     });
     it('Create Position', function() {
-      var fm, pos;
+      var pos;
       pool.initialize(10);
       pos = pool.createPos(95.0, 96.0);
-      fm = pool.createPos(99.9, 107.7);
+      console.log('Pos', Position.getX(pos), ',', Position.getY(pos));
       expect(Position.getX(pos)).to.equal(95);
       return expect(Position.getY(pos)).to.equal(96);
     });
-    it('Create Entity with Position', function() {
+    return it('Create Entity with Position', function() {
       var e3, pos, poz;
       pool.initialize(10);
       e3 = pool.createEntity();
@@ -41,21 +41,6 @@ Promise.all(['Entity', 'Position', 'pool'].map(function(x) {
       poz = Entity.getComponent(e3, 1);
       expect(Position.getX(poz)).to.equal(95);
       return expect(Position.getY(poz)).to.equal(96);
-    });
-    return it('Raise EntityAlreadyHasComponentException', function() {
-      var e4, error, ex, fm, pos, poz;
-      pool.initialize(10);
-      e4 = pool.createEntity();
-      pos = pool.createPos(95.0, 96.0);
-      pool.addComponent(e4, 2, pos);
-      poz = Entity.getComponent(e4, 2);
-      fm = pool.createPos(99.9, 107.7);
-      try {
-        return pool.addComponent(e4, 2, fm);
-      } catch (error) {
-        ex = error;
-        return expect(ex.message).to.equal("EntityAlreadyHasComponentException - 2");
-      }
     });
   });
 }, function(err) {

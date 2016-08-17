@@ -97,7 +97,7 @@ function NewClass(name, klass, args) {
 
 
 // function New(name, size, type, id) {
-function New(name, size, alloc) {
+function New(name, alloc) {
     return {
         "type": "ExpressionStatement",
         "expression": {
@@ -109,43 +109,84 @@ function New(name, size, alloc) {
             },
             "right": {
                 "type": "BinaryExpression",
-                "operator": ">>",
+                "operator": "|",
                 "left": {
-                    "type": "BinaryExpression",
-                    "operator": "|",
-                    "left": {
-                        "type": "CallExpression",
-                        "callee": {
-                            "type": "Identifier",
-                            "name": "malloc"
-                        },
-                        "arguments": [
-                            {
-                                "type": "BinaryExpression",
-                                "operator": "<<",
-                                "left": alloc,
-                                "right": {
-                                    "type": "Literal",
-                                    "value": size,
-                                    "raw": ""+size
-                                }
-                            }
-                        ]
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": "malloc"
                     },
-                    "right": {
-                        "type": "Literal",
-                        "value": 0,
-                        "raw": "0"
-                    }
+                    "arguments": [
+                        {
+                            "type": "BinaryExpression",
+                            "operator": "|",
+                            "left": alloc,
+                            "right": {
+                                "type": "Literal",
+                                "value": 0,
+                                "raw": "0"
+                            }
+                        }
+                    ]
                 },
                 "right": {
                     "type": "Literal",
-                    "value": size,
-                    "raw": ""+size
+                    "value": 0,
+                    "raw": "0"
                 }
             }
         }
     }
+
+
+// {
+//         "type": "ExpressionStatement",
+//         "expression": {
+//             "type": "AssignmentExpression",
+//             "operator": "=",
+//             "left": {
+//                 "type": "Identifier",
+//                 "name": name
+//             },
+//             "right": {
+//                 "type": "BinaryExpression",
+//                 "operator": ">>",
+//                 "left": {
+//                     "type": "BinaryExpression",
+//                     "operator": "|",
+//                     "left": {
+//                         "type": "CallExpression",
+//                         "callee": {
+//                             "type": "Identifier",
+//                             "name": "malloc"
+//                         },
+//                         "arguments": [
+//                             {
+//                                 "type": "BinaryExpression",
+//                                 "operator": "<<",
+//                                 "left": alloc,
+//                                 "right": {
+//                                     "type": "Literal",
+//                                     "value": size,
+//                                     "raw": ""+size
+//                                 }
+//                             }
+//                         ]
+//                     },
+//                     "right": {
+//                         "type": "Literal",
+//                         "value": 0,
+//                         "raw": "0"
+//                     }
+//                 },
+//                 "right": {
+//                     "type": "Literal",
+//                     "value": size,
+//                     "raw": ""+size
+//                 }
+//             }
+//         }
+//     }
 }
 
 /** the init of a for statement */
