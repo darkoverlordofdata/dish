@@ -315,16 +315,12 @@ function parse(input, mangle, packge) {
         imtype = ''
         try {
             if (isReturn) {
-                //console.log('Return', currentScope, recode(rhs))
-                /** set imtype to return type */
                 const api = require('../dish.json')
                 imtype = api[packge][moduleName].symtbl.global[currentScope].type
-                
                 return factory.Return(jsep(recode(rhs)))
             } else if (lhs == null) {
                 return esprima.parse(recode(rhs)).body[0]
             } else {
-                /** TODO deternine type of lhs and cast rhs appropriately */
                 return esprima.parse(`${recode(lhs, true)} = ${recode(rhs)}`).body[0]
             }
         } catch (ex) {
@@ -334,11 +330,11 @@ function parse(input, mangle, packge) {
     }
 
     /**
-     * name.member
-     * name.member(..)
-     * name.member[index]
-     * name[index]
-     * name(...)
+     * recode
+     * 
+     * @param tokens parsed input expression
+     * @param isLhs if true, set the implied type for the rhs
+     * @returns string re-written code
      */
     function recode(tokens, isLhs) {
         for (let t in tokens) {

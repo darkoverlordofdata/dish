@@ -46,6 +46,7 @@ function hasComponent(self, index) {
     index = index | 0;
     var comp = 0;
     var retval = 0;
+    comp = HEAPI32[self + 12 + (index << 2) >> 2] | 0;
     if ((comp | 0) > (0 | 0)) {
         retval = 1 | 0;
     } else {

@@ -46,21 +46,24 @@ Promise.all(['Entity', 'Position', 'pool'].map((x) ->
         expect(Position.getX(poz)).to.equal(95)
         expect(Position.getY(poz)).to.equal(96)
 
-      # it 'Raise EntityAlreadyHasComponentException', ->
+      it 'Raise EntityAlreadyHasComponentException', ->
 
-      #   pool.initialize(10)
-      #   e4 = pool.createEntity()
+        pool.initialize(10)
+        e4 = pool.createEntity()
 
-      #   pos = pool.createPos(95.0, 96.0)
-      #   pool.addComponent(e4, 2, pos)
-      #   poz = Entity.getComponent(e4, 2)
+        pos = pool.createPos(95.0, 96.0)
+        pool.addComponent(e4, 2, pos)
+        #poz = Entity.getComponent(e4, 2)
 
-      #   fm = pool.createPos(99.9, 107.7)
-      #   try 
-      #     pool.addComponent(e4, 2, fm)
-      #   catch ex
-      #     expect(ex.message).to.equal("EntityAlreadyHasComponentException - 2")
+        fm = pool.createPos(99.9, 107.7)
+        console.log(e4, pos, fm)
+
+        try 
+          pool.addComponent(e4, 2, fm)
+        catch ex
+          expect(ex.message).to.equal("EntityAlreadyHasComponentException - 2")
         
+        #expect('').to.not.equal("EntityAlreadyHasComponentException - 2")
         
 
       
