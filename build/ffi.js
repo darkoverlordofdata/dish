@@ -18,6 +18,10 @@ Ffi = (function() {
     throw new Error("EntityAlreadyHasComponentException - " + index);
   };
 
+  Ffi.EntityDoesNotHaveComponentException = function(index) {
+    throw new Error("EntityDoesNotHaveComponentException - " + index);
+  };
+
   Ffi.now = function() {
     return performance.now();
   };

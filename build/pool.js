@@ -9,12 +9,13 @@ var malloc = foreign.malloc;
 var free = foreign.free;
 var Entity_Entity = foreign.Entity_Entity;
 var Entity_ctor = foreign.Entity_ctor;
-var Entity_getId = foreign.Entity_getId;
-var Entity_setId = foreign.Entity_setId;
-var Entity_getEnabled = foreign.Entity_getEnabled;
-var Entity_setEnabled = foreign.Entity_setEnabled;
-var Entity_getComponent = foreign.Entity_getComponent;
-var Entity_setComponent = foreign.Entity_setComponent;
+var Entity_initialize = foreign.Entity_initialize;
+var Entity_onComponentAdded = foreign.Entity_onComponentAdded;
+var Entity_addComponent = foreign.Entity_addComponent;
+var Entity_removeComponent = foreign.Entity_removeComponent;
+var Entity_replaceComponent = foreign.Entity_replaceComponent;
+var Entity_updateComponent = foreign.Entity_updateComponent;
+var Entity__replaceComponent = foreign.Entity__replaceComponent;
 var Entity_hasComponent = foreign.Entity_hasComponent;
 var Position_Position = foreign.Position_Position;
 var Position_ctor = foreign.Position_ctor;
@@ -52,16 +53,6 @@ function getCount() {
     return count | 0;
 }
 function createEntity() {
-    var ent = 0;
-    var i = 0;
-    uniqueId = uniqueId + 1 | 0;
-    ent = Entity_ctor(totalComponents | 0) | 0;
-    Entity_setId(ent | 0, uniqueId | 0) | 0;
-    Entity_setEnabled(ent | 0, 1 | 0) | 0;
-    for (i = 0; (i | 0) < (totalComponents | 0); i = i + 1 | 0) {
-        Entity_setComponent(ent | 0, i | 0, 0 | 0) | 0;
-    }
-    return ent | 0;
 }
 function destroyEntity(entity) {
     entity = entity | 0;
@@ -95,17 +86,6 @@ function addComponent(entity, index, component) {
     entity = entity | 0;
     index = index | 0;
     component = component | 0;
-    var enabled = 0;
-    var comp = 0;
-    enabled = Entity_getEnabled(entity | 0) | 0;
-    if (!enabled) {
-        EntityIsNotEnabledException() | 0;
-    }
-    comp = Entity_hasComponent(entity | 0, index | 0) | 0;
-    if (comp) {
-        EntityAlreadyHasComponentException(index | 0) | 0;
-    }
-    Entity_setComponent(entity | 0, index | 0, component | 0) | 0;
 }
 function removeComponent(entity, index) {
     entity = entity | 0;

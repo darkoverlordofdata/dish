@@ -46,22 +46,22 @@ export int getCount() {
 }
 
 export Entity createEntity() {
-    Entity ent;
-    int i;
+    // Entity ent;
+    // int i;
 
-    uniqueId = uniqueId+1;
+    // uniqueId = uniqueId+1;
 
-    ent = new Entity(totalComponents);
-    ent.setId(uniqueId);
-    ent.setEnabled(1);
-    for (i=0; i<(totalComponents|0); i++) {
-        ent.setComponent(i, 0);
-    }
-    return ent;
+    // ent = new Entity(totalComponents);
+    // ent.setId(uniqueId);
+    // ent.setEnabled(1);
+    // for (i=0; i<(totalComponents|0); i++) {
+    //     ent.setComponent(i, 0);
+    // }
+    // return ent;
 }
 
 export void destroyEntity(Entity entity) {
-    //free(entity|0);
+    //free(entity);
 }
 
 export void destroyAllEntities() {
@@ -94,18 +94,18 @@ export void onEntityReleased(Entity entity) {
 
 
 export void addComponent(Entity entity, int index, int component) {
-    bool enabled;
-    bool comp;
+    // bool enabled;
+    // bool comp;
 
-    enabled = entity.getEnabled();
-    if (!enabled) {
-        EntityIsNotEnabledException();
-    }
-    comp = entity.hasComponent(index);
-    if (comp) {
-        EntityAlreadyHasComponentException(index);
-    }
-    entity.setComponent(index, component);
+    // enabled = entity.getEnabled();
+    // if (!enabled) {
+    //     EntityIsNotEnabledException();
+    // }
+    // comp = entity.hasComponent(index);
+    // if (comp) {
+    //     EntityAlreadyHasComponentException(index);
+    // }
+    // entity.setComponent(index, component);
     //entity_onComponentAdded(entity|0, index|0, component|0);
 }
 

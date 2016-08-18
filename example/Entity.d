@@ -1,10 +1,16 @@
 
 class Entity {
 
-    int id;
-    bool enabled;
-    int count;
-    int[20] component;
+    extern EntityIsNotEnabledException;
+    extern EntityAlreadyHasComponentException;
+    extern EntityDoesNotHaveComponentException;
+ 
+    int _count;
+    int _refCount;
+    int _creationIndex;
+    bool _isEnabled;
+
+    int[20] components;
 
     /**
      * constructor
@@ -12,44 +18,105 @@ class Entity {
      * @param totalComponents
      */
     public void Entity(int totalComponents) {
-        self.count = totalComponents;
+        self._count = totalComponents;
     }
 
-    public int getId() {
-        return self.id;
+    public void initialize(int creationIndex) {
+        self._creationIndex = creationIndex;
+        self._isEnabled = true;
     }
 
-    public void setId(int id) {
-        self.id = id;
+    public bool onComponentAdded(int index, int component) {
+        return false;
     }
 
-    public int getEnabled() {
-        return self.enabled;
+  /**
+    *  Adds a component at a certain index. You can only have one component at an index.
+    *  Each component type must have its own constant index.
+    *  The prefered way is to use the generated methods from the code generator.
+    *
+    * @param index
+    * @param component
+    * @return
+    */
+    public Entity addComponent(int index, int component) {
+        bool added;
+        bool isEnabled = self._isEnabled;
+        bool hasComponent = self.hasComponent(index);
+
+        if (!isEnabled) {
+            throw EntityIsNotEnabledException();
+        }
+
+        if (hasComponent) {
+            throw EntityAlreadyHasComponentException(index);
+        }
+        self.components[index] = component;
+        added = self.onComponentAdded(index, component);
+        return self;
     }
 
-    public void setEnabled(bool enabled) {
-        self.enabled = enabled;
+  /**
+    *
+    *  Removes a component at a certain index. You can only remove a component at an index if it exists.
+    *  The prefered way is to use the generated methods from the code generator.
+    *
+    * @param index
+    * @return
+    */
+    public Entity removeComponent(int index) {
+        bool isEnabled = self._isEnabled;
+        bool hasComponent = self.hasComponent(index);
+        if (!isEnabled) {
+            throw EntityIsNotEnabledException();
+        }
+        if (!hasComponent) {
+            throw EntityDoesNotHaveComponentException(index);
+        }
+        self._replaceComponent(index, 0);
+        return self;
     }
 
-    public int getComponent(int index) {
-        return self.component[index];
+  /**
+    *
+    *  Replaces an existing component at a certain index or adds it if it doesn't exist yet.
+    *  The prefered way is to use the generated methods from the code generator.
+    *
+    * @param index
+    * @param component
+    * @return
+    */
+    public Entity replaceComponent(int index, int component) {
+        bool isEnabled = self._isEnabled;
+        bool hasComponent = self.hasComponent(index);
+        if (!isEnabled) {
+            throw EntityIsNotEnabledException();
+        }
+        if (!hasComponent) {
+            self._replaceComponent(index, component);
+        } else {
+            self.addComponent(index, component);
+        }
+        return self;
+
     }
 
-    public void setComponent(int index, int value) {
-        self.component[index] = value;
+    public Entity updateComponent(int index, int component) {
+        int previousComponent = self.components[index];
+        if (previousComponent != 0) {
+            self.components[index] = component;
+        }
+        return self;
+        
+    }
+
+    public Entity _replaceComponent(int index, int component) {
+        return self;
     }
 
     public bool hasComponent(int index) {
-        int comp;
-        bool retval;
-
-        comp = self.component[index];
-        if ((comp|0) > (0|0)) {
-            retval = true;
-        } else {
-            retval = false;
-        }
-        return retval;
+        return self.components[index];
     }
+
 
 }

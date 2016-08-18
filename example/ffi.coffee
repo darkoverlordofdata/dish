@@ -10,6 +10,9 @@ class Ffi
         throw new Error('EntityIsNotEnabledException')
     @EntityAlreadyHasComponentException:(index) ->
         throw new Error("EntityAlreadyHasComponentException - #{index}")
+    @EntityDoesNotHaveComponentException:(index) ->
+        throw new Error("EntityDoesNotHaveComponentException - #{index}")
+    
 
 
     @now: -> performance.now()

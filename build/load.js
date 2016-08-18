@@ -10,52 +10,13 @@ Promise.all(['Entity', 'Position', 'pool'].map(function(x) {
   (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], pool = ref2.pool);
   return describe('Entitas / asm.js', function() {
     console.log('hello');
-    it('Create entity', function() {
-      var MAX, e1, e2, i, j, ref3;
-      MAX = 4;
-      console.log(MAX);
-      pool.initialize(10);
-      e1 = pool.createEntity();
-      expect(Entity.getId(e1)).to.equal(1);
-      Entity.setEnabled(e1, 0);
-      expect(Entity.getEnabled(e1)).to.equal(0);
-      for (i = j = 0, ref3 = MAX; 0 <= ref3 ? j <= ref3 : j >= ref3; i = 0 <= ref3 ? ++j : --j) {
-        e2 = pool.createEntity();
-      }
-      return expect(Entity.getId(e2)).to.equal(MAX + 2);
-    });
-    it('Create Position', function() {
+    return it('Create Position', function() {
       var pos;
       pool.initialize(10);
       pos = pool.createPos(95.0, 96.0);
       console.log('Pos', Position.getX(pos), ',', Position.getY(pos));
       expect(Position.getX(pos)).to.equal(95);
       return expect(Position.getY(pos)).to.equal(96);
-    });
-    it('Create Entity with Position', function() {
-      var e3, pos, poz;
-      pool.initialize(10);
-      e3 = pool.createEntity();
-      pos = pool.createPos(95.0, 96.0);
-      pool.addComponent(e3, 1, pos);
-      poz = Entity.getComponent(e3, 1);
-      expect(Position.getX(poz)).to.equal(95);
-      return expect(Position.getY(poz)).to.equal(96);
-    });
-    return it('Raise EntityAlreadyHasComponentException', function() {
-      var e4, error, ex, fm, pos;
-      pool.initialize(10);
-      e4 = pool.createEntity();
-      pos = pool.createPos(95.0, 96.0);
-      pool.addComponent(e4, 2, pos);
-      fm = pool.createPos(99.9, 107.7);
-      console.log(e4, pos, fm);
-      try {
-        return pool.addComponent(e4, 2, fm);
-      } catch (error) {
-        ex = error;
-        return expect(ex.message).to.equal("EntityAlreadyHasComponentException - 2");
-      }
     });
   });
 }, function(err) {

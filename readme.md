@@ -26,6 +26,7 @@ The goal of dish is to insulate me from the twiddly aspects of asm.js.
 * array types
 * lite-weight objects
     * an object is a pointer to a struct created on the heap.
+    * static fields can only be private. use public static get/set methods.
     * an asm.js module is used as a class. The penalty of cross-module calls is insignificant-
         less than 0.1% / 5ms per billion calls
 * use 3rd party npm module 'malloc' for heap implementation. (patched to run in the browser)

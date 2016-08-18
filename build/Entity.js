@@ -7,68 +7,117 @@ export const Entity = (function(stdlib, foreign, heap) {
 var HEAPI32 = new stdlib.Int32Array(heap);
 var malloc = foreign.malloc;
 var free = foreign.free;
+var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
+var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
+var EntityDoesNotHaveComponentException = foreign.EntityDoesNotHaveComponentException;
 function Entity(self, totalComponents) {
     self = self | 0;
     totalComponents = totalComponents | 0;
-    HEAPI32[self + 8 >> 2] = totalComponents | 0;
+    HEAPI32[self + 0 >> 2] = totalComponents | 0;
 }
-function getId(self) {
+function initialize(self, creationIndex) {
     self = self | 0;
-    return HEAPI32[self + 0 >> 2] | 0;
+    creationIndex = creationIndex | 0;
+    HEAPI32[self + 8 >> 2] = creationIndex | 0;
+    HEAPI32[self + 12 >> 2] = 1 | 0;
 }
-function setId(self, id) {
-    self = self | 0;
-    id = id | 0;
-    HEAPI32[self + 0 >> 2] = id | 0;
-}
-function getEnabled(self) {
-    self = self | 0;
-    return HEAPI32[self + 4 >> 2] | 0;
-}
-function setEnabled(self, enabled) {
-    self = self | 0;
-    enabled = enabled | 0;
-    HEAPI32[self + 4 >> 2] = enabled | 0;
-}
-function getComponent(self, index) {
+function onComponentAdded(self, index, component) {
     self = self | 0;
     index = index | 0;
-    return HEAPI32[self + 12 + (index << 2) >> 2] | 0;
+    component = component | 0;
+    return 0 | 0;
 }
-function setComponent(self, index, value) {
+function addComponent(self, index, component) {
     self = self | 0;
     index = index | 0;
-    value = value | 0;
-    HEAPI32[self + 12 + (index << 2) >> 2] = value | 0;
+    component = component | 0;
+    var added = 0;
+    var isEnabled = 0;
+    var hasComponent = 0;
+    isEnabled = HEAPI32[self + 12 >> 2] | 0;
+    hasComponent = hasComponent(self | 0, index | 0) | 0;
+    if (!isEnabled) {
+        return EntityIsNotEnabledException() | 0;
+    }
+    if (hasComponent) {
+        return EntityAlreadyHasComponentException(index | 0) | 0;
+    }
+    HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
+    added = onComponentAdded(self | 0, index | 0, component | 0) | 0;
+    return self | 0;
+}
+function removeComponent(self, index) {
+    self = self | 0;
+    index = index | 0;
+    var isEnabled = 0;
+    var hasComponent = 0;
+    isEnabled = HEAPI32[self + 12 >> 2] | 0;
+    hasComponent = hasComponent(self | 0, index | 0) | 0;
+    if (!isEnabled) {
+        return EntityIsNotEnabledException() | 0;
+    }
+    if (!hasComponent) {
+        return EntityDoesNotHaveComponentException(index | 0) | 0;
+    }
+    _replaceComponent(self | 0, index | 0, 0 | 0) | 0;
+    return self | 0;
+}
+function replaceComponent(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    var isEnabled = 0;
+    var hasComponent = 0;
+    isEnabled = HEAPI32[self + 12 >> 2] | 0;
+    hasComponent = hasComponent(self | 0, index | 0) | 0;
+    if (!isEnabled) {
+        return EntityIsNotEnabledException() | 0;
+    }
+    if (!hasComponent) {
+        _replaceComponent(self | 0, index | 0, component | 0) | 0;
+    } else {
+        addComponent(self | 0, index | 0, component | 0) | 0;
+    }
+    return self | 0;
+}
+function updateComponent(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    var previousComponent = 0;
+    previousComponent = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
+    if (previousComponent != 0) {
+        HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
+    }
+    return self | 0;
+}
+function _replaceComponent(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    return self | 0;
 }
 function hasComponent(self, index) {
     self = self | 0;
     index = index | 0;
-    var comp = 0;
-    var retval = 0;
-    comp = HEAPI32[self + 12 + (index << 2) >> 2] | 0;
-    if ((comp | 0) > (0 | 0)) {
-        retval = 1 | 0;
-    } else {
-        retval = 0 | 0;
-    }
-    return retval | 0;
+    return HEAPI32[self + 16 + (index << 2) >> 2] | 0;
 }
 function ctor(totalComponents) {
     totalComponents = totalComponents | 0;
     var self = 0;
-    self = malloc(92 | 0) | 0;
+    self = malloc(96 | 0) | 0;
     Entity(self | 0, totalComponents | 0);
     return self | 0;
 }    
 return { 
     Entity:Entity,
-    getId:getId,
-    setId:setId,
-    getEnabled:getEnabled,
-    setEnabled:setEnabled,
-    getComponent:getComponent,
-    setComponent:setComponent,
+    initialize:initialize,
+    onComponentAdded:onComponentAdded,
+    addComponent:addComponent,
+    removeComponent:removeComponent,
+    replaceComponent:replaceComponent,
+    updateComponent:updateComponent,
+    _replaceComponent:_replaceComponent,
     hasComponent:hasComponent,
     ctor:ctor, 
 };

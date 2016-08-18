@@ -14,14 +14,7 @@ module.exports = {
     parse: parse
 }
 
-function coerce(imtype, out) {
-    switch (imtype) {
-        case 'float':   return `fround(${out})` 
-        case 'double':  return `+(${out})` 
-        default:        return `${out}|0` 
-    }                
-    
-}
+
 /**
  * Parse tokens from the input lexer
  * 
@@ -173,7 +166,8 @@ function parse(input, mangle, packge) {
          * constructor
          */
         exporting.ctor = 'ctor'
-        const size = Field.last
+        const api = require('../dish.json')
+        const size = api[packge][moduleName].size
         const params = [jsep('self|0')]
         for (let i=0; i<ctor.args.length; i++) {
             switch (ctor.args[i].type.value) {
@@ -265,20 +259,18 @@ function parse(input, mangle, packge) {
                             body.push(factory.AssignmentStatement(sname, value))
                         }
                     } else {
-                        imtype = sym.type
-                        body.push(parseEx0([sym.name], sym.init, false))
+                        body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init.join(' '))))
                     }
                 }
             }
         }
         //=================================
-        if (matchKeyword('throw'))      return parseThrow()
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('continue'))   return parseContinue()
         if (matchKeyword('do'))         return parseDo()
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parseIf()
-        if (matchKeyword('print'))      return parsePrint(body)
+        if (matchKeyword('print'))      return parsePrinturn(body)
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
         //=================================
@@ -295,6 +287,7 @@ function parse(input, mangle, packge) {
         if (isReturn) {
             expectKeyword('return')
             if (match(';')) return factory.Return()
+            
         }
 
         while (!match('=') && !match(';')) {
@@ -308,6 +301,10 @@ function parse(input, mangle, packge) {
             }
         }
 
+        imtype = ''
+
+
+
         if (rhs.length === 0) {
             return parseEx0(null, lhs, isReturn)
         } else {
@@ -319,13 +316,13 @@ function parse(input, mangle, packge) {
 
     function parseEx0(lhs, rhs, isReturn) {
 
-        //imtype = ''
+        imtype = ''
         try {
             if (isReturn) {
-                imtype = symtbl.global[currentScope].type
+                const api = require('../dish.json')
+                imtype = api[packge][moduleName].symtbl.global[currentScope].type
                 return factory.Return(jsep(recode(rhs)))
             } else if (lhs == null) {
-                //imtype = ''
                 return esprima.parse(recode(rhs)).body[0]
             } else {
                 return esprima.parse(`${recode(lhs, true)} = ${recode(rhs)}`).body[0]
@@ -426,7 +423,11 @@ function parse(input, mangle, packge) {
                 if (isLhs) {
                     imtype = def.type
                     return out
-                } else return coerce(imtype, out)
+                } else switch (imtype) {
+                    case 'float':   return `fround(${out})` 
+                    case 'double':  return `+(${out})` 
+                    default:        return `${out}|0` 
+                }                
 
             } else if (tokens[3] === '(') {
                 const exp = []
@@ -445,7 +446,7 @@ function parse(input, mangle, packge) {
                 } while (paren !== 0)
 
                 const api = require('../dish.json')
-                const def = api[packge][moduleName].api[tokens[2]]
+                const def = api[packge][symtbl[currentScope][tokens[0]].type].api[tokens[2]]
                 let param = []
                 for (let k in def) {
                     param.push(def[k])
@@ -459,15 +460,25 @@ function parse(input, mangle, packge) {
                         default:        exp.push(`${par[p].join(' ')}|0`); break
                     }
                 }
+                // for (p in par) {
+                //     /** TODO: get correct type for coercion */
+                //     exp.push(par[p].join(' '))
+                // }
                 exp.unshift(`${tokens[0]}|0`)
 
-                const out = symtbl[currentScope][tokens[0]].type===moduleName
-                            ?`${tokens[2]}(${exp.join(',')})`
-                            :`${symtbl[currentScope][tokens[0]].type}_${tokens[2]}(${exp.join(',')})`
+                const out = `${symtbl[currentScope][tokens[0]].type}_${tokens[2]}(${exp.join(',')})`
                 if (isLhs) {
-                    imtype = symtbl.global[tokens[2]].type
+                    const api = require('../dish.json')
+                    const t = api[packge][symtbl[currentScope][tokens[0]].type]
+                    imtype = t.symtbl.global[tokens[2]].type
                     return out
-                } else return coerce(imtype, out)
+                } else {
+                    switch (imtype) {
+                        case 'float':   return `fround(${out})` 
+                        case 'double':  return `+(${out})` 
+                        default:        return `${out}|0` 
+                    }                
+                }
             } else {
                 const def = lookupField(sym.type, tokens[2])
                 heaps[mem[def.type].heap] = true
@@ -475,7 +486,11 @@ function parse(input, mangle, packge) {
                 if (isLhs) {
                     imtype = def.type
                     return out 
-                } else return coerce(imtype, out)
+                } else switch (imtype) {
+                    case 'float':   return `fround(${out})` 
+                    case 'double':  return `+(${out})` 
+                    default:        return `${out}|0` 
+                }                
                 return out
             }
             
@@ -498,7 +513,12 @@ function parse(input, mangle, packge) {
             if (isLhs) {
                 imtype = def.type
                 return out 
-            } else return coerce(imtype, out)
+            } else switch (imtype) {
+                case 'float':   return `fround(${out})` 
+                case 'double':  return `+(${out})` 
+                default:        return `${out}|0` 
+            }                
+
         } else if (tokens[1] === '(') {
             /**
              * name(...)
@@ -533,18 +553,37 @@ function parse(input, mangle, packge) {
                     default:        exp.push(`${par[p].join(' ')}|0`); break
                 }
             }
+
+            // for (p in par) {
+            //     /** TODO: get correct type for coercion */
+            //     exp.push(par[p].join(' ')+'|0')
+            // }
+            //currentScope
             const out = `${tokens[0]}(${exp.join(',')})`
             if (isLhs) {
+                const api = require('../dish.json')
                 imtype = def.type
                 return out
-            } else return coerce(imtype, out)
+            } else {
+                switch (imtype) {
+                    case 'float':   return `fround(${out})` 
+                    case 'double':  return `+(${out})` 
+                    default:        return `${out}|0` 
+                }                
+            }
+
         }
 
 
         const out = tokens.join(' ')
         if (isLhs) {
             return out 
-        } else return coerce(imtype, out)
+        } else switch (imtype) {
+            case 'float':   return `fround(${out})` 
+            case 'double':  return `+(${out})` 
+            default:        return `${out}|0` 
+        }                
+        
     }
 
     function lookupField(type, name) {
@@ -608,7 +647,6 @@ function parse(input, mangle, packge) {
 
         expectKeyword('static')
         isStatic = true
-        // if (matchKeyword('public'))     return parseExport('public')
         if (matchKeyword('const'))      return parseConst()
         if (matchKeyword('double'))     return parseDouble(scope)
         if (matchKeyword('float'))      return parseFloat32(scope)
@@ -741,7 +779,7 @@ function parse(input, mangle, packge) {
         const isCtor = (currentScope === moduleName)
 
         const args = []
-        if (isClass && !isStatic) {
+        if (isClass) {
             api[currentScope]['self'] = 'self'
             args.push({type: new Token(Token.Variable, moduleName), name: new Token(Token.Variable, 'self')})
         }
@@ -976,7 +1014,7 @@ function parse(input, mangle, packge) {
             }
 
         } else { /** Field? */
-            if (isClass && scope === 'global' && !isStatic) {
+            if (isClass && scope === 'global') {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'bool', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'bool', false, '', isArray)
@@ -1057,7 +1095,7 @@ function parse(input, mangle, packge) {
             }
 
         } else {
-            if (isClass && scope === 'global' && !isStatic) {
+            if (isClass && scope === 'global') {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'double', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'double', false, '', isArray)
@@ -1068,10 +1106,6 @@ function parse(input, mangle, packge) {
 
     function parseExport(which) {
         expectKeyword(which)
-        if (matchKeyword('static')) {
-            expectKeyword('static')
-            isStatic = true
-        }
         isPublic = true
         if (matchKeyword('void')) {
             expectKeyword('void')
@@ -1174,7 +1208,7 @@ function parse(input, mangle, packge) {
             }
 
         } else {
-            if (isClass && scope === 'global' && !isStatic) {
+            if (isClass && scope === 'global') {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'float', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'float', false, '', isArray)
@@ -1258,7 +1292,7 @@ function parse(input, mangle, packge) {
             }
 
         } else { /** Field? */
-            if (isClass && scope === 'global' && !isStatic) {
+            if (isClass && scope === 'global') {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'int', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'int', false, '', isArray)
@@ -1435,48 +1469,6 @@ function parse(input, mangle, packge) {
         return factory.Print(args)
     }
 
-    function parseThrow() {
-        const args = []
-        expectKeyword('throw')
-        const name = input.next().value
-        expect('(')
-        while (!match(')')) {
-            let arg = input.next()
-            switch(arg.type) {
-                case Token.Number:
-                    args.push({"type": "BinaryExpression",
-                                "operator": "|",
-                                "left": {
-                                    "type": "Literal",
-                                    "value": arg.value
-                                },
-                                "right": {
-                                    "type": "Literal",
-                                    "value": 0,
-                                    "raw": "0"
-                                }
-                            })                        
-                    break
-                case Token.Variable:
-                    args.push({"type": "BinaryExpression",
-                                "operator": "|",
-                                "left": {
-                                    "type": "Identifier",
-                                    "name": arg.value
-                                },
-                                "right": {
-                                    "type": "Literal",
-                                    "value": 0,
-                                    "raw": "0"
-                                }
-                            })
-                    break
-            }
-        }
-        expect(')')
-        return factory.Throw(name, args)
-    }
-
     function parseSwitch() {
         expectKeyword('switch')
         expect('(')
@@ -1589,7 +1581,7 @@ function parse(input, mangle, packge) {
             }
 
         } else {
-            if (isClass && scope === 'global' && !isStatic) {
+            if (isClass && scope === 'global') {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'uint', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'uint', false, '', isArray)
