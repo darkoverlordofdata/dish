@@ -4,22 +4,22 @@ class Position {
     double y;
 
     public void Position(double x, double y) {
-        self.x = x;
-        self.y = y;
+        this.x = x;
+        this.y = y;
     }
     
     public double getX() {
-        double z = self.x;
-        return self.x;
+        double z = this.x;
+        return this.x;
     }
     public void setX(double x) {
-        self.x = x;
+        this.x = x;
     }
     public double getY() {
-        return self.y;
+        return this.y;
     }
     public void setY(double y) {
-        self.y = y;
+        this.y = y;
     }
 
 }

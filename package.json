@@ -7,7 +7,7 @@
     "dish": "./bin/dish"
   },
   "scripts": {
-    "_vscode_build": "coffee -o build -bc ./example && src/dish.coffee example/Position.d,example/Entity.d,example/pool.d --package entitas --template example/asm.tpl.js  --output build && tsc -p ./jsconfig.json",
+    "_vscode_build": "coffee -o build -bc ./example && src/dish.coffee example/Position.d,example/Entity.d,example/Pool.d --package entitas --template example/asm.tpl.js  --output build && tsc -p ./jsconfig.json",
     "_vscode_test": "coffee -bc ./src/dish.coffee && coffee -bc ./test && node ./src/dish.js test/test1.d --template test/test.tpl.js --output test/test1.js && node ./src/dish.js test/test2.d --template test/test.tpl.js --output test/test2.js && node ./src/dish.js test/test-twister.d --template test/test.tpl.js --output test/test-twister.js && tsc -p ./jsconfig.json",
     "publish": "gulp publish",
     "frodo": "src/dish.coffee",

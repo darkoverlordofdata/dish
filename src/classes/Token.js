@@ -3,7 +3,7 @@
 class Token {
   constructor(type, value, line, col) {
     this.type = type
-    this.value = value
+    this.value = value==='this'?'self':value
     this.line = line
     this.col = col
   }

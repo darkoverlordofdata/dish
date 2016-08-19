@@ -22,6 +22,10 @@ Ffi = (function() {
     throw new Error("EntityDoesNotHaveComponentException - " + index);
   };
 
+  Ffi.EntityIsAlreadyReleasedException = function(entity) {
+    throw new Error("EntityIsAlreadyReleasedException - " + entity);
+  };
+
   Ffi.now = function() {
     return performance.now();
   };

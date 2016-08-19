@@ -4,6 +4,7 @@ class Entity {
     extern EntityIsNotEnabledException;
     extern EntityAlreadyHasComponentException;
     extern EntityDoesNotHaveComponentException;
+    extern EntityIsAlreadyReleasedException;
  
     int _count;
     int _refCount;
@@ -12,25 +13,35 @@ class Entity {
 
     int[20] components;
 
-    /**
+     /**
      * constructor
      *
      * @param totalComponents
      */
     public void Entity(int totalComponents) {
-        self._count = totalComponents;
+        this._count = totalComponents;
     }
 
     public void initialize(int creationIndex) {
-        self._creationIndex = creationIndex;
-        self._isEnabled = true;
+        this._creationIndex = creationIndex;
+        this._isEnabled = true;
     }
 
     public bool onComponentAdded(int index, int component) {
         return false;
     }
 
-  /**
+    public bool onComponentRemoved(int index, int previousComponent) {
+        return false;
+    }
+
+    public bool onComponentReplaced(int index, int previousComponent, int component) {
+        return false;
+    }
+    public bool onEntityReleased() {
+        return false;
+    }
+   /**
     *  Adds a component at a certain index. You can only have one component at an index.
     *  Each component type must have its own constant index.
     *  The prefered way is to use the generated methods from the code generator.
@@ -41,8 +52,8 @@ class Entity {
     */
     public Entity addComponent(int index, int component) {
         bool added;
-        bool isEnabled = self._isEnabled;
-        bool hasComponent = self.hasComponent(index);
+        bool isEnabled = this._isEnabled;
+        bool hasComponent = this.hasComponent(index);
 
         if (!isEnabled) {
             throw EntityIsNotEnabledException();
@@ -51,12 +62,12 @@ class Entity {
         if (hasComponent) {
             throw EntityAlreadyHasComponentException(index);
         }
-        self.components[index] = component;
-        added = self.onComponentAdded(index, component);
-        return self;
+        this.components[index] = component;
+        added = this.onComponentAdded(index, component);
+        return this;
     }
 
-  /**
+   /**
     *
     *  Removes a component at a certain index. You can only remove a component at an index if it exists.
     *  The prefered way is to use the generated methods from the code generator.
@@ -65,19 +76,21 @@ class Entity {
     * @return
     */
     public Entity removeComponent(int index) {
-        bool isEnabled = self._isEnabled;
-        bool hasComponent = self.hasComponent(index);
+        bool isEnabled = this._isEnabled;
+        bool hasComponent = this.hasComponent(index);
+        int ignore;
+
         if (!isEnabled) {
             throw EntityIsNotEnabledException();
         }
         if (!hasComponent) {
             throw EntityDoesNotHaveComponentException(index);
         }
-        self._replaceComponent(index, 0);
-        return self;
+        ignore = this._replaceComponent(index, 0);
+        return this;
     }
 
-  /**
+   /**
     *
     *  Replaces an existing component at a certain index or adds it if it doesn't exist yet.
     *  The prefered way is to use the generated methods from the code generator.
@@ -87,36 +100,142 @@ class Entity {
     * @return
     */
     public Entity replaceComponent(int index, int component) {
-        bool isEnabled = self._isEnabled;
-        bool hasComponent = self.hasComponent(index);
+        bool isEnabled = this._isEnabled;
+        bool hasComponent = this.hasComponent(index);
+        int ignore;
+
         if (!isEnabled) {
             throw EntityIsNotEnabledException();
         }
         if (!hasComponent) {
-            self._replaceComponent(index, component);
+            ignore = this._replaceComponent(index, component);
         } else {
-            self.addComponent(index, component);
+            ignore = this.addComponent(index, component);
         }
-        return self;
-
+        return this;
     }
 
     public Entity updateComponent(int index, int component) {
-        int previousComponent = self.components[index];
+        int previousComponent = this.components[index];
         if (previousComponent != 0) {
-            self.components[index] = component;
+            this.components[index] = component;
         }
-        return self;
-        
+        return this;
     }
 
     public Entity _replaceComponent(int index, int component) {
-        return self;
+        bool ignore;
+        int previousComponent = this.components[index];
+        if (previousComponent != 0) {
+            if (previousComponent == component) {
+                ignore = this.onComponentReplaced(index, previousComponent, component);
+            } else {
+                this.components[index] = component;
+                if (component == 0) {
+                    ignore = this.onComponentRemoved(index, previousComponent);
+                } else {
+                    ignore = this.onComponentReplaced(index, previousComponent, component);
+                }
+            }
+        }
+        return this;
     }
 
+
+   /**
+    *  Returns a component at a certain index. You can only get a component at an index if it exists.
+    *  The prefered way is to use the generated methods from the code generator.
+    *
+    * @param index
+    * @return
+    */
+    public int getComponent(int index) {
+        bool component = this.hasComponent(index);
+        if (!component) {
+            throw EntityDoesNotHaveComponentException(index);
+        }
+        return component;
+    }
+
+    
+   /**
+    *  Returns all added components.
+    *
+    * @return
+    */
     public bool hasComponent(int index) {
-        return self.components[index];
+        return this.components[index];
     }
 
+    public bool hasComponents(int[] indices) {
+        int i;
+        int index;
+        int component;
+
+        for (i=0; i<20; i++) {
+            index = indices[i];
+            if (index) {
+                component = this.components[index];
+                if (!component) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public bool hasAnyComponent(int[] indices) {
+        int i;
+        int index;
+        int component;
+
+        for (i=0; i<20; i++) {
+            index = indices[i];
+            if (index) {
+                component = this.components[index];
+                if (component) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void removeAllComponents() {
+        int i;
+        int component;
+        int ignore;
+
+        for (i=0; i<20; i++) {
+            component = this.components[i];
+            if (component) {
+                ignore = this._replaceComponent(i, 0);
+            }
+        }
+    }
+
+    public Entity retain() {
+        int refCount = this._refCount;
+        this._refCount = refCount+1;
+        return this;
+    }
+
+    public void release() {
+        bool ignore;
+        int refCount = this._refCount;
+        int creationIndex = this._creationIndex
+        this._refCount = refCount-1;
+        if (refCount == 1) {
+            ignore = this.onEntityReleased();
+        } 
+        if (refCount < 1) {
+            throw EntityIsAlreadyReleasedException(creationIndex);
+        }
+    }
+
+    public void destroy() {
+        this.removeAllComponents();
+        this._isEnabled = false;
+    }
 
 }

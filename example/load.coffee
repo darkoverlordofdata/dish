@@ -1,8 +1,8 @@
 ###
  * Run tests
 ###
-Promise.all(['Entity', 'Position', 'pool'].map((x) -> 
-  System.import(x))).then ([{Entity}, {Position}, {pool}]) ->
+Promise.all(['Entity', 'Position', 'Pool'].map((x) -> 
+  System.import(x))).then ([{Entity}, {Position}, {Pool}]) ->
 
     describe 'Entitas / asm.js', ->
       console.log('hello')
@@ -22,14 +22,14 @@ Promise.all(['Entity', 'Position', 'pool'].map((x) ->
       #     e2 = pool.createEntity()
       #   expect(Entity.getId(e2)).to.equal(MAX+2)
 
-      it 'Create Position', ->
+      # it 'Create Position', ->
 
-        pool.initialize(10)
-        pos = pool.createPos(95.0, 96.0)
-        #fm = pool.createPos(99.9, 107.7)
-        console.log('Pos',Position.getX(pos),',', Position.getY(pos))
-        expect(Position.getX(pos)).to.equal(95)
-        expect(Position.getY(pos)).to.equal(96)
+      #   pool.initialize(10)
+      #   pos = pool.createPos(95.0, 96.0)
+      #   #fm = pool.createPos(99.9, 107.7)
+      #   console.log('Pos',Position.getX(pos),',', Position.getY(pos))
+      #   expect(Position.getX(pos)).to.equal(95)
+      #   expect(Position.getY(pos)).to.equal(96)
 
       # it 'Create Entity with Position', ->
 

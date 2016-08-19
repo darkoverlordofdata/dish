@@ -12,6 +12,8 @@ class Ffi
         throw new Error("EntityAlreadyHasComponentException - #{index}")
     @EntityDoesNotHaveComponentException:(index) ->
         throw new Error("EntityDoesNotHaveComponentException - #{index}")
+    @EntityIsAlreadyReleasedException:(entity) ->
+        throw new Error("EntityIsAlreadyReleasedException - #{entity}")
     
 
 

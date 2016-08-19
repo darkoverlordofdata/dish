@@ -41,25 +41,38 @@ function clone(obj) {
     return JSON.parse(JSON.stringify(obj))
 }
 
-function Throw(exception, args) {
-    return {
-        "type": "ReturnStatement",
-        "argument": {
-            "type": "BinaryExpression",
-            "operator": "|",
-            "left": {
-                "type": "CallExpression",
-                "callee": {
-                    "type": "Identifier",
-                    "name": exception
-                },
-                "arguments": args
-                },
-            "right": {
-                "type": "Literal",
-                "value": 0,
-                "raw": "0"
+function Throw(exception, args, isReturn) {
+    if (isReturn)
+        return {
+            "type": "ReturnStatement",
+            "argument": {
+                "type": "BinaryExpression",
+                "operator": "|",
+                "left": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": exception
+                    },
+                    "arguments": args
+                    },
+                "right": {
+                    "type": "Literal",
+                    "value": 0,
+                    "raw": "0"
+                }
             }
+        }
+    else
+        return {
+        "type": "ExpressionStatement",
+        "expression": {
+            "type": "CallExpression",
+            "callee": {
+                "type": "Identifier",
+                "name": exception
+            },
+            "arguments": args
         }
     }
 }

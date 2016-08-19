@@ -18,6 +18,7 @@ function coerce(imtype, out) {
     switch (imtype) {
         case 'float':   return `fround(${out})` 
         case 'double':  return `+(${out})` 
+        case 'void':    return out;
         default:        return `${out}|0` 
     }                
     
@@ -32,12 +33,9 @@ function parse(input, mangle, packge) {
     const jsep = require('jsep')
     const codegen = require('escodegen')
     const esprima = require('esprima')
-    const Ast = require('./classes/Ast')
     const Field = require('./classes/Field')
     const Symbol = require('./classes/Symbol')
-    const Term = require('./classes/Term')
     const Token = require('./classes/Token')
-    const Triad = require('./classes/Triad')
     const factory = require('./factory')
     const lexer = require('./lexer')
     const ast = { type: 'Program', body: [] }
@@ -272,7 +270,7 @@ function parse(input, mangle, packge) {
             }
         }
         //=================================
-        if (matchKeyword('throw'))      return parseThrow()
+        if (matchKeyword('throw'))      return parseThrow(body)
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('continue'))   return parseContinue()
         if (matchKeyword('do'))         return parseDo()
@@ -325,9 +323,10 @@ function parse(input, mangle, packge) {
                 imtype = symtbl.global[currentScope].type
                 return factory.Return(jsep(recode(rhs)))
             } else if (lhs == null) {
-                //imtype = ''
+                imtype = 'void'
                 return esprima.parse(recode(rhs)).body[0]
             } else {
+                if (rhs.length === 0) imtype = 'void'
                 return esprima.parse(`${recode(lhs, true)} = ${recode(rhs)}`).body[0]
             }
         } catch (ex) {
@@ -429,6 +428,12 @@ function parse(input, mangle, packge) {
                 } else return coerce(imtype, out)
 
             } else if (tokens[3] === '(') {
+                /**
+                 * [0] = object
+                 * [1] = '.'
+                 * [2] = method
+                 * [3] = '('
+                 */
                 const exp = []
                 const par = []
                 let paren = 0
@@ -445,15 +450,14 @@ function parse(input, mangle, packge) {
                 } while (paren !== 0)
 
                 const api = require('../dish.json')
-                const def = api[packge][moduleName].api[tokens[2]]
+                const def = api[packge][symtbl[currentScope][tokens[0]].type].api[tokens[2]]
                 let param = []
                 for (let k in def) {
                     param.push(def[k])
                 }
                 param.shift()
-
                 for (p in par) {
-                    switch (param[p].type) {
+                    switch (param[p]) {
                         case 'float':   exp.push(`fround(${par[p].join(' ')})`); break;
                         case 'double':  exp.push(`+(${par[p].join(' ')})`); break;
                         default:        exp.push(`${par[p].join(' ')}|0`); break
@@ -464,10 +468,14 @@ function parse(input, mangle, packge) {
                 const out = symtbl[currentScope][tokens[0]].type===moduleName
                             ?`${tokens[2]}(${exp.join(',')})`
                             :`${symtbl[currentScope][tokens[0]].type}_${tokens[2]}(${exp.join(',')})`
+
                 if (isLhs) {
                     imtype = symtbl.global[tokens[2]].type
                     return out
-                } else return coerce(imtype, out)
+                } else {
+                    //console.log(imtype, coerce(imtype, out))
+                    return coerce(imtype, out)
+                }
             } else {
                 const def = lookupField(sym.type, tokens[2])
                 heaps[mem[def.type].heap] = true
@@ -493,10 +501,11 @@ function parse(input, mangle, packge) {
             } while (bracket !== 0)
             exp[0] = '('
             exp[exp.length-1] = ')'
-            heaps[mem[def.type].heap] = true
-            const out = `${mem[def.type].heap}[${tokens[0]}+${exp.join(' ')}*${mem[def.type].width} >> mem[def.type].size]`
+            heaps[mem[sym.type].heap] = true
+            // const out = `${mem[sym.type].heap}[${tokens[0]}+${exp.join(' ')}*${mem[sym.type].width} >> ${mem[sym.type].size}]`
+            const out = `${mem[sym.type].heap}[${tokens[0]}+(${exp.join(' ')} << ${mem[sym.type].size}) >> ${mem[sym.type].size}]`
             if (isLhs) {
-                imtype = def.type
+                imtype = sym.type
                 return out 
             } else return coerce(imtype, out)
         } else if (tokens[1] === '(') {
@@ -643,6 +652,7 @@ function parse(input, mangle, packge) {
      * @returns esprima schema ast
      */
     function parseExp(tokens, conditional) {
+        //if (conditional) console.log(tokens)
         if ('string' === typeof tokens) {
             try {
                 return jsep(tokens)
@@ -690,6 +700,12 @@ function parse(input, mangle, packge) {
                                 console.log('WTF 303')
                                 process.exit(0)
                         }
+                    } else if (token.type === Token.Number) {
+                        temp.push(new Token(Token.Delimiter, '('))
+                        temp.push(token)
+                        temp.push(new Token(Token.Delimiter, '|'))
+                        temp.push(new Token(Token.Number, '0'))
+                        temp.push(new Token(Token.Delimiter, ')'))
                     } else {
                         temp.push(token)
                     }
@@ -700,6 +716,7 @@ function parse(input, mangle, packge) {
                 }
                 return jsep(str.join(' '))
             } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
+                console.log(tokens)
                 const temp = []
                 temp.push(tokens[0])
                 temp.push(new Token(Token.Delimiter, '='))
@@ -742,17 +759,23 @@ function parse(input, mangle, packge) {
 
         const args = []
         if (isClass && !isStatic) {
-            api[currentScope]['self'] = 'self'
+            api[currentScope]['self'] = moduleName//'int'
             args.push({type: new Token(Token.Variable, moduleName), name: new Token(Token.Variable, 'self')})
         }
         expect('(')
         while (!match(')')) {
+            let isArray = false
             const apiType = input.next()
+            if (match('[')) {
+                isArray = true
+                expect('[')
+                expect(']')
+            }
             const apiName = input.next()
             api[currentScope][apiName.value] = apiType.value
-            args.push({ type: apiType, name: apiName})
+            args.push({ type: apiType, name: apiName, array:isArray})
             if (isCtor) {
-                ctor.args.push({ type: apiType, name: apiName})
+                ctor.args.push({ type: apiType, name: apiName, array:isArray})
                 api['ctor'] = api['ctor'] || {}
                 api['ctor'][apiName.value] = apiType.value
             }
@@ -763,8 +786,11 @@ function parse(input, mangle, packge) {
         const body = block = []
 
         for (let i=0; i<args.length; i++) {
+            //const isArray = 
             const size = args[i].type.value === 'double' ? 3 : 2;
-            symtbl[name.value][args[i].name.value] = new Symbol(args[i].name.value, args[i].type.value)
+            symtbl[name.value][args[i].name.value] = new Symbol(args[i].name.value, args[i].type.value, false, '', args[i].array)
+            //    constructor(name, type, func, init, array, immutable) {
+
             switch(args[i].type.value) {
                 case 'bool':    
                     body.push(factory.IntParameter(args[i].name))
@@ -1294,11 +1320,10 @@ function parse(input, mangle, packge) {
             expect('}')
         }
 
-        const _then = consequent.length === 0 ? null :  { "type": "BlockStatement", "body": consequent }
+        const _then = consequent.length === 0 ? null : { "type": "BlockStatement", "body": consequent }
         const _else = alternate.length === 0 ? null : { "type": "BlockStatement", "body": alternate }
 
-        let c = factory.IfStatement(parseExp(tokens, false), _then, _else)
-        return c;
+        return factory.IfStatement(parseExp(tokens, true), _then, _else)
     }
 
     /**
@@ -1435,10 +1460,11 @@ function parse(input, mangle, packge) {
         return factory.Print(args)
     }
 
-    function parseThrow() {
+    function parseThrow(body) {
         const args = []
         expectKeyword('throw')
         const name = input.next().value
+        const isReturn = symtbl.global[currentScope].type === 'void'?false:true
         expect('(')
         while (!match(')')) {
             let arg = input.next()
@@ -1474,7 +1500,12 @@ function parse(input, mangle, packge) {
             }
         }
         expect(')')
-        return factory.Throw(name, args)
+        if (isReturn) {
+            return factory.Throw(name, args, isReturn)
+        } else {
+            body.push(factory.Throw(name, args, isReturn))
+            return factory.Return()
+        }
     }
 
     function parseSwitch() {

@@ -21,6 +21,9 @@ System.register("ffi", [], function(exports_1, context_1) {
                 Ffi.EntityDoesNotHaveComponentException = function (index) {
                     throw new Error("EntityDoesNotHaveComponentException - " + index);
                 };
+                Ffi.EntityIsAlreadyReleasedException = function (entity) {
+                    throw new Error("EntityIsAlreadyReleasedException - " + entity);
+                };
                 Ffi.now = function () {
                     return performance.now();
                 };
@@ -120,6 +123,7 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                 var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
                 var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
                 var EntityDoesNotHaveComponentException = foreign.EntityDoesNotHaveComponentException;
+                var EntityIsAlreadyReleasedException = foreign.EntityIsAlreadyReleasedException;
                 function Entity(self, totalComponents) {
                     self = self | 0;
                     totalComponents = totalComponents | 0;
@@ -137,6 +141,23 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     component = component | 0;
                     return 0 | 0;
                 }
+                function onComponentRemoved(self, index, previousComponent) {
+                    self = self | 0;
+                    index = index | 0;
+                    previousComponent = previousComponent | 0;
+                    return 0 | 0;
+                }
+                function onComponentReplaced(self, index, previousComponent, component) {
+                    self = self | 0;
+                    index = index | 0;
+                    previousComponent = previousComponent | 0;
+                    component = component | 0;
+                    return 0 | 0;
+                }
+                function onEntityReleased(self) {
+                    self = self | 0;
+                    return 0 | 0;
+                }
                 function addComponent(self, index, component) {
                     self = self | 0;
                     index = index | 0;
@@ -146,10 +167,10 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     var hasComponent = 0;
                     isEnabled = HEAPI32[self + 12 >> 2] | 0;
                     hasComponent = hasComponent(self | 0, index | 0) | 0;
-                    if (!isEnabled) {
+                    if (!(isEnabled | 0)) {
                         return EntityIsNotEnabledException() | 0;
                     }
-                    if (hasComponent) {
+                    if (hasComponent | 0) {
                         return EntityAlreadyHasComponentException(index | 0) | 0;
                     }
                     HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
@@ -161,15 +182,16 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     index = index | 0;
                     var isEnabled = 0;
                     var hasComponent = 0;
+                    var ignore = 0;
                     isEnabled = HEAPI32[self + 12 >> 2] | 0;
                     hasComponent = hasComponent(self | 0, index | 0) | 0;
-                    if (!isEnabled) {
+                    if (!(isEnabled | 0)) {
                         return EntityIsNotEnabledException() | 0;
                     }
-                    if (!hasComponent) {
+                    if (!(hasComponent | 0)) {
                         return EntityDoesNotHaveComponentException(index | 0) | 0;
                     }
-                    _replaceComponent(self | 0, index | 0, 0 | 0) | 0;
+                    ignore = _replaceComponent(self | 0, index | 0, 0 | 0) | 0;
                     return self | 0;
                 }
                 function replaceComponent(self, index, component) {
@@ -178,16 +200,17 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     component = component | 0;
                     var isEnabled = 0;
                     var hasComponent = 0;
+                    var ignore = 0;
                     isEnabled = HEAPI32[self + 12 >> 2] | 0;
                     hasComponent = hasComponent(self | 0, index | 0) | 0;
-                    if (!isEnabled) {
+                    if (!(isEnabled | 0)) {
                         return EntityIsNotEnabledException() | 0;
                     }
-                    if (!hasComponent) {
-                        _replaceComponent(self | 0, index | 0, component | 0) | 0;
+                    if (!(hasComponent | 0)) {
+                        ignore = _replaceComponent(self | 0, index | 0, component | 0) | 0;
                     }
                     else {
-                        addComponent(self | 0, index | 0, component | 0) | 0;
+                        ignore = addComponent(self | 0, index | 0, component | 0) | 0;
                     }
                     return self | 0;
                 }
@@ -197,7 +220,7 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     component = component | 0;
                     var previousComponent = 0;
                     previousComponent = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
-                    if (previousComponent != 0) {
+                    if ((previousComponent | 0) != (0 | 0)) {
                         HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
                     }
                     return self | 0;
@@ -206,12 +229,112 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     self = self | 0;
                     index = index | 0;
                     component = component | 0;
+                    var ignore = 0;
+                    var previousComponent = 0;
+                    previousComponent = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
+                    if ((previousComponent | 0) != (0 | 0)) {
+                        if ((previousComponent | 0) == (component | 0)) {
+                            ignore = onComponentReplaced(self | 0, index | 0, previousComponent | 0, component | 0) | 0;
+                        }
+                        else {
+                            HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
+                            if ((component | 0) == (0 | 0)) {
+                                ignore = onComponentRemoved(self | 0, index | 0, previousComponent | 0) | 0;
+                            }
+                            else {
+                                ignore = onComponentReplaced(self | 0, index | 0, previousComponent | 0, component | 0) | 0;
+                            }
+                        }
+                    }
                     return self | 0;
+                }
+                function getComponent(self, index) {
+                    self = self | 0;
+                    index = index | 0;
+                    var component = 0;
+                    component = hasComponent(self | 0, index | 0) | 0;
+                    if (!(component | 0)) {
+                        return EntityDoesNotHaveComponentException(index | 0) | 0;
+                    }
+                    return component | 0;
                 }
                 function hasComponent(self, index) {
                     self = self | 0;
                     index = index | 0;
                     return HEAPI32[self + 16 + (index << 2) >> 2] | 0;
+                }
+                function hasComponents(self, indices) {
+                    self = self | 0;
+                    indices = indices | 0;
+                    var i = 0;
+                    var index = 0;
+                    var component = 0;
+                    for (i = 0; (i | 0) < (20 | 0); i = i + 1 | 0) {
+                        index = HEAPI32[indices + (i << 2) >> 2] | 0;
+                        if (index | 0) {
+                            component = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
+                            if (!(component | 0)) {
+                                return 0 | 0;
+                            }
+                        }
+                    }
+                    return 1 | 0;
+                }
+                function hasAnyComponent(self, indices) {
+                    self = self | 0;
+                    indices = indices | 0;
+                    var i = 0;
+                    var index = 0;
+                    var component = 0;
+                    for (i = 0; (i | 0) < (20 | 0); i = i + 1 | 0) {
+                        index = HEAPI32[indices + (i << 2) >> 2] | 0;
+                        if (index | 0) {
+                            component = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
+                            if (component | 0) {
+                                return 1 | 0;
+                            }
+                        }
+                    }
+                    return 0 | 0;
+                }
+                function removeAllComponents(self) {
+                    self = self | 0;
+                    var i = 0;
+                    var component = 0;
+                    var ignore = 0;
+                    for (i = 0; (i | 0) < (20 | 0); i = i + 1 | 0) {
+                        component = HEAPI32[self + 16 + (i << 2) >> 2] | 0;
+                        if (component | 0) {
+                            ignore = _replaceComponent(self | 0, i | 0, 0 | 0) | 0;
+                        }
+                    }
+                }
+                function retain(self) {
+                    self = self | 0;
+                    var refCount = 0;
+                    refCount = HEAPI32[self + 4 >> 2] | 0;
+                    HEAPI32[self + 4 >> 2] = refCount + 1 | 0;
+                    return self | 0;
+                }
+                function release(self) {
+                    self = self | 0;
+                    var ignore = 0;
+                    var refCount = 0;
+                    var creationIndex = 0;
+                    refCount = HEAPI32[self + 4 >> 2] | 0;
+                    creationIndex = HEAPI32[self + 8 >> 2] | 0;
+                    if ((refCount | 0) == (1 | 0)) {
+                        ignore = onEntityReleased(self | 0) | 0;
+                    }
+                    if ((refCount | 0) < (1 | 0)) {
+                        EntityIsAlreadyReleasedException(creationIndex | 0);
+                        return;
+                    }
+                }
+                function destroy(self) {
+                    self = self | 0;
+                    removeAllComponents(self | 0);
+                    HEAPI32[self + 12 >> 2] = 0 | 0;
                 }
                 function ctor(totalComponents) {
                     totalComponents = totalComponents | 0;
@@ -224,12 +347,22 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_3, context_3) {
                     Entity: Entity,
                     initialize: initialize,
                     onComponentAdded: onComponentAdded,
+                    onComponentRemoved: onComponentRemoved,
+                    onComponentReplaced: onComponentReplaced,
+                    onEntityReleased: onEntityReleased,
                     addComponent: addComponent,
                     removeComponent: removeComponent,
                     replaceComponent: replaceComponent,
                     updateComponent: updateComponent,
                     _replaceComponent: _replaceComponent,
+                    getComponent: getComponent,
                     hasComponent: hasComponent,
+                    hasComponents: hasComponents,
+                    hasAnyComponent: hasAnyComponent,
+                    removeAllComponents: removeAllComponents,
+                    retain: retain,
+                    release: release,
+                    destroy: destroy,
                     ctor: ctor,
                 };
             }(stdlib_1.default, ffi_1.default, ffi_2.buffer)));
@@ -309,11 +442,11 @@ System.register("Position", ["ffi", "stdlib"], function(exports_4, context_4) {
         }
     }
 });
-System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
+System.register("Pool", ["ffi", "stdlib"], function(exports_5, context_5) {
     "use strict";
     var __moduleName = context_5 && context_5.id;
     var ffi_5, ffi_6, stdlib_3;
-    var pool;
+    var Pool;
     return {
         setters:[
             function (ffi_5_1) {
@@ -324,131 +457,70 @@ System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
                 stdlib_3 = stdlib_3_1;
             }],
         execute: function() {
-            exports_5("pool", pool = (function (stdlib, foreign, heap) {
+            exports_5("Pool", Pool = (function (stdlib, foreign, heap) {
                 "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
+                var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
+                var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
                 var Entity_Entity = foreign.Entity_Entity;
                 var Entity_ctor = foreign.Entity_ctor;
                 var Entity_initialize = foreign.Entity_initialize;
                 var Entity_onComponentAdded = foreign.Entity_onComponentAdded;
+                var Entity_onComponentRemoved = foreign.Entity_onComponentRemoved;
+                var Entity_onComponentReplaced = foreign.Entity_onComponentReplaced;
+                var Entity_onEntityReleased = foreign.Entity_onEntityReleased;
                 var Entity_addComponent = foreign.Entity_addComponent;
                 var Entity_removeComponent = foreign.Entity_removeComponent;
                 var Entity_replaceComponent = foreign.Entity_replaceComponent;
                 var Entity_updateComponent = foreign.Entity_updateComponent;
                 var Entity__replaceComponent = foreign.Entity__replaceComponent;
+                var Entity_getComponent = foreign.Entity_getComponent;
                 var Entity_hasComponent = foreign.Entity_hasComponent;
-                var Position_Position = foreign.Position_Position;
-                var Position_ctor = foreign.Position_ctor;
-                var Position_getX = foreign.Position_getX;
-                var Position_setX = foreign.Position_setX;
-                var Position_getY = foreign.Position_getY;
-                var Position_setY = foreign.Position_setY;
-                var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
-                var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
-                var POOL_SIZE = 4096;
-                var init = 1;
-                var pool = 0;
-                var totalComponents = 0;
-                var count = 0;
-                var index = 0;
-                var uniqueId = 0;
-                function initialize(count) {
-                    count = count | 0;
-                    if (init) {
-                        totalComponents = count | 0;
-                        uniqueId = 0 | 0;
-                        pool = malloc(POOL_SIZE << 2) | 0;
-                        init = 0 | 0;
-                    }
+                var Entity_hasComponents = foreign.Entity_hasComponents;
+                var Entity_hasAnyComponent = foreign.Entity_hasAnyComponent;
+                var Entity_removeAllComponents = foreign.Entity_removeAllComponents;
+                var Entity_retain = foreign.Entity_retain;
+                var Entity_release = foreign.Entity_release;
+                var Entity_destroy = foreign.Entity_destroy;
+                function Pool(self, startCreationIndex) {
+                    self = self | 0;
+                    startCreationIndex = startCreationIndex | 0;
+                    HEAPI32[self + 0 >> 2] = startCreationIndex | 0;
                 }
-                function createPos(x, y) {
-                    x = +x;
-                    y = +y;
-                    return Position_ctor(+x, +y) | 0;
-                }
-                function getTotalComponents() {
-                    return totalComponents | 0;
-                }
-                function getCount() {
-                    return count | 0;
-                }
-                function createEntity() {
-                }
-                function destroyEntity(entity) {
+                function onEntityCreated(self, entity) {
+                    self = self | 0;
                     entity = entity | 0;
+                    return 0 | 0;
                 }
-                function destroyAllEntities() {
+                function createEntity(self) {
+                    self = self | 0;
+                    var creationIndex = 0;
+                    var entity = 0;
+                    creationIndex = HEAPI32[self + 0 >> 2] | 0;
+                    entity = Entity_ctor(20 | 0) | 0;
+                    HEAPI32[self + 0 >> 2] = creationIndex | 0;
+                    Entity_initialize(entity | 0, creationIndex | 0);
+                    Entity_retain(entity | 0);
+                    return entity | 0;
                 }
-                function hasEntity(entity) {
-                    entity = entity | 0;
-                }
-                function getEntities(matching) {
-                    matching = matching | 0;
-                }
-                function getGroup(matching) {
-                    matching = matching | 0;
-                }
-                function updateGroupsComponentAddedOrRemoved(entity, index, component) {
-                    entity = entity | 0;
-                    index = index | 0;
-                    component = component | 0;
-                }
-                function updateGroupsComponentReplaced(entity, index, prevcomponent, newcomponent) {
-                    entity = entity | 0;
-                    index = index | 0;
-                    prevcomponent = prevcomponent | 0;
-                    newcomponent = newcomponent | 0;
-                }
-                function onEntityReleased(entity) {
-                    entity = entity | 0;
-                }
-                function addComponent(entity, index, component) {
-                    entity = entity | 0;
-                    index = index | 0;
-                    component = component | 0;
-                }
-                function removeComponent(entity, index) {
-                    entity = entity | 0;
-                    index = index | 0;
-                }
-                function replaceComponent(entity, index, component) {
-                    entity = entity | 0;
-                    index = index | 0;
-                    component = component | 0;
-                }
-                function getComponent(entity, index) {
-                    entity = entity | 0;
-                    index = index | 0;
-                }
-                function hasComponent(entity, index) {
-                    entity = entity | 0;
-                    index = index | 0;
+                function ctor(startCreationIndex) {
+                    startCreationIndex = startCreationIndex | 0;
+                    var self = 0;
+                    self = malloc(40 | 0) | 0;
+                    Pool(self | 0, startCreationIndex | 0);
+                    return self | 0;
                 }
                 return {
-                    initialize: initialize,
-                    createPos: createPos,
-                    getTotalComponents: getTotalComponents,
-                    getCount: getCount,
+                    Pool: Pool,
+                    onEntityCreated: onEntityCreated,
                     createEntity: createEntity,
-                    destroyEntity: destroyEntity,
-                    destroyAllEntities: destroyAllEntities,
-                    hasEntity: hasEntity,
-                    getEntities: getEntities,
-                    getGroup: getGroup,
-                    updateGroupsComponentAddedOrRemoved: updateGroupsComponentAddedOrRemoved,
-                    updateGroupsComponentReplaced: updateGroupsComponentReplaced,
-                    onEntityReleased: onEntityReleased,
-                    addComponent: addComponent,
-                    removeComponent: removeComponent,
-                    replaceComponent: replaceComponent,
-                    getComponent: getComponent,
-                    hasComponent: hasComponent,
+                    ctor: ctor,
                 };
             }(stdlib_3.default, ffi_5.default, ffi_6.buffer)));
-            for (var k in pool) {
-                ffi_5.default['pool_' + k] = pool[k];
+            for (var k in Pool) {
+                ffi_5.default['Pool_' + k] = Pool[k];
             }
         }
     }
@@ -457,21 +529,13 @@ System.register("pool", ["ffi", "stdlib"], function(exports_5, context_5) {
 /*
  * Run tests
  */
-Promise.all(['Entity', 'Position', 'pool'].map(function (x) {
+Promise.all(['Entity', 'Position', 'Pool'].map(function (x) {
     return System["import"](x);
 })).then(function (arg) {
-    var Entity, Position, pool, ref, ref1, ref2;
-    (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], pool = ref2.pool);
+    var Entity, Pool, Position, ref, ref1, ref2;
+    (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], Pool = ref2.Pool);
     return describe('Entitas / asm.js', function () {
-        console.log('hello');
-        return it('Create Position', function () {
-            var pos;
-            pool.initialize(10);
-            pos = pool.createPos(95.0, 96.0);
-            console.log('Pos', Position.getX(pos), ',', Position.getY(pos));
-            expect(Position.getX(pos)).to.equal(95);
-            return expect(Position.getY(pos)).to.equal(96);
-        });
+        return console.log('hello');
     });
 }, function (err) {
     return console.log(err);

@@ -3,21 +3,13 @@
 /*
  * Run tests
  */
-Promise.all(['Entity', 'Position', 'pool'].map(function(x) {
+Promise.all(['Entity', 'Position', 'Pool'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var Entity, Position, pool, ref, ref1, ref2;
-  (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], pool = ref2.pool);
+  var Entity, Pool, Position, ref, ref1, ref2;
+  (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], Pool = ref2.Pool);
   return describe('Entitas / asm.js', function() {
-    console.log('hello');
-    return it('Create Position', function() {
-      var pos;
-      pool.initialize(10);
-      pos = pool.createPos(95.0, 96.0);
-      console.log('Pos', Position.getX(pos), ',', Position.getY(pos));
-      expect(Position.getX(pos)).to.equal(95);
-      return expect(Position.getY(pos)).to.equal(96);
-    });
+    return console.log('hello');
   });
 }, function(err) {
   return console.log(err);
