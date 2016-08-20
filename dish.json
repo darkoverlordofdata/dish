@@ -258,7 +258,19 @@
         "onEntityReleased": {
           "self": "Entity"
         },
+        "release": {
+          "self": "Entity"
+        },
+        "hasComponent": {
+          "self": "Entity",
+          "index": "int"
+        },
         "addComponent": {
+          "self": "Entity",
+          "index": "int",
+          "component": "int"
+        },
+        "_replaceComponent": {
           "self": "Entity",
           "index": "int",
           "component": "int"
@@ -277,16 +289,7 @@
           "index": "int",
           "component": "int"
         },
-        "_replaceComponent": {
-          "self": "Entity",
-          "index": "int",
-          "component": "int"
-        },
         "getComponent": {
-          "self": "Entity",
-          "index": "int"
-        },
-        "hasComponent": {
           "self": "Entity",
           "index": "int"
         },
@@ -302,9 +305,6 @@
           "self": "Entity"
         },
         "retain": {
-          "self": "Entity"
-        },
-        "release": {
           "self": "Entity"
         },
         "destroy": {
@@ -430,8 +430,38 @@
             "size": 2,
             "heap": "HEAPI32"
           },
+          "release": {
+            "name": "release",
+            "type": "void",
+            "func": true,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "hasComponent": {
+            "name": "hasComponent",
+            "type": "bool",
+            "func": true,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
           "addComponent": {
             "name": "addComponent",
+            "type": "Entity",
+            "func": true,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "_replaceComponent": {
+            "name": "_replaceComponent",
             "type": "Entity",
             "func": true,
             "init": "",
@@ -470,29 +500,9 @@
             "size": 2,
             "heap": "HEAPI32"
           },
-          "_replaceComponent": {
-            "name": "_replaceComponent",
-            "type": "Entity",
-            "func": true,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
           "getComponent": {
             "name": "getComponent",
             "type": "int",
-            "func": true,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "hasComponent": {
-            "name": "hasComponent",
-            "type": "bool",
             "func": true,
             "init": "",
             "array": false,
@@ -533,16 +543,6 @@
           "retain": {
             "name": "retain",
             "type": "Entity",
-            "func": true,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "release": {
-            "name": "release",
-            "type": "void",
             "func": true,
             "init": "",
             "array": false,
@@ -723,6 +723,85 @@
             "heap": "HEAPI32"
           }
         },
+        "release": {
+          "self": {
+            "name": "self",
+            "type": "Entity",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "ignore": {
+            "name": "ignore",
+            "type": "bool",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "refCount": {
+            "name": "refCount",
+            "type": "int",
+            "func": false,
+            "init": [
+              "self",
+              ".",
+              "_refCount"
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "creationIndex": {
+            "name": "creationIndex",
+            "type": "int",
+            "func": false,
+            "init": [
+              "self",
+              ".",
+              "_creationIndex",
+              "self",
+              ".",
+              "_refCount",
+              "=",
+              "refCount",
+              "-",
+              1
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          }
+        },
+        "hasComponent": {
+          "self": {
+            "name": "self",
+            "type": "Entity",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "index": {
+            "name": "index",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          }
+        },
         "addComponent": {
           "self": {
             "name": "self",
@@ -789,6 +868,65 @@
               "(",
               "index",
               ")"
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          }
+        },
+        "_replaceComponent": {
+          "self": {
+            "name": "self",
+            "type": "Entity",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "index": {
+            "name": "index",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "component": {
+            "name": "component",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "ignore": {
+            "name": "ignore",
+            "type": "bool",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "previousComponent": {
+            "name": "previousComponent",
+            "type": "int",
+            "func": false,
+            "init": [
+              "self",
+              ".",
+              "components",
+              "[",
+              "index",
+              "]"
             ],
             "array": false,
             "immutable": false,
@@ -981,65 +1119,6 @@
             "heap": "HEAPI32"
           }
         },
-        "_replaceComponent": {
-          "self": {
-            "name": "self",
-            "type": "Entity",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "index": {
-            "name": "index",
-            "type": "int",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "component": {
-            "name": "component",
-            "type": "int",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "ignore": {
-            "name": "ignore",
-            "type": "bool",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "previousComponent": {
-            "name": "previousComponent",
-            "type": "int",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "components",
-              "[",
-              "index",
-              "]"
-            ],
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          }
-        },
         "getComponent": {
           "self": {
             "name": "self",
@@ -1073,28 +1152,6 @@
               "index",
               ")"
             ],
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          }
-        },
-        "hasComponent": {
-          "self": {
-            "name": "self",
-            "type": "Entity",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "index": {
-            "name": "index",
-            "type": "int",
-            "func": false,
-            "init": "",
             "array": false,
             "immutable": false,
             "size": 2,
@@ -1266,63 +1323,6 @@
               "self",
               ".",
               "_refCount"
-            ],
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          }
-        },
-        "release": {
-          "self": {
-            "name": "self",
-            "type": "Entity",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "ignore": {
-            "name": "ignore",
-            "type": "bool",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "refCount": {
-            "name": "refCount",
-            "type": "int",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "_refCount"
-            ],
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "creationIndex": {
-            "name": "creationIndex",
-            "type": "int",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "_creationIndex",
-              "self",
-              ".",
-              "_refCount",
-              "=",
-              "refCount",
-              "-",
-              1
             ],
             "array": false,
             "immutable": false,
@@ -2228,6 +2228,285 @@
         }
       },
       "source": "example/Pool.d"
+    },
+    "MersenneTwister": {
+      "name": "MersenneTwister",
+      "class": false,
+      "size": 0,
+      "api": {
+        "init_genrand": {
+          "s": "int"
+        },
+        "genrand_int32": {},
+        "test": {
+          "n": "int",
+          "m": "int"
+        }
+      },
+      "data": [],
+      "symtbl": {
+        "global": {
+          "N": {
+            "name": "N",
+            "type": "int",
+            "func": false,
+            "init": [
+              624
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "M": {
+            "name": "M",
+            "type": "int",
+            "func": false,
+            "init": [
+              397
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "MATRIX_A": {
+            "name": "MATRIX_A",
+            "type": "int",
+            "func": false,
+            "init": [
+              2567483615
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "UPPER_MASK": {
+            "name": "UPPER_MASK",
+            "type": "int",
+            "func": false,
+            "init": [
+              2147483648
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "LOWER_MASK": {
+            "name": "LOWER_MASK",
+            "type": "int",
+            "func": false,
+            "init": [
+              2147483647
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "mt": {
+            "name": "mt",
+            "type": "uint",
+            "func": false,
+            "init": "",
+            "array": true,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPU32"
+          },
+          "mti": {
+            "name": "mti",
+            "type": "int",
+            "func": false,
+            "init": [
+              625
+            ],
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "mag01": {
+            "name": "mag01",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": true,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "init_genrand": {
+            "name": "init_genrand",
+            "type": "void",
+            "func": true,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "genrand_int32": {
+            "name": "genrand_int32",
+            "type": "int",
+            "func": true,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "test": {
+            "name": "test",
+            "type": "int",
+            "func": true,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          }
+        },
+        "init_genrand": {
+          "s": {
+            "name": "s",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "t0": {
+            "name": "t0",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "t1": {
+            "name": "t1",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "t2": {
+            "name": "t2",
+            "type": "double",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 3,
+            "heap": "HEAPF64"
+          },
+          "t3": {
+            "name": "t3",
+            "type": "double",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 3,
+            "heap": "HEAPF64"
+          }
+        },
+        "genrand_int32": {
+          "y": {
+            "name": "y",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "kk": {
+            "name": "kk",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "z": {
+            "name": "z",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          }
+        },
+        "test": {
+          "n": {
+            "name": "n",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "m": {
+            "name": "m",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "i": {
+            "name": "i",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "j": {
+            "name": "j",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          },
+          "z": {
+            "name": "z",
+            "type": "int",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
+          }
+        }
+      },
+      "source": "example/mt.d"
     }
   }
 }

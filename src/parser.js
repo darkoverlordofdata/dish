@@ -14,6 +14,14 @@ module.exports = {
     parse: parse
 }
 
+function values(tokens) {
+    const t1 = []
+    for (let t in tokens) {
+        t1.push(tokens[t].value)
+    }
+    return t1
+}
+
 function coerce(imtype, out) {
     switch (imtype) {
         case 'float':   return `fround(${out})` 
@@ -23,6 +31,7 @@ function coerce(imtype, out) {
     }                
     
 }
+
 /**
  * Parse tokens from the input lexer
  * 
@@ -121,6 +130,11 @@ function parse(input, mangle, packge) {
         console.log(ex.message)
         console.log(ex.stack)
         process.exit(0)
+    }
+
+    function external(object) {
+        const api = require('../dish.json')
+        return api[packge][symtbl[currentScope][object].type]//.api[tokens[2]]
     }
 
 
@@ -259,7 +273,7 @@ function parse(input, mangle, packge) {
                         body.push(factory.New(name, { "type": "Literal", "value": tokens.length }))
                         for (let t in tokens) {
                             let sname = `${sym.heap}[(${name}+${t})<<2>>2]`
-                            let value = parseExp(''+tokens[t])
+                            let value = parseEx0(null, [tokens[t]], false).expression
                             body.push(factory.AssignmentStatement(sname, value))
                         }
                     } else {
@@ -317,16 +331,13 @@ function parse(input, mangle, packge) {
 
     function parseEx0(lhs, rhs, isReturn) {
 
-        //imtype = ''
         try {
             if (isReturn) {
                 imtype = symtbl.global[currentScope].type
                 return factory.Return(jsep(recode(rhs)))
             } else if (lhs == null) {
-                imtype = 'void'
                 return esprima.parse(recode(rhs)).body[0]
             } else {
-                if (rhs.length === 0) imtype = 'void'
                 return esprima.parse(`${recode(lhs, true)} = ${recode(rhs)}`).body[0]
             }
         } catch (ex) {
@@ -345,10 +356,14 @@ function parse(input, mangle, packge) {
     function recode(tokens, isLhs) {
         for (let t in tokens) {
             switch (tokens[t]) {
-                case 'true': tokens[t] = 1;break
-                case 'false': tokens[t] = 0;break
+                case 'true':        tokens[t] = 1; break
+                case 'false':       tokens[t] = 0; break
+                case 'to!double':   tokens[t] = '__double__'; imtype = 'double'; break
+                case 'to!int':      tokens[t] = '__int__'; imtype = 'int'; break
+                case 'to!float':    tokens[t] = 'fround'; imtype = 'float'; float = true; break
             }
         }
+
         if (tokens[0] === 'new') {
             malloc = true
             if (mem[tokens[1]]) {
@@ -398,7 +413,7 @@ function parse(input, mangle, packge) {
             return `${tokens[1]}_ctor(${exp.join(',')})|0`
 
         }
-        const sym = symtbl[currentScope][tokens[0]]
+        const sym = symtbl[currentScope][tokens[0]]?symtbl[currentScope][tokens[0]]:symtbl.global[tokens[0]]
 
         if (tokens[1] === '.') {
             /**
@@ -434,6 +449,7 @@ function parse(input, mangle, packge) {
                  * [2] = method
                  * [3] = '('
                  */
+                //console.log(imtype, tokens)
                 const exp = []
                 const par = []
                 let paren = 0
@@ -449,8 +465,17 @@ function parse(input, mangle, packge) {
                     }
                 } while (paren !== 0)
 
-                const api = require('../dish.json')
-                const def = api[packge][symtbl[currentScope][tokens[0]].type].api[tokens[2]]
+
+                const def = api[tokens[2]]?api[tokens[2]]:external(tokens[0])
+                if (!def) {
+
+                    console.log(`Type not found for ${tokens[0]}.${tokens[2]} in ${moduleName}.${currentScope}`)
+                    process.exit(0)
+                }
+                const type = symtbl.global[tokens[2]] 
+                            ? symtbl.global[tokens[2]].type 
+                            : def.symtbl.global[tokens[2]].type
+                
                 let param = []
                 for (let k in def) {
                     param.push(def[k])
@@ -473,7 +498,7 @@ function parse(input, mangle, packge) {
                     imtype = symtbl.global[tokens[2]].type
                     return out
                 } else {
-                    //console.log(imtype, coerce(imtype, out))
+                    imtype = type
                     return coerce(imtype, out)
                 }
             } else {
@@ -508,7 +533,7 @@ function parse(input, mangle, packge) {
                 imtype = sym.type
                 return out 
             } else return coerce(imtype, out)
-        } else if (tokens[1] === '(') {
+        } else if (tokens[1] === '(' && tokens[0]!== '(') {
             /**
              * name(...)
              */
@@ -641,107 +666,6 @@ function parse(input, mangle, packge) {
     }
 
 
-    /**
-     * Parse an expression 
-     * 
-     * A wrapper around jsep
-     * converts ++ syntax in for update expression
-     * 
-     * @param tokens the expression as string or as an array of tokens
-     * @param conditional bool hint conditional or arithmetic
-     * @returns esprima schema ast
-     */
-    function parseExp(tokens, conditional) {
-        //if (conditional) console.log(tokens)
-        if ('string' === typeof tokens) {
-            try {
-                return jsep(tokens)
-            } catch (ex) {
-                console.log(tokens)
-                console.log(ex.message)
-                console.log(ex.stack)
-                process.exit(0)
-            }
-        } else {
-            if (conditional) {
-                // coerce each term individually
-                const scope = currentScope === '' ? 'global' : currentScope
-                const temp = []
-                for (let i=0; i<tokens.length; i++) {
-                    const token = tokens[i]
-                    if (token.type === Token.Variable) {
-                        if (!symtbl[scope][token.value])  {
-                            temp.push(token)
-                            continue // todo?: finish this
-                        }
-                        switch(symtbl[scope][token.value].type) {
-                            case 'int':    
-                            case 'uint':    
-                            case 'bool':
-                                temp.push(new Token(Token.Delimiter, '('))
-                                temp.push(token)
-                                temp.push(new Token(Token.Delimiter, '|'))
-                                temp.push(new Token(Token.Number, '0'))
-                                temp.push(new Token(Token.Delimiter, ')'))
-                                break
-                            case 'double':  
-                                temp.push(new Token(Token.Delimiter, '('))
-                                temp.push(new Token(Token.Delimiter, '+'))
-                                temp.push(token)
-                                temp.push(new Token(Token.Delimiter, ')'))
-                                break
-                            case 'float':   
-                                temp.push(new Token(Token.Variable, 'fround'))
-                                temp.push(new Token(Token.Delimiter, '('))
-                                temp.push(token)
-                                temp.push(new Token(Token.Delimiter, ')'))
-                                break
-                            default:
-                                console.log('WTF 303')
-                                process.exit(0)
-                        }
-                    } else if (token.type === Token.Number) {
-                        temp.push(new Token(Token.Delimiter, '('))
-                        temp.push(token)
-                        temp.push(new Token(Token.Delimiter, '|'))
-                        temp.push(new Token(Token.Number, '0'))
-                        temp.push(new Token(Token.Delimiter, ')'))
-                    } else {
-                        temp.push(token)
-                    }
-                }
-                const str = []
-                for (let i=0; i<temp.length; i++) {
-                    str.push(temp[i].value)
-                }
-                return jsep(str.join(' '))
-            } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
-                console.log(tokens)
-                const temp = []
-                temp.push(tokens[0])
-                temp.push(new Token(Token.Delimiter, '='))
-                temp.push(new Token(Token.Delimiter, '('))
-                temp.push(tokens[0])
-                temp.push(new Token(Token.Delimiter, '+'))
-                temp.push(new Token(Token.Number, '1'))
-                temp.push(new Token(Token.Delimiter, ')'))
-                temp.push(new Token(Token.Delimiter, '|'))
-                temp.push(new Token(Token.Number, '0'))
-                const str = []
-                for (let i=0; i<temp.length; i++) {
-                    str.push(temp[i].value)
-                }
-                return jsep(str.join(' '))
-            }
-            else {
-                const str = []
-                for (let i=0; i<tokens.length; i++) {
-                    str.push(tokens[i].value)
-                }
-                return jsep(str.join(' '))
-            }
-        }
-    }
 
     function parseFunction(scope, type, name) {
         if (scope !== 'global')  {
@@ -841,32 +765,6 @@ function parse(input, mangle, packge) {
         return factory.FunctionDeclaration(name, args, body)
     }
 
-    function parseCall() {
-        let name = input.next();
-        const arg = []
-        let pos = 0
-        expect('(')
-        while (!match(')')) {
-            if (match(',')) {
-                expect(',')
-                pos++
-            } else {
-                if (!arg[pos]) arg[pos] = []
-                arg[pos].push(input.next())
-            }
-
-        }
-        expect(')')
-        const params = []
-        for (let i=0; i<arg.length; i++) {
-            //TODO: Coerce params - p1|0, +p2, fround(p3)
-            let node = parseExp(arg[i])
-            params.push(node)
-        }
-        return factory.CallExpression(name.value, params)
-    }
-
-
     /**
      * Create Variable
      * 
@@ -940,16 +838,16 @@ function parse(input, mangle, packge) {
             } else if (match(',')) { /** a sequence of assignments */
                 expect(',')
                 names.push(name)
-                inits.push(parseExp(tokens.join(' ')))
+                inits.push(parseEx0(null, tokens, false).expression)
                 name = ''
             } else { /** just copy the token to the output stack */
                 tokens.push(input.next().value)
             }
         }
         names.push(name)
-        inits.push(parseExp(tokens.join(' ')))
+        inits.push(parseEx0(null, tokens, false).expression)
         if (names.length === 1) {
-            return factory.AssignmentStatement(names[0], parseExp(tokens.join(' ')))
+            return factory.AssignmentStatement(names[0], parseEx0(null, tokens, false).expression)
         } else {
             return factory.AssignmentStatement(names, inits)
         }
@@ -1038,7 +936,7 @@ function parse(input, mangle, packge) {
         }
         expect(')')
 
-        return factory.DoWhileStatement(parseExp(tokens, true), body)
+        return factory.DoWhileStatement(parseEx0(null, values(tokens), false).expression, body)
         
     }
     function parseDouble(scope) {
@@ -1237,9 +1135,10 @@ function parse(input, mangle, packge) {
         expect('}')
 
         const _init = init.length>0?init[0].expression:null
+        const _cond = parseEx0(null, values(tokens), false).expression
         const _update = update.length>0?update[0].expression:null
 
-        return factory.ForStatement(_init, parseExp(tokens, true), _update, body)
+        return factory.ForStatement(_init, _cond, _update, body)
         
     }
 
@@ -1320,10 +1219,11 @@ function parse(input, mangle, packge) {
             expect('}')
         }
 
+        const _cond = parseEx0(null, values(tokens), false).expression
         const _then = consequent.length === 0 ? null : { "type": "BlockStatement", "body": consequent }
         const _else = alternate.length === 0 ? null : { "type": "BlockStatement", "body": alternate }
 
-        return factory.IfStatement(parseExp(tokens, true), _then, _else)
+        return factory.IfStatement(_cond, _then, _else)
     }
 
     /**
@@ -1376,63 +1276,7 @@ function parse(input, mangle, packge) {
             return factory.ImportDeclaration(name.value, 'foreign', name.value)
         }
     }
-    /**
-     * Method
-     * 
-     */
-    function parseMethod() {
-        const _this = input.next()
-        expect('.')
-        const name = input.next()
 
-        let sym = symtbl[currentScope][_this.value]
-        name.value = `${sym.type}_${name.value}`
-        const arg = [[
-            _this,
-            new Token(Token.Delimiter, '|'),
-            new Token(Token.Number, '0')
-        ]]
-        let pos = 1
-        if (match('(')) {
-            /**
-             * Method Call:
-             * 
-             *      entity.setComponent(index|0, component|0);
-             */
-            expect('(')
-            while (!match(')')) {
-                if (match(',')) {
-                    expect(',')
-                    pos++
-                } else {
-                    if (!arg[pos]) arg[pos] = []
-                    arg[pos].push(input.next())
-                }
-
-            }
-            expect(')')
-            const params = []
-            for (let i=0; i<arg.length; i++) {
-                //TODO: Coerce params - p1|0, +p2, fround(p3)
-                let node = parseExp(arg[i])
-                params.push(node)
-            }
-            return factory.CallExpression(name.value, params)
-        } else if (match('[')) {
-            /**
-             * Property Array
-             *         
-             *      self.component[index] = value;
-             */
-            expect('[')
-            const tokens = []
-            while (!match(']')) {
-                tokens.push(input.next().value)
-            }
-            expect(']')
-
-        } else input.raise('Invalid property/method')
-    }
     /**
      * Print statement - wrapper for console.log
      * 
@@ -1533,7 +1377,7 @@ function parse(input, mangle, packge) {
             }
         }
         expect('}')
-        return factory.SwitchStatement(parseExp(tokens), cases)
+        return factory.SwitchStatement(parseEx0(null, values(tokens), false).expression, cases)
     }
 
     function parseType(scope) {
@@ -1659,7 +1503,7 @@ function parse(input, mangle, packge) {
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
-        return factory.WhileStatement(parseExp(tokens, true), body)
+        return factory.WhileStatement(parseEx0(null, values(tokens), false).expression, body)
     }
 
     function tokens2Array(tokens) {

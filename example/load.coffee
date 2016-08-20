@@ -1,12 +1,17 @@
 ###
  * Run tests
 ###
-Promise.all(['Entity', 'Position', 'Pool'].map((x) -> 
-  System.import(x))).then ([{Entity}, {Position}, {Pool}]) ->
+Promise.all(['Entity', 'Position', 'Pool', 'mt'].map((x) -> 
+  System.import(x))).then ([{Entity}, {Position}, {Pool}, {MersenneTwister}]) ->
 
     describe 'Entitas / asm.js', ->
       console.log('hello')
 
+      # it 'Speed dish', ->
+      #   MersenneTwister.test(1000, 32767)
+
+      #   expect(0).to.equal(0)
+        
       # it 'Create entity', ->
       #   MAX = 4
 

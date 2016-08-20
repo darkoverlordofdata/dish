@@ -8,6 +8,7 @@
     "files": [
         "build/ffi.js",
         "build/stdlib.js",
+        "build/mt.js",
         "build/Entity.js",
         "build/Position.js",
         "build/Pool.js",

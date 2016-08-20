@@ -16,18 +16,18 @@ var Entity_onComponentAdded = foreign.Entity_onComponentAdded;
 var Entity_onComponentRemoved = foreign.Entity_onComponentRemoved;
 var Entity_onComponentReplaced = foreign.Entity_onComponentReplaced;
 var Entity_onEntityReleased = foreign.Entity_onEntityReleased;
+var Entity_release = foreign.Entity_release;
+var Entity_hasComponent = foreign.Entity_hasComponent;
 var Entity_addComponent = foreign.Entity_addComponent;
+var Entity__replaceComponent = foreign.Entity__replaceComponent;
 var Entity_removeComponent = foreign.Entity_removeComponent;
 var Entity_replaceComponent = foreign.Entity_replaceComponent;
 var Entity_updateComponent = foreign.Entity_updateComponent;
-var Entity__replaceComponent = foreign.Entity__replaceComponent;
 var Entity_getComponent = foreign.Entity_getComponent;
-var Entity_hasComponent = foreign.Entity_hasComponent;
 var Entity_hasComponents = foreign.Entity_hasComponents;
 var Entity_hasAnyComponent = foreign.Entity_hasAnyComponent;
 var Entity_removeAllComponents = foreign.Entity_removeAllComponents;
 var Entity_retain = foreign.Entity_retain;
-var Entity_release = foreign.Entity_release;
 var Entity_destroy = foreign.Entity_destroy;
 function Pool(self, startCreationIndex) {
     self = self | 0;
@@ -47,7 +47,7 @@ function createEntity(self) {
     entity = Entity_ctor(20 | 0) | 0;
     HEAPI32[self + 0 >> 2] = creationIndex | 0;
     Entity_initialize(entity | 0, creationIndex | 0);
-    Entity_retain(entity | 0);
+    Entity_retain(entity | 0) | 0;
     return entity | 0;
 }
 function ctor(startCreationIndex) {

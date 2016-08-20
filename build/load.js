@@ -3,11 +3,11 @@
 /*
  * Run tests
  */
-Promise.all(['Entity', 'Position', 'Pool'].map(function(x) {
+Promise.all(['Entity', 'Position', 'Pool', 'mt'].map(function(x) {
   return System["import"](x);
 })).then(function(arg) {
-  var Entity, Pool, Position, ref, ref1, ref2;
-  (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], Pool = ref2.Pool);
+  var Entity, MersenneTwister, Pool, Position, ref, ref1, ref2, ref3;
+  (ref = arg[0], Entity = ref.Entity), (ref1 = arg[1], Position = ref1.Position), (ref2 = arg[2], Pool = ref2.Pool), (ref3 = arg[3], MersenneTwister = ref3.MersenneTwister);
   return describe('Entitas / asm.js', function() {
     return console.log('hello');
   });

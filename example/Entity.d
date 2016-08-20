@@ -41,6 +41,30 @@ class Entity {
     public bool onEntityReleased() {
         return false;
     }
+
+    public void release() {
+        bool ignore;
+        int refCount = this._refCount;
+        int creationIndex = this._creationIndex
+        this._refCount = refCount-1;
+        if ((refCount|0) == 1) {
+            ignore = this.onEntityReleased();
+        } 
+        if ((refCount|0) < 1) {
+            throw EntityIsAlreadyReleasedException(creationIndex);
+        }
+    }
+
+   /**
+    *  Returns all added components.
+    *
+    * @return
+    */
+    public bool hasComponent(int index) {
+        return this.components[index];
+    }
+
+    
    /**
     *  Adds a component at a certain index. You can only have one component at an index.
     *  Each component type must have its own constant index.
@@ -67,6 +91,24 @@ class Entity {
         return this;
     }
 
+    public Entity _replaceComponent(int index, int component) {
+        bool ignore;
+        int previousComponent = this.components[index];
+        if (previousComponent) {
+            if ((previousComponent|0) == (component|0)) {
+                ignore = this.onComponentReplaced(index, previousComponent, component);
+            } else {
+                this.components[index] = component;
+                if (!component) {
+                    ignore = this.onComponentRemoved(index, previousComponent);
+                } else {
+                    ignore = this.onComponentReplaced(index, previousComponent, component);
+                }
+            }
+        }
+        return this;
+    }
+
    /**
     *
     *  Removes a component at a certain index. You can only remove a component at an index if it exists.
@@ -80,10 +122,10 @@ class Entity {
         bool hasComponent = this.hasComponent(index);
         int ignore;
 
-        if (!isEnabled) {
+        if (isEnabled) {
             throw EntityIsNotEnabledException();
         }
-        if (!hasComponent) {
+        if (hasComponent) {
             throw EntityDoesNotHaveComponentException(index);
         }
         ignore = this._replaceComponent(index, 0);
@@ -107,36 +149,19 @@ class Entity {
         if (!isEnabled) {
             throw EntityIsNotEnabledException();
         }
-        if (!hasComponent) {
-            ignore = this._replaceComponent(index, component);
-        } else {
+        if (hasComponent) {
             ignore = this.addComponent(index, component);
         }
+        if (!hasComponent) {
+            ignore = this._replaceComponent(index, component);
+        } 
         return this;
     }
 
     public Entity updateComponent(int index, int component) {
         int previousComponent = this.components[index];
-        if (previousComponent != 0) {
+        if (previousComponent) {
             this.components[index] = component;
-        }
-        return this;
-    }
-
-    public Entity _replaceComponent(int index, int component) {
-        bool ignore;
-        int previousComponent = this.components[index];
-        if (previousComponent != 0) {
-            if (previousComponent == component) {
-                ignore = this.onComponentReplaced(index, previousComponent, component);
-            } else {
-                this.components[index] = component;
-                if (component == 0) {
-                    ignore = this.onComponentRemoved(index, previousComponent);
-                } else {
-                    ignore = this.onComponentReplaced(index, previousComponent, component);
-                }
-            }
         }
         return this;
     }
@@ -158,21 +183,12 @@ class Entity {
     }
 
     
-   /**
-    *  Returns all added components.
-    *
-    * @return
-    */
-    public bool hasComponent(int index) {
-        return this.components[index];
-    }
-
     public bool hasComponents(int[] indices) {
         int i;
         int index;
         int component;
 
-        for (i=0; i<20; i++) {
+        for (i=0; (i|0)<20; i++) {
             index = indices[i];
             if (index) {
                 component = this.components[index];
@@ -189,7 +205,7 @@ class Entity {
         int index;
         int component;
 
-        for (i=0; i<20; i++) {
+        for (i=0; (i|0)<20; i++) {
             index = indices[i];
             if (index) {
                 component = this.components[index];
@@ -205,8 +221,9 @@ class Entity {
         int i;
         int component;
         int ignore;
+        
 
-        for (i=0; i<20; i++) {
+        for (i=0; (i|0)<20; i++) {
             component = this.components[i];
             if (component) {
                 ignore = this._replaceComponent(i, 0);
@@ -218,19 +235,6 @@ class Entity {
         int refCount = this._refCount;
         this._refCount = refCount+1;
         return this;
-    }
-
-    public void release() {
-        bool ignore;
-        int refCount = this._refCount;
-        int creationIndex = this._creationIndex
-        this._refCount = refCount-1;
-        if (refCount == 1) {
-            ignore = this.onEntityReleased();
-        } 
-        if (refCount < 1) {
-            throw EntityIsAlreadyReleasedException(creationIndex);
-        }
     }
 
     public void destroy() {
