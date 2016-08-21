@@ -43,16 +43,17 @@ class Entity {
     }
 
     public void release() {
-        bool ignore;
-        int refCount = this._refCount;
-        int creationIndex = this._creationIndex
-        this._refCount = refCount-1;
-        if ((refCount|0) == 1) {
-            ignore = this.onEntityReleased();
-        } 
-        if ((refCount|0) < 1) {
-            throw EntityIsAlreadyReleasedException(creationIndex);
-        }
+        // bool ignore;
+        // int refCount = this._refCount;
+        // int creationIndex = this._creationIndex
+        // this._refCount = refCount-1;
+        // if ((refCount|0) == 1) {
+        // // if ((this._refCount|0) == 1) {
+        //     ignore = this.onEntityReleased();
+        // } 
+        // if ((refCount|0) < 1) {
+        //     throw EntityIsAlreadyReleasedException(creationIndex);
+        // }
     }
 
    /**

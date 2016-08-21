@@ -215,8 +215,8 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                 stdlib_2 = stdlib_2_1;
             }],
         execute: function() {
-            exports_4("Entity", Entity = (function (stdlib, foreign, heap) {
-                "use asm";
+            exports_4("Entity", Entity = function (stdlib, foreign, heap) {
+                'use asm';
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
@@ -227,56 +227,44 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                 function Entity(self, totalComponents) {
                     self = self | 0;
                     totalComponents = totalComponents | 0;
-                    HEAPI32[self + 0 >> 2] = totalComponents | 0;
+                    HEAPI32[self + 0 >> 2] = totalComponents;
                 }
                 function initialize(self, creationIndex) {
                     self = self | 0;
                     creationIndex = creationIndex | 0;
-                    HEAPI32[self + 8 >> 2] = creationIndex | 0;
-                    HEAPI32[self + 12 >> 2] = 1 | 0;
+                    HEAPI32[self + 8 >> 2] = creationIndex;
+                    HEAPI32[self + 12 >> 2] = true;
                 }
                 function onComponentAdded(self, index, component) {
                     self = self | 0;
                     index = index | 0;
                     component = component | 0;
-                    return 0 | 0;
+                    return false;
                 }
                 function onComponentRemoved(self, index, previousComponent) {
                     self = self | 0;
                     index = index | 0;
                     previousComponent = previousComponent | 0;
-                    return 0 | 0;
+                    return false;
                 }
                 function onComponentReplaced(self, index, previousComponent, component) {
                     self = self | 0;
                     index = index | 0;
                     previousComponent = previousComponent | 0;
                     component = component | 0;
-                    return 0 | 0;
+                    return false;
                 }
                 function onEntityReleased(self) {
                     self = self | 0;
-                    return 0 | 0;
+                    return false;
                 }
                 function release(self) {
                     self = self | 0;
-                    var ignore = 0;
-                    var refCount = 0;
-                    var creationIndex = 0;
-                    refCount = HEAPI32[self + 4 >> 2] | 0;
-                    creationIndex = HEAPI32[self + 8 >> 2] | 0;
-                    if ((refCount | 0) == 1 | 0) {
-                        ignore = onEntityReleased(self | 0) | 0;
-                    }
-                    if ((refCount | 0) < 1 | 0) {
-                        EntityIsAlreadyReleasedException(creationIndex | 0);
-                        return;
-                    }
                 }
                 function hasComponent(self, index) {
                     self = self | 0;
                     index = index | 0;
-                    return HEAPI32[self + 16 + (index << 2) >> 2] | 0;
+                    return self.components[index];
                 }
                 function addComponent(self, index, component) {
                     self = self | 0;
@@ -285,17 +273,17 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var added = 0;
                     var isEnabled = 0;
                     var hasComponent = 0;
-                    isEnabled = HEAPI32[self + 12 >> 2] | 0;
-                    hasComponent = hasComponent(self | 0, index | 0) | 0;
-                    if (!isEnabled | 0) {
+                    isEnabled = HEAPI32[self + 12 >> 2];
+                    hasComponent = hasComponent(self, index);
+                    if (!isEnabled) {
                         return EntityIsNotEnabledException() | 0;
                     }
-                    if (hasComponent | 0) {
+                    if (hasComponent) {
                         return EntityAlreadyHasComponentException(index | 0) | 0;
                     }
-                    HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
-                    added = onComponentAdded(self | 0, index | 0, component | 0) | 0;
-                    return self | 0;
+                    self.components[index] = component;
+                    added = onComponentAdded(self, index, component);
+                    return self;
                 }
                 function _replaceComponent(self, index, component) {
                     self = self | 0;
@@ -303,22 +291,22 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     component = component | 0;
                     var ignore = 0;
                     var previousComponent = 0;
-                    previousComponent = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
-                    if (previousComponent | 0) {
-                        if ((previousComponent | 0) == (component | 0) | 0) {
-                            ignore = onComponentReplaced(self | 0, index | 0, previousComponent | 0, component | 0) | 0;
+                    previousComponent = self.components[index];
+                    if (previousComponent) {
+                        if ((previousComponent | 0) == (component | 0)) {
+                            ignore = onComponentReplaced(self, index, previousComponent, component);
                         }
                         else {
-                            HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
-                            if (!component | 0) {
-                                ignore = onComponentRemoved(self | 0, index | 0, previousComponent | 0) | 0;
+                            self.components[index] = component;
+                            if (!component) {
+                                ignore = onComponentRemoved(self, index, previousComponent);
                             }
                             else {
-                                ignore = onComponentReplaced(self | 0, index | 0, previousComponent | 0, component | 0) | 0;
+                                ignore = onComponentReplaced(self, index, previousComponent, component);
                             }
                         }
                     }
-                    return self | 0;
+                    return self;
                 }
                 function removeComponent(self, index) {
                     self = self | 0;
@@ -326,16 +314,16 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var isEnabled = 0;
                     var hasComponent = 0;
                     var ignore = 0;
-                    isEnabled = HEAPI32[self + 12 >> 2] | 0;
-                    hasComponent = hasComponent(self | 0, index | 0) | 0;
-                    if (isEnabled | 0) {
+                    isEnabled = HEAPI32[self + 12 >> 2];
+                    hasComponent = hasComponent(self, index);
+                    if (isEnabled) {
                         return EntityIsNotEnabledException() | 0;
                     }
-                    if (hasComponent | 0) {
+                    if (hasComponent) {
                         return EntityDoesNotHaveComponentException(index | 0) | 0;
                     }
-                    ignore = _replaceComponent(self | 0, index | 0, 0 | 0) | 0;
-                    return self | 0;
+                    ignore = _replaceComponent(self, index, 0);
+                    return self;
                 }
                 function replaceComponent(self, index, component) {
                     self = self | 0;
@@ -344,39 +332,39 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var isEnabled = 0;
                     var hasComponent = 0;
                     var ignore = 0;
-                    isEnabled = HEAPI32[self + 12 >> 2] | 0;
-                    hasComponent = hasComponent(self | 0, index | 0) | 0;
-                    if (!isEnabled | 0) {
+                    isEnabled = HEAPI32[self + 12 >> 2];
+                    hasComponent = hasComponent(self, index);
+                    if (!isEnabled) {
                         return EntityIsNotEnabledException() | 0;
                     }
-                    if (hasComponent | 0) {
-                        ignore = addComponent(self | 0, index | 0, component | 0) | 0;
+                    if (hasComponent) {
+                        ignore = addComponent(self, index, component);
                     }
-                    if (!hasComponent | 0) {
-                        ignore = _replaceComponent(self | 0, index | 0, component | 0) | 0;
+                    if (!hasComponent) {
+                        ignore = _replaceComponent(self, index, component);
                     }
-                    return self | 0;
+                    return self;
                 }
                 function updateComponent(self, index, component) {
                     self = self | 0;
                     index = index | 0;
                     component = component | 0;
                     var previousComponent = 0;
-                    previousComponent = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
-                    if (previousComponent | 0) {
-                        HEAPI32[self + 16 + (index << 2) >> 2] = component | 0;
+                    previousComponent = self.components[index];
+                    if (previousComponent) {
+                        self.components[index] = component;
                     }
-                    return self | 0;
+                    return self;
                 }
                 function getComponent(self, index) {
                     self = self | 0;
                     index = index | 0;
                     var component = 0;
-                    component = hasComponent(self | 0, index | 0) | 0;
-                    if (!component | 0) {
+                    component = hasComponent(self, index);
+                    if (!component) {
                         return EntityDoesNotHaveComponentException(index | 0) | 0;
                     }
-                    return component | 0;
+                    return component;
                 }
                 function hasComponents(self, indices) {
                     self = self | 0;
@@ -384,16 +372,16 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var i = 0;
                     var index = 0;
                     var component = 0;
-                    for (i = 0 | 0; (i | 0) < 20 | 0; i = i + 1 | 0) {
-                        index = HEAPI32[indices + (i << 2) >> 2] | 0;
-                        if (index | 0) {
-                            component = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
-                            if (!component | 0) {
-                                return 0 | 0;
+                    for (i = 0; (i | 0) < 20; i = i + 1 | 0) {
+                        index = indices[i];
+                        if (index) {
+                            component = self.components[index];
+                            if (!component) {
+                                return false;
                             }
                         }
                     }
-                    return 1 | 0;
+                    return true;
                 }
                 function hasAnyComponent(self, indices) {
                     self = self | 0;
@@ -401,40 +389,40 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var i = 0;
                     var index = 0;
                     var component = 0;
-                    for (i = 0 | 0; (i | 0) < 20 | 0; i = i + 1 | 0) {
-                        index = HEAPI32[indices + (i << 2) >> 2] | 0;
-                        if (index | 0) {
-                            component = HEAPI32[self + 16 + (index << 2) >> 2] | 0;
-                            if (component | 0) {
-                                return 1 | 0;
+                    for (i = 0; (i | 0) < 20; i = i + 1 | 0) {
+                        index = indices[i];
+                        if (index) {
+                            component = self.components[index];
+                            if (component) {
+                                return true;
                             }
                         }
                     }
-                    return 0 | 0;
+                    return false;
                 }
                 function removeAllComponents(self) {
                     self = self | 0;
                     var i = 0;
                     var component = 0;
                     var ignore = 0;
-                    for (i = 0 | 0; (i | 0) < 20 | 0; i = i + 1 | 0) {
-                        component = HEAPI32[self + 16 + (i << 2) >> 2] | 0;
-                        if (component | 0) {
-                            ignore = _replaceComponent(self | 0, i | 0, 0 | 0) | 0;
+                    for (i = 0; (i | 0) < 20; i = i + 1 | 0) {
+                        component = self.components[i];
+                        if (component) {
+                            ignore = _replaceComponent(self, i, 0);
                         }
                     }
                 }
                 function retain(self) {
                     self = self | 0;
                     var refCount = 0;
-                    refCount = HEAPI32[self + 4 >> 2] | 0;
-                    HEAPI32[self + 4 >> 2] = refCount + 1 | 0;
-                    return self | 0;
+                    refCount = HEAPI32[self + 4 >> 2];
+                    HEAPI32[self + 4 >> 2] = refCount + 1;
+                    return self;
                 }
                 function destroy(self) {
                     self = self | 0;
-                    removeAllComponents(self | 0);
-                    HEAPI32[self + 12 >> 2] = 0 | 0;
+                    removeAllComponents(self);
+                    HEAPI32[self + 12 >> 2] = false;
                 }
                 function ctor(totalComponents) {
                     totalComponents = totalComponents | 0;
@@ -463,9 +451,9 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     removeAllComponents: removeAllComponents,
                     retain: retain,
                     destroy: destroy,
-                    ctor: ctor,
+                    ctor: ctor
                 };
-            }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
+            }(stdlib_2.default, ffi_3.default, ffi_4.buffer));
             for (var k in Entity) {
                 ffi_3.default['Entity_' + k] = Entity[k];
             }
@@ -487,37 +475,36 @@ System.register("Position", ["ffi", "stdlib"], function(exports_5, context_5) {
                 stdlib_3 = stdlib_3_1;
             }],
         execute: function() {
-            exports_5("Position", Position = (function (stdlib, foreign, heap) {
-                "use asm";
-                var HEAPF64 = new stdlib.Float64Array(heap);
+            exports_5("Position", Position = function (stdlib, foreign, heap) {
+                'use asm';
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 function Position(self, x, y) {
                     self = self | 0;
                     x = +x;
                     y = +y;
-                    HEAPF64[self + 0 >> 3] = +x;
-                    HEAPF64[self + 8 >> 3] = +y;
+                    HEAPF64[self + 0 >> 3] = x;
+                    HEAPF64[self + 8 >> 3] = y;
                 }
                 function getX(self) {
                     self = self | 0;
-                    var z = 0.0;
-                    z = +HEAPF64[self + 0 >> 3];
-                    return +HEAPF64[self + 0 >> 3];
+                    var z = 0;
+                    z = HEAPF64[self + 0 >> 3];
+                    return HEAPF64[self + 0 >> 3];
                 }
                 function setX(self, x) {
                     self = self | 0;
                     x = +x;
-                    HEAPF64[self + 0 >> 3] = +x;
+                    HEAPF64[self + 0 >> 3] = x;
                 }
                 function getY(self) {
                     self = self | 0;
-                    return +HEAPF64[self + 8 >> 3];
+                    return HEAPF64[self + 8 >> 3];
                 }
                 function setY(self, y) {
                     self = self | 0;
                     y = +y;
-                    HEAPF64[self + 8 >> 3] = +y;
+                    HEAPF64[self + 8 >> 3] = y;
                 }
                 function ctor(x, y) {
                     x = +x;
@@ -533,9 +520,9 @@ System.register("Position", ["ffi", "stdlib"], function(exports_5, context_5) {
                     setX: setX,
                     getY: getY,
                     setY: setY,
-                    ctor: ctor,
+                    ctor: ctor
                 };
-            }(stdlib_3.default, ffi_5.default, ffi_6.buffer)));
+            }(stdlib_3.default, ffi_5.default, ffi_6.buffer));
             for (var k in Position) {
                 ffi_5.default['Position_' + k] = Position[k];
             }
@@ -557,8 +544,8 @@ System.register("Pool", ["ffi", "stdlib"], function(exports_6, context_6) {
                 stdlib_4 = stdlib_4_1;
             }],
         execute: function() {
-            exports_6("Pool", Pool = (function (stdlib, foreign, heap) {
-                "use asm";
+            exports_6("Pool", Pool = function (stdlib, foreign, heap) {
+                'use asm';
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
@@ -587,23 +574,23 @@ System.register("Pool", ["ffi", "stdlib"], function(exports_6, context_6) {
                 function Pool(self, startCreationIndex) {
                     self = self | 0;
                     startCreationIndex = startCreationIndex | 0;
-                    HEAPI32[self + 0 >> 2] = startCreationIndex | 0;
+                    HEAPI32[self + 0 >> 2] = startCreationIndex;
                 }
                 function onEntityCreated(self, entity) {
                     self = self | 0;
                     entity = entity | 0;
-                    return 0 | 0;
+                    return false;
                 }
                 function createEntity(self) {
                     self = self | 0;
                     var creationIndex = 0;
                     var entity = 0;
-                    creationIndex = HEAPI32[self + 0 >> 2] | 0;
-                    entity = Entity_ctor(20 | 0) | 0;
-                    HEAPI32[self + 0 >> 2] = creationIndex | 0;
-                    Entity_initialize(entity | 0, creationIndex | 0);
-                    Entity_retain(entity | 0) | 0;
-                    return entity | 0;
+                    creationIndex = HEAPI32[self + 0 >> 2] + 1;
+                    entity = new Entity(20);
+                    HEAPI32[self + 0 >> 2] = creationIndex;
+                    Entity_initialize(entity, creationIndex);
+                    Entity_retain(entity);
+                    return entity;
                 }
                 function ctor(startCreationIndex) {
                     startCreationIndex = startCreationIndex | 0;
@@ -616,9 +603,9 @@ System.register("Pool", ["ffi", "stdlib"], function(exports_6, context_6) {
                     Pool: Pool,
                     onEntityCreated: onEntityCreated,
                     createEntity: createEntity,
-                    ctor: ctor,
+                    ctor: ctor
                 };
-            }(stdlib_4.default, ffi_7.default, ffi_8.buffer)));
+            }(stdlib_4.default, ffi_7.default, ffi_8.buffer));
             for (var k in Pool) {
                 ffi_7.default['Pool_' + k] = Pool[k];
             }

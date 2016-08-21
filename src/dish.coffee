@@ -16,6 +16,7 @@ parser = require('./parser')
 esprima = require('esprima')
 esmangle = require('esmangle')
 escodegen = require('escodegen')
+transform = require('./transform')
 liquid = require('liquid.coffee')
 manifest = require('../package.json')
 
@@ -51,6 +52,12 @@ main = ->
 ###
 compile = (source, template, output, packge, mangle, whitespace) ->
     console.log "dish #{manifest.version} #{packge||''}  #{source}"
+    ###
+     * Phase I
+     *
+     *  collect type information and output intermediate javascript  
+     *
+    ###
     if packge
         if not fs.existsSync("./dish.json")
             fs.writeFileSync "./dish.json", """
@@ -61,7 +68,6 @@ compile = (source, template, output, packge, mangle, whitespace) ->
         api = require("../dish.json")
 
     parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle, packge)
-
 
     tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
 
@@ -96,12 +102,12 @@ compile = (source, template, output, packge, mangle, whitespace) ->
     ###
     * Fix Ups
     ###
-    out = out.replace(/\n    var __ZZ__ = 0;/mg, '')            # delete placeholder
     out = out.replace(/__double__/mg, '')                       # fix-up type conversions
     out = out.replace(/__int__/mg, '~~')                        # fix-up type conversions
     out = out.replace(/\+fround/mg, 'fround')                   # fix-up type conversions
     out = out.replace(/ \| 0 \| 0/mg, '|0')                     # remove redundant coercion
     out = out.replace(/\n\n/mg, '\n') while /\n\n/.test(out)    # fix-up empty lines
+    out = out.replace(/;;/mg, ';')                              # fix-up redundant semicolon
 
     if mangle
         i = out.indexOf(parsed.name)
@@ -114,9 +120,6 @@ compile = (source, template, output, packge, mangle, whitespace) ->
                 .replace(/'0.0'/g, '0.0')               # reverse verbatim option
         else out = out.replace(/\('0.0'\)/g, '0.0')     # reverse verbatim option
     else out = out.replace(/\('0.0'\)/g, '0.0')         # reverse verbatim option
-
-    if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", out
-    else console.log out
 
     ###
     * Update package api info
@@ -132,6 +135,24 @@ compile = (source, template, output, packge, mangle, whitespace) ->
             source: source
         }
         fs.writeFileSync "./dish.json", JSON.stringify(api, null, 2)
+
+    if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", out
+
+    ###
+     * Phase II
+     *
+     *  transform intermediate javascript by refactoring expressions 
+     *
+     *  ex: 
+     *      self.components[index] = component;
+     *  to:
+     *      HEAPI32[self+12+(index<<2)>>2] = component|0;
+     *
+    ###
+    console.log "dish #{manifest.version} phase II/refactoring"
+    out = transform.code(packge, parsed.name, out)
+    if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", out
+    else console.log out
 
 
 

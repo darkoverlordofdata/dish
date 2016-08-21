@@ -1,19 +1,18 @@
 /**
- * parse.js - standard version
+ * parse.js
  * 
  * 
  * Recursive Descent Parser for D`ish
- * Parses the statements and builds linkage infrastructure 
- * expression parsing is handed off to parseExp.
+ * Parses statements and builds linkage infrastructure 
+ * Collect and save type info
  * 
- * - Blit Twiddlefast
+ * 
  */
 'use strict'
 
 module.exports = {
     parse: parse
 }
-
 
 /**
  * Parse tokens from the input lexer
@@ -22,28 +21,46 @@ module.exports = {
  * @returns parsed document and flags
  */
 function parse(input, mangle, packge) {
-    const jsep = require('jsep')
     const codegen = require('escodegen')
     const esprima = require('esprima')
-    const Ast = require('./classes/Ast')
     const Field = require('./classes/Field')
     const Symbol = require('./classes/Symbol')
-    const Term = require('./classes/Term')
     const Token = require('./classes/Token')
-    const Triad = require('./classes/Triad')
     const factory = require('./factory')
+    const lexer = require('./lexer')
     const ast = { type: 'Program', body: [] }
+    const ctor = {args:[], body:[]}
     const symtbl = { global: {} }
     const exporting = {}
     const types = {}
     const api = {}
     const data = []
+    const mem = {
+        byte:   {size: 0, width: 1, heap: 'HEAPU8',   name: 'HEAPU8'},
+        char:   {size: 1, width: 2, heap: 'HEAPI16',  name: 'HEAPI16'},
+        bool:   {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
+        int:    {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
+        uint:   {size: 2, width: 4, heap: 'HEAPU32',  name: 'HEAPU32'},
+        object: {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPU32'},
+        float:  {size: 2, width: 4, heap: 'HEAPF32',  name: 'HEAPF32'},
+        double: {size: 3, width: 8, heap: 'HEAPF64',  name: 'HEAPF64'}
+    }
+    const heaps = {
+        HEAPI8: false,
+        HRAPU8: false,
+        HEAPI16: false,
+        HEAPU16: false,
+        HEAPI32: false,
+        HEAPU32: false,
+        HEAPF32: false,
+        HEAPF64: false
+    }
 
-    let uniqueId = 1
     let moduleName = ''
     let current = ''
     let block = [] // current output block
     let currentScope = ''
+    let imtype = ''
     let priorScope = ''
     let injectInit = false
     let isClass = false
@@ -52,14 +69,6 @@ function parse(input, mangle, packge) {
     let isConst = false
     let float = false
     let malloc = false
-    let heapi8 = false
-    let heapu8 = false
-    let heapi16 = false
-    let heapu16 = false
-    let heapi32 = false
-    let heapu32 = false
-    let heapf32 = false
-    let heapf64 = false
     Field.offset = 0
     Field.index = 0
     Field.size = 0
@@ -81,19 +90,20 @@ function parse(input, mangle, packge) {
             name: moduleName,   //  module name
             float: float,       //  uses floats?
             malloc: malloc,     //  use heap?
-            heapi8: heapi8,     //  heap views:
-            heapu8: heapu8,
-            heapi16: heapi16,
-            heapu16: heapu16,
-            heapi32: heapi32,
-            heapu32: heapu32,
-            heapf32: heapf32,
-            heapf64: true, // heapf64,
+            heapi8: heaps.HEAPI8,     //  heap views:
+            heapu8: heaps.HEAPU8,
+            heapi16: heaps.HEAPI16,
+            heapu16: heaps.HEAPU16,
+            heapi32: heaps.HEAPI32,
+            heapu32: heaps.HEAPU32,
+            heapf32: heaps.HEAPF32,
+            heapf64: heaps.HEAPF64,
             exports: exporting,  //  exported API
             api: api,
             data: data,
             size: Field.last,
-            'class': isClass
+            'class': isClass,
+            symtbl: symtbl
         }
         
     } catch (ex) {
@@ -102,43 +112,80 @@ function parse(input, mangle, packge) {
         process.exit(0)
     }
 
+    /** get an ast fragment */
+    function fragment(ex) {
+        return esprima.parse(ex).body[0].expression
+    }
+
+    /** 
+     * reduce a list of tokens to a list of token.values
+     */
+    function values(tokens) {
+        const t1 = []
+        for (let t in tokens) {
+            t1.push(tokens[t].value)
+        }
+        return t1
+    }
 
     /**
-     * test if the token is a delimiter  
+     * apply coercion wrapper to the entire expression
      */
+    function coerce(imtype, out) {
+        switch (imtype) {
+            case 'float':   return `fround(${out})` 
+            case 'double':  return `+(${out})` 
+            case 'void':    return out;
+            default:        return `${out}|0` 
+        }                
+        
+    }
+
+    /** lookup an imported member type */
+    function external(object) {
+        const api = require('../dish.json')
+        return api[packge][symtbl[currentScope][object].type]
+    }
+
+    /** loopup an imported field descriptor */
+    function lookupField(type, name) {
+        let t = null
+        if (type === moduleName) {
+            t = data
+        } else {
+            const ext = require('../dish.json')
+            try {
+                t = ext[packge][name].data
+            } catch (ex) {
+                input.raise(`Unable to lookupField ${packge} ${name} `)
+            }
+        }
+        for (let i in t) {
+            if (t[i].name === name) return t[i]
+        }
+        input.raise(`Type ${type} not found`)
+
+    }
+
+
+    /** shortcut to input.match */
     function match(ch) {
-        const tok = input.peek()
-        return tok.type === Token.Delimiter && tok.value === ch
+        return input.match(ch)
     }
-
-    /**
-     * test if the token is a keyword  
-     */
+    /** shortcut to input.matchKeyword */
     function matchKeyword(kw) {
-        const tok = input.peek()
-        return tok.type === Token.Keyword && tok.value === kw
+        return input.matchKeyword(kw)
     }
-
-    /**
-     * Token MUST match the delimiter
-     */
+    /** shortcut to input.expect */
     function expect(ch) {
-        if (match(ch)) input.next()
-        else input.raise(`Expecting delimiter: [${ch}]`)
+        return input.expect(ch)
     }
-
-    /**
-     * Token MUST match the keyword
-     */
+    /** shortcut to input.expectKeyword */
     function expectKeyword(kw) {
-        if (matchKeyword(kw)) input.next()
-        else input.raise(`Expecting keyword: [${kw}]`)
+        return input.expectKeyword(kw)
     }
 
-    function reset() {
-        uniqueId = 1
-    }
-
+    /** Top Level: Parse Module */
     function parseModule(body) {
         expectKeyword('module') //  first keyword is required
         moduleName = input.next().value
@@ -151,6 +198,7 @@ function parse(input, mangle, packge) {
         }
     }
 
+    /** Top Level: Parse Class */
     function parseClass(body) {
         expectKeyword('class') //  first keyword is required
         moduleName = input.next().value
@@ -163,9 +211,35 @@ function parse(input, mangle, packge) {
             if (node) body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
             if (match('}')) break
-
         }
         expect('}')
+        /**
+         * constructor
+         */
+        exporting.ctor = 'ctor'
+        const size = Field.last
+        const params = [fragment('self|0')]
+        for (let i=0; i<ctor.args.length; i++) {
+            switch (ctor.args[i].type.value) {
+                case 'float': 
+                    float = true
+                    params.push(fragment(`fround(${ctor.args[i].name.value})`))
+                    break
+                case 'double':
+                    params.push(fragment(`+${ctor.args[i].name.value}`))
+                    break
+                default:
+                    params.push(fragment(`${ctor.args[i].name.value}|0`))
+
+            }
+        }
+
+        malloc = true
+        ctor.body.push(factory.IntDeclaration('self'))
+        ctor.body.push(factory.New('self', { "type": "Literal", "value": size }))
+        ctor.body.push(factory.CallExpression(moduleName, params))
+        ctor.body.push(factory.Return(fragment('self|0')))
+        body.push(factory.FunctionDeclaration({value:'ctor'}, ctor.args, ctor.body))
     }
 
     /**
@@ -220,7 +294,6 @@ function parse(input, mangle, packge) {
         if (types[input.peek().value])  return parseType(currentScope)
         //=================================
         if (currentScope !== priorScope) {
-            reset()
             priorScope = currentScope
             for (let name in symtbl[currentScope]) {
                 let sym = symtbl[currentScope][name]
@@ -228,396 +301,320 @@ function parse(input, mangle, packge) {
                     if (sym.array) {
                         malloc = true
                         const tokens = tokens2Array(sym.init)
-                        body.push(factory.New(name, sym.size, { "type": "Literal", "value": tokens.length }))
+                        body.push(factory.New(name, { "type": "Literal", "value": tokens.length }))
                         for (let t in tokens) {
                             let sname = `${sym.heap}[(${name}+${t})<<2>>2]`
-                            let value = parseExp(''+tokens[t])
+                            let value = parseExpression(null, [tokens[t]], false).expression
                             body.push(factory.AssignmentStatement(sname, value))
                         }
                     } else {
-                        body.push(factory.AssignmentStatement(sym.name, parseExp(sym.init.join(' '))))
+                        imtype = sym.type
+                        body.push(parseExpression([sym.name], sym.init, false))
                     }
                 }
             }
         }
         //=================================
+        if (matchKeyword('throw'))      return parseThrow(body)
         if (matchKeyword('break'))      return parseBreak()
         if (matchKeyword('continue'))   return parseContinue()
         if (matchKeyword('do'))         return parseDo()
         if (matchKeyword('for'))        return parseFor()
         if (matchKeyword('if'))         return parseIf()
-        if (matchKeyword('print'))      return parsePrint()
-        if (matchKeyword('return'))     return parseReturn(body)
+        if (matchKeyword('print'))      return parsePrint(body)
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
         //=================================
-        // const ex = alt.parseExpression(body)
-        // if (ex) return ex
-       return parseExpression(body, input.next().value, false)
- 
-    }    
-    
-    function parseReturn(body) {
-        expectKeyword('return')
-        if (match(';')) return factory.Return()
 
-        /** parse the return expression */
-        const ast = parseExpression(body, mangle?'$00':'__00__', true)
-
-        let castExpression = ''
-        switch(symtbl.global[currentScope].type) {
-            case 'bool':    castExpression = `((${mangle?'$00':'__00__'})|0)`; break
-            case 'uint':    castExpression = `((${mangle?'$00':'__00__'})|0)`; break
-            case 'int':     castExpression = `((${mangle?'$00':'__00__'})|0)`; break
-            case 'double':  castExpression = `+(${mangle?'$00':'__00__'})`; break
-            case 'float':   castExpression = `fround(${mangle?'$00':'__00__'})`; break
-            case 'void':    castExpression = 'void 0'; break
-            default:        castExpression = `((${mangle?'$00':'__00__'})|0)`; break
-        }
-        let value = factory.Return(parseExp(castExpression))
-        body.push(ast)
-        return value
-
-    }
-
-    function parseExpression(body, name, isReturn) {
-
+        const lhs = []
         const rhs = []
-        const index = []
-        let indexer = false
-        let property = false
-        let member = ''
-        let method = ''
-        let self = ''
+        const isReturn = matchKeyword('return')
 
-        if (!isReturn)  { /** process LHS */
-            if (match('+')) { /** AutoIncrement */
-                expect('+')
-                if (match('+')) {
-                    expect('+')
-                    return factory.AutoIncrement(name)
-                }
-                input.raise('Expected [++]')
-            }
-            if (match('-')) { /** AutoDecrement */
-                expect('-')
-                if (match('-')) {
-                    expect('-')
-                    return factory.AutoDecrement(name)
-                }
-                input.raise('Expected [--]')
-            }
-            if (match('(')) { /** Call Function */
-                input.putBack()
-                return parseCall()
-            }
-
-            /** LHS */
-            if (match('=')) {               /** x = */
-                expect('=')
-            } else if (match('.')) {        /** x.member = */
-                                            /** x.member[index] = */
-                                            /** x.member(p) */
-                expect('.')
-                property = true
-                member = input.next().value
-                if (match('=')) {
-                    expect('=')
-                }
-                else {
-                    const method = `${symtbl[currentScope][name].type}_${member}`
-                    const arg = [[
-                        new Token(Token.Variable, name),
-                        new Token(Token.Delimiter, '|'),
-                        new Token(Token.Number, '0')
-                    ]]
-                    let pos = 1
-
-                    if (match('(')) { /** Call Method: o.method(...) */
-                        expect('(')
-                        while (!match(')')) {
-                            if (match(',')) {
-                                expect(',')
-                                pos++
-                            } else {
-                                if (!arg[pos]) arg[pos] = []
-                                arg[pos].push(input.next())
-                            }
-
-                        }
-                        expect(')')
-                        const params = []
-                        for (let i=0; i<arg.length; i++) {
-                            //TODO: Coerce params - p1|0, +p2, fround(p3)
-                            let node = parseExp(arg[i])
-                            params.push(node)
-                        }
-                        return factory.CallExpression(method, params)
-
-                    } else if (match('[')) { /** Property Array: o.field[index] = value; */
-                        /**
-                         * o.field[index] = value
-                         * HEAPI32[o+field+index] = value
-                         */
-                        expect('[')
-                        while (!match(']')) {
-                            index.push(input.next().value)
-                        }
-                        expect(']')
-                        expect('=')
-                    } else input.raise('Invalid property/method')
-                    
-                }
-            } else if (match('[')) {        /** x[exp] =  */
-                expect('[')
-                indexer = true
-                while (!match(']')) {
-                    index.push(input.next().value)
-                }
-                expect(']')
-                if (match('.')) {           /** x[exp].member = */
-                    expect('.')
-                    property = true
-                    member = input.next().value
-                    if (match('=')) expect('=')
-                    else input.raise('Invalid LHS(2) in assignment')
-                } else if (match('=')) expect('=')
-                else input.raise('Invalid LHS(3) in assignment')
-            } else input.raise('Invalid LHS(4) in assignment')
-
-            if (member !== '') { /** Encode lhsvalue */
-                const sym = symtbl[currentScope][name]
-                const def = lookupField(sym.type, member)
-                index.push(def.offset>>2)
-            }
+        if (isReturn) {
+            expectKeyword('return')
+            if (match(';')) return factory.Return()
         }
-        /** RHS */
-        while (!match(';')) {
-            if (matchKeyword('new')) {
-                expectKeyword('new') 
-                let size = 0
-                let tokens = []
-                let token = null
-                if (matchKeyword('int')) {
-                    expectKeyword('int')
-                    size = 2
-                    heapi32 = true
-                } else if (matchKeyword('uint')) {
-                    expectKeyword('uint')
-                    size = 2
-                    heapu32 = true
-                } else if (matchKeyword('bool')) {
-                    expectKeyword('bool')
-                    size = 2
-                    heapu32 = true
-                } else if (matchKeyword('float')) {
-                    expectKeyword('float')
-                    size = 2
-                    heapf32 = true
-                } else if (matchKeyword('double')) {
-                    expectKeyword('double')
-                    size = 3
-                    heapf64 = true
-                } else {
-                    malloc = true
-                    let klass = input.next()
 
-                    const ext = require('../dish.json')
-                    const size = ext[packge][klass.value].size
-                    const ctor = `${klass.value}_${klass.value}`
-                    const arg = [[
-                        new Token(Token.Variable, name),
-                        new Token(Token.Delimiter, '|'),
-                        new Token(Token.Number, '0')
-                    ]]
-                    let pos = 1
-                    expect('(')
-                    while (!match(')')) {
-                        if (match(',')) {
-                            expect(',')
-                            pos++
-                        } else {
-                            if (!arg[pos]) arg[pos] = []
-                            arg[pos].push(input.next())
-                        }
-
-                    }
-                    expect(')')
-                    const params = []
-
-                    for (let i=0; i<arg.length; i++) {
-                        //TODO: Coerce params - p1|0, +p2, fround(p3)
-                        let node = parseExp(arg[i])
-                        params.push(node)
-                    }
-
-                    body.push(factory.New(name, 2, { "type": "Literal", "value": size }))
-                    return factory.CallExpression(ctor, params)
-                }
-                expect('[')
-                while (!match(']')) {
-                    token = input.next();
-                }
-                expect(']')
-                malloc = true
-                switch (token.type) {
-                    case Token.Variable:
-                        return factory.New(name, size, { "type": 'Identifier', "name": token.value })
-                    case Token.Number:
-                        return factory.New(name, size, { "type": "Literal", "value": token.value }) //, "raw": ""+token.value })
-                    default:
-                        input.raise('Expecting [Literal|Identifier]')
-                }
-            } else if (match('.')) {
-                expect('.')
-                method = input.next().value
-                
-                if (match('(')) { /** x = obj.method(...) */
-                    expect('(')
-                    const name = rhs[0].value
-                    rhs[0].value = `${symtbl[currentScope][rhs[0].value].type}_${method}`
-                    rhs.push(new Token(Token.Delimiter, '('))
-                    rhs.push(new Token(Token.Variable, name))
-                    rhs.push(new Token(Token.Delimiter, '|'))
-                    rhs.push(new Token(Token.Number, '0'))
-                    let pos = 1
-
-                    while (!match(')')) {
-                        if (match(',')) {
-                            expect(',')
-                            rhs.push(new Token(Token.Delimiter, ','))
-                        } else {
-                            //TODO: Coerce params - p1|0, +p2, fround(p3)
-                            rhs.push(input.next()) 
-                        }
-
-                    }
-                    expect(')')
-                    rhs.push(new Token(Token.Delimiter, ')'))
-                    method = ''  
-                }
-            } else {
-                rhs.push(input.next())
+        while (!match('=') && !match(';')) {
+            lhs.push(input.next().value)
+        }
+        if (match('=')) {
+            if (isReturn) input.raise('Invalid return/assignment')
+            expect('=')
+            while (!match(';')) {
+                rhs.push(input.next().value)
             }
         }
 
-        /** Decode RHS of object.field */
-        if (method !== '') {
-            self = rhs[0].value
-            let sym = symtbl[currentScope][self]
-            if (rhs.length === 1) {/** Property */
-                const def = lookupField(sym.type, method)
-                if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
-
-                rhs.push(new Token(Token.Delimiter, '['))
-                rhs.push(new Token(Token.Number, (def.offset>>2)))
-                rhs.push(new Token(Token.Delimiter, ']'))
-            } else {
-                if (rhs[1].value === '[') {
-                    const def = lookupField(sym.type, method)
-                    if (def.static) input.raise(`Invalid static type ${sym.type}.${method}`)
-                    rhs[2].value = `${rhs[2].value} + ${def.offset>>2}`
-                }
-            }
-        }
-
-        const ast = parseExp(fixExpression(rhs))
-        const sym = symtbl[currentScope][name]||symtbl['global'][name]
-
-        if (ast.type === 'BinaryExpression' || ast.type === 'MemberExpression' || index.length>0) {
-            const lhsvalue = index.length===0?null:parseExp(index.join('+'))
-            const lines = transpile(sym, ast, lhsvalue, mangle)  
-            for (let l in lines) {
-                const line = lines[l]
-                if (parseInt(l, 10) === lines.length-1) {
-                    createVar(body, line.name, 'int', 0)
-                    console.log(line)
-                    return factory.AssignmentStatement(line.name, parseExp(line.code))
-                } else {
-                    createVar(body, line.name, 'int', 0)
-                    body.push(factory.AssignmentStatement(line.name, parseExp(line.code)))
-                }
-
-            }
-        } else { /**  simple assignment */
-            let a;
-            switch (ast.type) {
-                case 'Literal': 
-                    switch (ast.raw) {
-                        case 'true': 
-                            ast.value = 1
-                            ast.raw = '1'
-                            break
-                        case 'false':
-                            ast.value = 0
-                            ast.raw = '0'
-                            break
-                    }
-                    a = factory.AssignmentStatement(name, ast)
-                    return a
-                case 'Identifier':
-                    a = factory.AssignmentStatement(name, ast)
-                    return a
-                case 'CallExpression':
-                    if (self !== '') {
-                        ast.arguments.unshift(
-                        { type: 'BinaryExpression',
-                            operator: '|',
-                            left: { type: 'Identifier', name: self },
-                            right: { type: 'Literal', value: 0, raw: '0' } } 
-                        )
-                    }
-                    switch (sym.type) {
-                        case 'int': return factory.AssignmentStatementCallInt(name, ast)
-                        case 'uint': return factory.AssignmentStatementCallInt(name, ast)
-                        case 'bool': return factory.AssignmentStatementCallInt(name, ast)
-                        //case 'float': return factory.AssignmentStatementCallFloat(name, ast)
-                        case 'double': return factory.AssignmentStatementCallDouble(name, ast)
-                        case 'float': throw new Error('WTF???')
-                        default: throw new Error(`Unknown Symbol ${sym.type}`)
-                    }
-            }
-        }
-
-
-    }
-
-    function lookupField(type, name) {
-        let t = null
-        if (type === moduleName) {
-            t = data
+        if (rhs.length === 0) {
+            return parseExpression(null, lhs, isReturn)
         } else {
-            const ext = require('../dish.json')
-            t = ext[packge][name].data
+            return parseExpression(lhs, rhs, false)
         }
-        for (let i in t) {
-            if (t[i].name === name) return t[i]
-        }
-        input.raise(`Type ${type} not found`)
 
     }
 
-    function fixExpression(tokens) {
-        const exp = []
 
-        for (let i in tokens) {
+    /**
+     * Parse expression
+     * 
+     * entry point to parsing an expression
+     * 
+     * @param lhs   left hand side of the expression
+     * @param rhs   right hand side of the expression
+     * @param isEeturn true if this is a return expression
+     * @return compiled ast
+     */
+    function parseExpression(lhs, rhs, isReturn) {
+        //console.log(isReturn, lhs?lhs.join(''):'', rhs.join(''))
+        if (isReturn) {
+            //console.log('return '+rhs.join(' '))
+            return factory.Return(esprima.parse(rhs.join(' ')).body[0])
+            // imtype = symtbl.global[currentScope].type
+            // return factory.Return(esprima.parse(recode(rhs)).body[0])
+        } else if (lhs == null) {
+            //console.log(rhs.join(' '))
+            return esprima.parse(rhs.join(' ')).body[0]
+            // return esprima.parse(recode(rhs)).body[0]
+        } else {
+            //console.log(`${lhs.join(' ')} = ${rhs.join(' ')}`)
+            return esprima.parse(`${lhs.join(' ')} = ${rhs.join(' ')}`).body[0]
+            // return esprima.parse(`${recode(lhs, true)} = ${recode(rhs)}`).body[0]
+        }
+    }
 
-            switch(tokens[i]) {
-                case 'to!double':
-                    tokens[i].value = '__double__'
-                    break
-                case 'to!int':
-                    tokens[i].value = '__int__'
-                    break
-                case 'to!float':
-                    tokens[i].value = 'fround'
-                    float = true
-                    break
+    
+    /**
+     * recode
+     * 
+     * @param tokens parsed input expression
+     * @param isLhs if true, set the implied type for the rhs
+     * @returns string re-written code
+     */
+    function recode(tokens, isLhs) {
+        for (let t in tokens) {
+            switch (tokens[t]) {
+                case 'true':        tokens[t] = 1; break
+                case 'false':       tokens[t] = 0; break
+                case 'to!double':   tokens[t] = '__double__'; imtype = 'double'; break
+                case 'to!int':      tokens[t] = '__int__'; imtype = 'int'; break
+                case 'to!float':    tokens[t] = 'fround'; imtype = 'float'; float = true; break
+            }
+        }
+
+        if (tokens[0] === 'new') {
+            malloc = true
+            if (mem[tokens[1]]) {
+                const exp = []
+                let bracket = 0
+                let i = 2
+                do {
+                    if (tokens[i] === '[') bracket++
+                    if (tokens[i] === ']') bracket--
+                    exp.push(tokens[i++])
+                } while (bracket !== 0)
+                exp[0] = '('
+                exp[exp.length-1] = ')'
+                
+                heaps[mem[tokens[1]].name] = true
+                return `malloc(${exp.join(' ')} << ${mem[tokens[1]].size})|0`
+            }
+            const exp = []
+            const par = []
+            let paren = 0
+            let i = 2
+            let p = 0
+            do {
+                if (tokens[i] === '(') paren++, i++
+                else if (tokens[i] === ')') paren--, i++
+                else if (tokens[i] === ',') i++, p++
+                else {
+                    if (!par[p]) par[p] = []
+                    par[p].push(tokens[i++])
+                }
+            } while (paren !== 0)
+
+            const api = require('../dish.json')
+            const def = api[packge][tokens[1]].api['ctor']
+            let param = []
+            for (let k in def) {
+                param.push(def[k])
+            }
+            for (p in par) {
+                switch (param[p]) {
+                    case 'float':   exp.push(`fround(${par[p].join(' ')})`); break;
+                    case 'double':  exp.push(`+(${par[p].join(' ')})`); break;
+                    default:        exp.push(`${par[p].join(' ')}|0`); break
+                }
+            }
+            heaps.HEAPI32 = true
+            return `${tokens[1]}_ctor(${exp.join(',')})|0`
+
+        }
+        const sym = symtbl[currentScope][tokens[0]]?symtbl[currentScope][tokens[0]]:symtbl.global[tokens[0]]
+
+        if (tokens[1] === '.') {
+            /**
+             * name.member
+             * name.member(..)
+             * name.member[index]
+             */
+
+            if (tokens[3] === '[') {
+                const def = lookupField(sym.type, tokens[2])
+                const exp = []
+                let bracket = 0
+                let i = 3
+                do {
+                    if (tokens[i] === '[') bracket++
+                    if (tokens[i] === ']') bracket--
+                    exp.push(tokens[i++])
+                } while (bracket !== 0)
+                exp[0] = '('
+                exp[exp.length-1] = ')'
+                heaps[mem[def.type].heap] = true
+
+                const out = `${mem[def.type].heap}[${tokens[0]}+${def.offset}+(${exp.join(' ')} << ${mem[def.type].size}) >> ${mem[def.type].size}]`
+                if (isLhs) {
+                    imtype = def.type
+                    return out
+                } else return coerce(imtype, out)
+
+            } else if (tokens[3] === '(') {
+                /**
+                 * [0] = object
+                 * [1] = '.'
+                 * [2] = method
+                 * [3] = '('
+                 */
+                //console.log(imtype, tokens)
+                const exp = []
+                const par = []
+                let paren = 0
+                let i = 3
+                let p = 0
+                do {
+                    if (tokens[i] === '(') paren++, i++
+                    else if (tokens[i] === ')') paren--, i++
+                    else if (tokens[i] === ',') i++, p++
+                    else {
+                        if (!par[p]) par[p] = []
+                        par[p].push(tokens[i++])
+                    }
+                } while (paren !== 0)
+
+
+                const def = api[tokens[2]]?api[tokens[2]]:external(tokens[0])
+                if (!def) {
+                    input.raise(`Type not found for ${tokens[0]}.${tokens[2]} in ${moduleName}.${currentScope}`)
+                }
+                const type = symtbl.global[tokens[2]] 
+                            ? symtbl.global[tokens[2]].type 
+                            : def.symtbl.global[tokens[2]].type
+                
+                const param = []
+                for (let k in def) {
+                    param.push(def[k])
+                }
+                param.shift()
+                for (let p in par) {
+                    switch (param[p]) {
+                        case 'float':   exp.push(`fround(${par[p].join(' ')})`); break;
+                        case 'double':  exp.push(`+(${par[p].join(' ')})`); break;
+                        default:        exp.push(`${par[p].join(' ')}|0`); break
+                    }
+                }
+                exp.unshift(`${tokens[0]}|0`)
+
+                const out = symtbl[currentScope][tokens[0]].type===moduleName
+                            ?`${tokens[2]}(${exp.join(',')})`
+                            :`${symtbl[currentScope][tokens[0]].type}_${tokens[2]}(${exp.join(',')})`
+
+                if (isLhs) {
+                    imtype = symtbl.global[tokens[2]].type
+                    return out
+                } else {
+                    imtype = type
+                    return coerce(imtype, out)
+                }
+            } else {
+                const def = lookupField(sym.type, tokens[2])
+                heaps[mem[def.type].heap] = true
+                const out = `${mem[def.type].heap}[${tokens[0]}+${def.offset} >> ${mem[def.type].size}]`
+                if (isLhs) {
+                    imtype = def.type
+                    return out 
+                } else return coerce(imtype, out)
+                //return out
             }
             
-            exp.push(tokens[i].value)
+        } else if (tokens[1] === '[') {
+            /**
+             * name[index]
+             */
+            const exp = []
+            let bracket = 0
+            let i = 1
+            do {
+                if (tokens[i] === '[') bracket++
+                if (tokens[i] === ']') bracket--
+                exp.push(tokens[i++])
+            } while (bracket !== 0)
+            exp[0] = '('
+            exp[exp.length-1] = ')'
+            heaps[mem[sym.type].heap] = true
+
+            const out = `${mem[sym.type].heap}[${tokens[0]}+(${exp.join(' ')} << ${mem[sym.type].size}) >> ${mem[sym.type].size}]`
+            if (isLhs) {
+                imtype = sym.type
+                return out 
+            } else return coerce(imtype, out)
+        } else if (tokens[1] === '(' && tokens[0]!== '(') {
+            /**
+             * name(...)
+             */
+            const exp = []
+            const par = []
+            let paren = 0
+            let i = 1
+            let p = 0
+            do {
+                if (tokens[i] === '(') paren++, i++
+                else if (tokens[i] === ')') paren--, i++
+                else if (tokens[i] === ',') i++, p++
+                else {
+                    if (!par[p]) par[p] = []
+                    par[p].push(tokens[i++])
+                }
+            } while (paren !== 0)
+
+            const api = require('../dish.json')
+            const def = symtbl[currentScope]
+            let param = []
+            for (let k in def) {
+                param.push(def[k])
+            }
+            param.shift()
+
+            for (p in par) {
+                switch (param[p].type) {
+                    case 'float':   exp.push(`fround(${par[p].join(' ')})`); break;
+                    case 'double':  exp.push(`+(${par[p].join(' ')})`); break;
+                    default:        exp.push(`${par[p].join(' ')}|0`); break
+                }
+            }
+            const out = `${tokens[0]}(${exp.join(',')})`
+            if (isLhs) {
+                imtype = def.type
+                return out
+            } else return coerce(imtype, out)
         }
-        return exp.join(' ')
+
+
+        const out = tokens.join(' ')
+        if (isLhs) {
+            return out 
+        } else return coerce(imtype, out)
     }
 
     /**
@@ -662,99 +659,6 @@ function parse(input, mangle, packge) {
     }
 
 
-    /**
-     * Parse an expression 
-     * 
-     * A wrapper around jsep
-     * converts ++ syntax in for update expression
-     * 
-     * @param tokens the expression as string or as an array of tokens
-     * @param conditional bool hint conditional or arithmetic
-     * @returns esprima schema ast
-     */
-    function parseExp(tokens, conditional) {
-        if ('string' === typeof tokens) {
-            try {
-                return jsep(tokens)
-            } catch (ex) {
-                console.log(tokens)
-                console.log(ex.message)
-                console.log(ex.stack)
-                process.exit(0)
-            }
-        } else {
-            if (conditional) {
-                // coerce each term individually
-                const scope = currentScope === '' ? 'global' : currentScope
-                const temp = []
-                for (let i=0; i<tokens.length; i++) {
-                    const token = tokens[i]
-                    if (token.type === Token.Variable) {
-                        if (!symtbl[scope][token.value])  {
-                            temp.push(token)
-                            continue // todo?: finish this
-                        }
-                        switch(symtbl[scope][token.value].type) {
-                            case 'int':    
-                            case 'uint':    
-                            case 'bool':
-                                temp.push(new Token(Token.Delimiter, '('))
-                                temp.push(token)
-                                temp.push(new Token(Token.Delimiter, '|'))
-                                temp.push(new Token(Token.Number, '0'))
-                                temp.push(new Token(Token.Delimiter, ')'))
-                                break
-                            case 'double':  
-                                temp.push(new Token(Token.Delimiter, '('))
-                                temp.push(new Token(Token.Delimiter, '+'))
-                                temp.push(token)
-                                temp.push(new Token(Token.Delimiter, ')'))
-                                break
-                            case 'float':   
-                                temp.push(new Token(Token.Variable, 'fround'))
-                                temp.push(new Token(Token.Delimiter, '('))
-                                temp.push(token)
-                                temp.push(new Token(Token.Delimiter, ')'))
-                                break
-                            default:
-                                console.log('WTF 303')
-                                process.exit(0)
-                        }
-                    } else {
-                        temp.push(token)
-                    }
-                }
-                const str = []
-                for (let i=0; i<temp.length; i++) {
-                    str.push(temp[i].value)
-                }
-                return jsep(str.join(' '))
-            } else if (tokens.length === 2 && tokens[0].type === Token.Variable && tokens[1].value === '++')  {
-                const temp = []
-                temp.push(tokens[0])
-                temp.push(new Token(Token.Delimiter, '='))
-                temp.push(new Token(Token.Delimiter, '('))
-                temp.push(tokens[0])
-                temp.push(new Token(Token.Delimiter, '+'))
-                temp.push(new Token(Token.Number, '1'))
-                temp.push(new Token(Token.Delimiter, ')'))
-                temp.push(new Token(Token.Delimiter, '|'))
-                temp.push(new Token(Token.Number, '0'))
-                const str = []
-                for (let i=0; i<temp.length; i++) {
-                    str.push(temp[i].value)
-                }
-                return jsep(str.join(' '))
-            }
-            else {
-                const str = []
-                for (let i=0; i<tokens.length; i++) {
-                    str.push(tokens[i].value)
-                }
-                return jsep(str.join(' '))
-            }
-        }
-    }
 
     function parseFunction(scope, type, name) {
         if (scope !== 'global')  {
@@ -767,18 +671,31 @@ function parse(input, mangle, packge) {
         }
         currentScope = name.value
         api[currentScope] = {}
-       
+        
+        const isCtor = (currentScope === moduleName)
+
         const args = []
-        if (isClass) {
-            api[currentScope]['self'] = 'self'
+        if (isClass && !isStatic) {
+            api[currentScope]['self'] = moduleName//'int'
             args.push({type: new Token(Token.Variable, moduleName), name: new Token(Token.Variable, 'self')})
         }
         expect('(')
         while (!match(')')) {
+            let isArray = false
             const apiType = input.next()
+            if (match('[')) {
+                isArray = true
+                expect('[')
+                expect(']')
+            }
             const apiName = input.next()
             api[currentScope][apiName.value] = apiType.value
-            args.push({ type: apiType, name: apiName})
+            args.push({ type: apiType, name: apiName, array:isArray})
+            if (isCtor) {
+                ctor.args.push({ type: apiType, name: apiName, array:isArray})
+                api['ctor'] = api['ctor'] || {}
+                api['ctor'][apiName.value] = apiType.value
+            }
             if (match(',')) input.next()
         }
         expect(')')
@@ -786,40 +703,50 @@ function parse(input, mangle, packge) {
         const body = block = []
 
         for (let i=0; i<args.length; i++) {
+            //const isArray = 
             const size = args[i].type.value === 'double' ? 3 : 2;
-            symtbl[name.value][args[i].name.value] = new Symbol(args[i].name.value, args[i].type.value)
+            symtbl[name.value][args[i].name.value] = new Symbol(args[i].name.value, args[i].type.value, false, '', args[i].array)
+            //    constructor(name, type, func, init, array, immutable) {
+
             switch(args[i].type.value) {
-                case 'bool':    body.push(factory.IntParameter(args[i].name)); break
-                case 'uint':    body.push(factory.IntParameter(args[i].name)); break
-                case 'int':     body.push(factory.IntParameter(args[i].name)); break
-                case 'float':   body.push(factory.FloatParameter(args[i].name)); break
-                case 'double':  body.push(factory.DoubleParameter(args[i].name)); break
+                case 'bool':    
+                    body.push(factory.IntParameter(args[i].name))
+                    if (isCtor && i>0)
+                        ctor.body.push(factory.IntParameter(args[i].name))
+                    break
+                case 'uint':    
+                    body.push(factory.IntParameter(args[i].name))
+                    if (isCtor && i>0)
+                        ctor.body.push(factory.IntParameter(args[i].name))
+                    break
+                case 'int':     
+                    body.push(factory.IntParameter(args[i].name))
+                    if (isCtor && i>0)
+                        ctor.body.push(factory.IntParameter(args[i].name))
+                    break
+                case 'float':   
+                    body.push(factory.FloatParameter(args[i].name))
+                    if (isCtor && i>0)
+                        ctor.body.push(factory.FloatParameter(args[i].name))
+                    break
+                case 'double':  
+                    body.push(factory.DoubleParameter(args[i].name))
+                    if (isCtor && i>0)
+                        ctor.body.push(factory.DoubleParameter(args[i].name))
+                    break
                 default: 
                     if (types[args[i].type.value]) {
-                        body.push(factory.IntParameter(args[i].name)); break
+                        body.push(factory.IntParameter(args[i].name))
+                        if (isCtor && i>0)
+                            ctor.body.push(factory.IntParameter(args[i].name))
+                        break
                     } else if (args[i].type.value === moduleName) {
-                        body.push(factory.IntParameter(args[i].name)); break
+                        body.push(factory.IntParameter(args[i].name))
+                        if (isCtor && i>0)
+                            ctor.body.push(factory.IntParameter(args[i].name))
+                        break
                     } else input.raise('Parameter type not found')        
             }
-        }
-
-        /** placeholder for variables */
-        body.push(body.vars = factory.IntDeclaration(mangle?'$ZZ':'__ZZ__'))
-
-        /** use for return processing */
-        switch (type) {
-            case 'void': break
-            case 'double':  
-                body.push(body.vars = factory.DoubleDeclaration(mangle?'$00':'__00__')); 
-                symtbl[name.value][mangle?'$00':'__00__'] = new Symbol(mangle?'$00':'__00__', 0)
-                break
-            case 'float':   
-                body.push(body.vars = factory.FloatDeclaration(mangle?'$00':'__00__')); 
-                symtbl[name.value][mangle?'$00':'__00__'] = new Symbol(mangle?'$00':'__00__', 0)
-                break
-            default:
-                body.push(body.vars = factory.IntDeclaration(mangle?'$00':'__00__'))
-                symtbl[name.value][mangle?'$00':'__00__'] = new Symbol(mangle?'$00':'__00__', 0)
         }
 
         expect('{')
@@ -831,73 +758,6 @@ function parse(input, mangle, packge) {
         return factory.FunctionDeclaration(name, args, body)
     }
 
-    function parseCall() {
-        let name = input.next();
-        const arg = []
-        let pos = 0
-        expect('(')
-        while (!match(')')) {
-            if (match(',')) {
-                expect(',')
-                pos++
-            } else {
-                if (!arg[pos]) arg[pos] = []
-                arg[pos].push(input.next())
-            }
-
-        }
-        expect(')')
-        const params = []
-        for (let i=0; i<arg.length; i++) {
-            //TODO: Coerce params - p1|0, +p2, fround(p3)
-            let node = parseExp(arg[i])
-            params.push(node)
-        }
-        return factory.CallExpression(name.value, params)
-    }
-
-
-    /**
-     * Create Variable
-     * 
-     * @param body block to create variable in
-     * @param name name of the variable
-     * @param type type of the variable
-     * @param value value of the variable
-     */
-    function createVar(body, name, type, value) {
-        if (name.substr(0,(mangle?1:2)) !== (mangle?'$':'__')) return
-        if (!symtbl[currentScope][name]) {
-            symtbl[currentScope][name] = new Symbol(name, type)
-            if (name === (mangle?'$01':'__01__') && block.vars.declarations[0].id.name === (mangle?'$ZZ':'__ZZ__')) { 
-                block.vars.declarations[0] = {
-                    "type": "VariableDeclarator",
-                    "id": {
-                        "type": "Identifier",
-                        "name": name
-                    },
-                    "init": {
-                        "type": "Literal",
-                        "value": value,
-                        "raw": String(value)
-                    }
-                }
-                return
-            }
-            block.vars.declarations.push({
-                "type": "VariableDeclarator",
-                "id": {
-                    "type": "Identifier",
-                    "name": name
-                },
-                "init": {
-                    "type": "Literal",
-                    "value": value,
-                    "raw": String(value)
-                }
-            })
-        }
-    }
     /**
      * returns a sequence of AssignmentExpressions
      * used in for loop header
@@ -930,16 +790,16 @@ function parse(input, mangle, packge) {
             } else if (match(',')) { /** a sequence of assignments */
                 expect(',')
                 names.push(name)
-                inits.push(parseExp(tokens.join(' ')))
+                inits.push(parseExpression(null, tokens, false).expression)
                 name = ''
             } else { /** just copy the token to the output stack */
                 tokens.push(input.next().value)
             }
         }
         names.push(name)
-        inits.push(parseExp(tokens.join(' ')))
+        inits.push(parseExpression(null, tokens, false).expression)
         if (names.length === 1) {
-            return factory.AssignmentStatement(names[0], parseExp(tokens.join(' ')))
+            return factory.AssignmentStatement(names[0], parseExpression(null, tokens, false).expression)
         } else {
             return factory.AssignmentStatement(names, inits)
         }
@@ -992,7 +852,7 @@ function parse(input, mangle, packge) {
             }
 
         } else { /** Field? */
-            if (isClass && scope === 'global') {
+            if (isClass && scope === 'global' && !isStatic) {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'bool', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'bool', false, '', isArray)
@@ -1028,7 +888,7 @@ function parse(input, mangle, packge) {
         }
         expect(')')
 
-        return factory.DoWhileStatement(parseExp(tokens, true), body)
+        return factory.DoWhileStatement(parseExpression(null, values(tokens), false).expression, body)
         
     }
     function parseDouble(scope) {
@@ -1073,7 +933,7 @@ function parse(input, mangle, packge) {
             }
 
         } else {
-            if (isClass && scope === 'global') {
+            if (isClass && scope === 'global' && !isStatic) {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'double', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'double', false, '', isArray)
@@ -1084,6 +944,10 @@ function parse(input, mangle, packge) {
 
     function parseExport(which) {
         expectKeyword(which)
+        if (matchKeyword('static')) {
+            expectKeyword('static')
+            isStatic = true
+        }
         isPublic = true
         if (matchKeyword('void')) {
             expectKeyword('void')
@@ -1186,7 +1050,7 @@ function parse(input, mangle, packge) {
             }
 
         } else {
-            if (isClass && scope === 'global') {
+            if (isClass && scope === 'global' && !isStatic) {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'float', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'float', false, '', isArray)
@@ -1223,9 +1087,10 @@ function parse(input, mangle, packge) {
         expect('}')
 
         const _init = init.length>0?init[0].expression:null
+        const _cond = parseExpression(null, values(tokens), false).expression
         const _update = update.length>0?update[0].expression:null
 
-        return factory.ForStatement(_init, parseExp(tokens, true), _update, body)
+        return factory.ForStatement(_init, _cond, _update, body)
         
     }
 
@@ -1242,7 +1107,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.HEAPI32 = true
         }
         const name = input.next()
         if (match('(')) {   /** function definition */
@@ -1270,7 +1135,7 @@ function parse(input, mangle, packge) {
             }
 
         } else { /** Field? */
-            if (isClass && scope === 'global') {
+            if (isClass && scope === 'global' && !isStatic) {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'int', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'int', false, '', isArray)
@@ -1306,11 +1171,12 @@ function parse(input, mangle, packge) {
             expect('}')
         }
 
-        const _then = consequent.length === 0 ? null :  { "type": "BlockStatement", "body": consequent }
+        //console.log(values(tokens))
+        const _cond = parseExpression(null, values(tokens), false).expression
+        const _then = consequent.length === 0 ? null : { "type": "BlockStatement", "body": consequent }
         const _else = alternate.length === 0 ? null : { "type": "BlockStatement", "body": alternate }
 
-        let c = factory.IfStatement(parseExp(tokens, false), _then, _else)
-        return c;
+        return factory.IfStatement(_cond, _then, _else)
     }
 
     /**
@@ -1363,63 +1229,7 @@ function parse(input, mangle, packge) {
             return factory.ImportDeclaration(name.value, 'foreign', name.value)
         }
     }
-    /**
-     * Method
-     * 
-     */
-    function parseMethod() {
-        const _this = input.next()
-        expect('.')
-        const name = input.next()
 
-        let sym = symtbl[currentScope][_this.value]
-        name.value = `${sym.type}_${name.value}`
-        const arg = [[
-            _this,
-            new Token(Token.Delimiter, '|'),
-            new Token(Token.Number, '0')
-        ]]
-        let pos = 1
-        if (match('(')) {
-            /**
-             * Method Call:
-             * 
-             *      entity.setComponent(index|0, component|0);
-             */
-            expect('(')
-            while (!match(')')) {
-                if (match(',')) {
-                    expect(',')
-                    pos++
-                } else {
-                    if (!arg[pos]) arg[pos] = []
-                    arg[pos].push(input.next())
-                }
-
-            }
-            expect(')')
-            const params = []
-            for (let i=0; i<arg.length; i++) {
-                //TODO: Coerce params - p1|0, +p2, fround(p3)
-                let node = parseExp(arg[i])
-                params.push(node)
-            }
-            return factory.CallExpression(name.value, params)
-        } else if (match('[')) {
-            /**
-             * Property Array
-             *         
-             *      self.component[index] = value;
-             */
-            expect('[')
-            const tokens = []
-            while (!match(']')) {
-                tokens.push(input.next().value)
-            }
-            expect(']')
-
-        } else input.raise('Invalid property/method')
-    }
     /**
      * Print statement - wrapper for console.log
      * 
@@ -1447,6 +1257,54 @@ function parse(input, mangle, packge) {
         return factory.Print(args)
     }
 
+    function parseThrow(body) {
+        const args = []
+        expectKeyword('throw')
+        const name = input.next().value
+        const isReturn = symtbl.global[currentScope].type === 'void'?false:true
+        expect('(')
+        while (!match(')')) {
+            let arg = input.next()
+            switch(arg.type) {
+                case Token.Number:
+                    args.push({"type": "BinaryExpression",
+                                "operator": "|",
+                                "left": {
+                                    "type": "Literal",
+                                    "value": arg.value
+                                },
+                                "right": {
+                                    "type": "Literal",
+                                    "value": 0,
+                                    "raw": "0"
+                                }
+                            })                        
+                    break
+                case Token.Variable:
+                    args.push({"type": "BinaryExpression",
+                                "operator": "|",
+                                "left": {
+                                    "type": "Identifier",
+                                    "name": arg.value
+                                },
+                                "right": {
+                                    "type": "Literal",
+                                    "value": 0,
+                                    "raw": "0"
+                                }
+                            })
+                    break
+            }
+        }
+        expect(')')
+        if (isReturn) {
+            return factory.Throw(name, args, isReturn)
+        } else {
+            body.push(factory.Throw(name, args, isReturn))
+            return factory.Return()
+        }
+    }
+
     function parseSwitch() {
         expectKeyword('switch')
         expect('(')
@@ -1472,7 +1330,7 @@ function parse(input, mangle, packge) {
             }
         }
         expect('}')
-        return factory.SwitchStatement(parseExp(tokens), cases)
+        return factory.SwitchStatement(parseExpression(null, values(tokens), false).expression, cases)
     }
 
     function parseType(scope) {
@@ -1484,7 +1342,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.HEAPI32 = true
         }
         const name = input.next()
         if (input.peek().value === '(') { /** function definition */
@@ -1531,7 +1389,7 @@ function parse(input, mangle, packge) {
             expect(']')
             isArray = true
             malloc = true
-            heapi32 = true
+            heaps.heapui32 = true
         }
         const name = input.next()
         if (match('(')) { /** function definition */
@@ -1559,7 +1417,7 @@ function parse(input, mangle, packge) {
             }
 
         } else {
-            if (isClass && scope === 'global') {
+            if (isClass && scope === 'global' && !isStatic) {
                 data.push(new Field(isPublic, isStatic, isConst, name.value, 'uint', isArray, alloc))
             } else {
                 symtbl[scope][name.value] = new Symbol(name.value, 'uint', false, '', isArray)
@@ -1598,7 +1456,7 @@ function parse(input, mangle, packge) {
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
-        return factory.WhileStatement(parseExp(tokens, true), body)
+        return factory.WhileStatement(parseExpression(null, values(tokens), false).expression, body)
     }
 
     function tokens2Array(tokens) {
@@ -1610,158 +1468,6 @@ function parse(input, mangle, packge) {
         }
         return out
     }
-
-    /**
-     * 
-     * TODO: pass the symtbl, not sym
-     *       lookup member, not self
-     * 
-     * transpile an expression
-     * 
-     * @param tokens input ast
-     * @param symbol lhs symbol being assigned to
-     * @param index optional ast of index for lhs
-     * @returns array of output lines
-     */
-    function transpile(symbol, tokens, index, mangle) {
-
-        let ptr = 0
-        let curr = ''
-        let prev = ''
-        let stack = []
-        let nodes = []
-        const code = []
-
-        let name = symbol.name
-        let heap = symbol.heap
-        const size = symbol.size
-        const type = symbol.type
-        if (index != null) {
-            switch (index.type) {
-                case 'Literal':
-                    createVar()
-                    code.push(new Triad(curr, type, name, '+', index.value))
-                    createVar()
-                    code.push(new Triad(curr, type, prev, '<<', size))
-                    break
-                case 'Identifier':
-                    createVar()
-                    code.push(new Triad(curr, type, name, '+', index.name))
-                    createVar()
-                    code.push(new Triad(curr, type, prev, '<<', size))
-                    break
-                case 'BinaryExpression':
-                    traverse(index)
-                    nodes = nodes.reverse()
-                    codegen()
-                    createVar()
-                    code.push(new Triad(curr, type, name, '+', prev))
-                    createVar()
-                    code.push(new Triad(curr, type, prev, '<<', size))
-                    break
-            }
-            name = `${heap}[${curr} >> ${size}]`
-        }
-
-        ptr = 0
-        nodes = []
-        stack = []
-        traverse(tokens)
-        nodes = nodes.reverse()
-        codegen()
-        let result = stack.pop()
-
-        if (index == null) {
-            code[code.length-1].name = name
-        } else { /** patch to use the correct heap for class members */
-            const left = result.node.name || result.node.value0
-            const api = require('../dish.json')
-            const data = api[packge][type].data
-            for (let ix in data) {
-                if (data[ix].name === left) {
-                    switch (data[ix].type) {
-                        case 'int':     heap = 'HEAPI32'; break
-                        case 'uint':    heap = 'HEAPUI32'; break
-                        case 'bool':    heap = 'HEAPI32'; break
-                        case 'float':   heap = 'HEAPF32'; break
-                        case 'double':  heap = 'HEAPF64'; break
-                    }
-                } 
-            }
-            name = `${heap}[${curr} >> ${size}]`
-            code.push(new Triad(name, type, left))
-        }
-        return code
-
-        function createVar() {
-            prev = curr
-            if (mangle) {
-                curr = `$${uniqueId}`
-                curr = curr.length === 2 ? `$0${uniqueId}` : curr
-            } else {
-                curr = `__${uniqueId}__`
-                curr = curr.length === 5 ? `__0${uniqueId}__` : curr
-            }
-            uniqueId++
-        }
-
-        /**
-         * Put the ast nodes into an ordered list
-         */
-        function traverse(node) {
-            switch (node.type) {
-                case 'BinaryExpression':
-                    nodes.push(new Ast('Operator', node.operator))
-                    traverse(node.left)
-                    traverse(node.right)
-                    break
-                case 'MemberExpression':
-                    nodes.push(new Ast('Operator', '+', true))
-                    traverse(node.object)
-                    traverse(node.property)
-                    break
-                case 'Identifier':
-                case 'Literal':
-                case 'CallExpression':
-                    nodes.push(node)
-                    break
-            }
-        }
-
-        /**
-         * iterate the ast node list
-         */
-        function codegen() {
-            while (ptr<nodes.length) {
-                const node = nodes[ptr]
-                switch (node.type) {
-                    case 'Literal':
-                    case 'Identifier':
-                    case 'CallExpression':
-                        stack.push(new Term(node))
-                        break
-                    case 'Operator':
-                        createVar()
-                        const op1 = stack.pop()
-                        const op2 = stack.pop()
-                        code.push(new Triad(curr, type, op1.toString(), node.op, op2.toString()))
-                        stack.push(new Term({type: 'Identifier', name: curr})) 
-                        if (node.array) {
-                            createVar()
-                            code.push(new Triad(curr, type, prev, '<<', 2))
-                            createVar()
-                            code.push(new Triad(curr, type, `${heap}[${prev} >> 2]`))
-                            stack.pop() //# pop off the prev, replace with curr
-                            stack.push(new Term({type: 'Identifier', name: curr})) 
-                        }
-                }
-                ptr++
-            }
-
-        }
-        
-    }
- 
 
 }
 

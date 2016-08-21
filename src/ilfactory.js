@@ -1,7 +1,7 @@
 /*
- * Factory
+ * ILFactory
  * 
- *  Create concepts with ast structures 
+ *  Create il.js with ast structures 
  */
 "use strict"
 const Token = require('./classes/Token')

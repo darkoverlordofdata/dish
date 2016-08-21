@@ -733,51 +733,6 @@
             "immutable": false,
             "size": 2,
             "heap": "HEAPI32"
-          },
-          "ignore": {
-            "name": "ignore",
-            "type": "bool",
-            "func": false,
-            "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "refCount": {
-            "name": "refCount",
-            "type": "int",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "_refCount"
-            ],
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "creationIndex": {
-            "name": "creationIndex",
-            "type": "int",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "_creationIndex",
-              "self",
-              ".",
-              "_refCount",
-              "=",
-              "refCount",
-              "-",
-              1
-            ],
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
           }
         },
         "hasComponent": {

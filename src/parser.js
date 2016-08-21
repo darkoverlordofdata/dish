@@ -1,35 +1,18 @@
 /**
- * parse.js - no tca version
+ * parse.js
  * 
+ * Phase I
  * 
  * Recursive Descent Parser for D`ish
- * Parses the statements and builds linkage infrastructure 
- * expression parsing is handed off to parseExp.
+ * Parses statements and builds linkage infrastructure 
+ * Collect and save type info
  * 
- * - Blit Twiddlefast
+ * 
  */
 'use strict'
 
 module.exports = {
     parse: parse
-}
-
-function values(tokens) {
-    const t1 = []
-    for (let t in tokens) {
-        t1.push(tokens[t].value)
-    }
-    return t1
-}
-
-function coerce(imtype, out) {
-    switch (imtype) {
-        case 'float':   return `fround(${out})` 
-        case 'double':  return `+(${out})` 
-        case 'void':    return out;
-        default:        return `${out}|0` 
-    }                
-    
 }
 
 /**
@@ -39,13 +22,12 @@ function coerce(imtype, out) {
  * @returns parsed document and flags
  */
 function parse(input, mangle, packge) {
-    const jsep = require('jsep')
     const codegen = require('escodegen')
     const esprima = require('esprima')
     const Field = require('./classes/Field')
     const Symbol = require('./classes/Symbol')
     const Token = require('./classes/Token')
-    const factory = require('./factory')
+    const factory = require('./ilfactory')
     const lexer = require('./lexer')
     const ast = { type: 'Program', body: [] }
     const ctor = {args:[], body:[]}
@@ -54,16 +36,16 @@ function parse(input, mangle, packge) {
     const types = {}
     const api = {}
     const data = []
-    const mem = {
-        byte:   {size: 0, width: 1, heap: 'HEAPU8',   name: 'HEAPU8'},
-        char:   {size: 1, width: 2, heap: 'HEAPI16',  name: 'HEAPI16'},
-        bool:   {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
-        int:    {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
-        uint:   {size: 2, width: 4, heap: 'HEAPU32',  name: 'HEAPU32'},
-        object: {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPU32'},
-        float:  {size: 2, width: 4, heap: 'HEAPF32',  name: 'HEAPF32'},
-        double: {size: 3, width: 8, heap: 'HEAPF64',  name: 'HEAPF64'}
-    }
+    // const mem = {
+    //     byte:   {size: 0, width: 1, heap: 'HEAPU8',   name: 'HEAPU8'},
+    //     char:   {size: 1, width: 2, heap: 'HEAPI16',  name: 'HEAPI16'},
+    //     bool:   {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
+    //     int:    {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
+    //     uint:   {size: 2, width: 4, heap: 'HEAPU32',  name: 'HEAPU32'},
+    //     object: {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPU32'},
+    //     float:  {size: 2, width: 4, heap: 'HEAPF32',  name: 'HEAPF32'},
+    //     double: {size: 3, width: 8, heap: 'HEAPF64',  name: 'HEAPF64'}
+    // }
     const heaps = {
         HEAPI8: false,
         HRAPU8: false,
@@ -75,7 +57,6 @@ function parse(input, mangle, packge) {
         HEAPF64: false
     }
 
-    let uniqueId = 1
     let moduleName = ''
     let current = ''
     let block = [] // current output block
@@ -132,29 +113,41 @@ function parse(input, mangle, packge) {
         process.exit(0)
     }
 
-    function external(object) {
-        const api = require('../dish.json')
-        return api[packge][symtbl[currentScope][object].type]//.api[tokens[2]]
+    /** get an ast fragment */
+    function fragment(ex) {
+        return esprima.parse(ex).body[0].expression
+    }
+
+    /** 
+     * reduce a list of tokens to a list of token.values
+     */
+    function values(tokens) {
+        const t1 = []
+        for (let t in tokens) {
+            t1.push(tokens[t].value)
+        }
+        return t1
     }
 
 
+    /** shortcut to input.match */
     function match(ch) {
         return input.match(ch)
     }
+    /** shortcut to input.matchKeyword */
     function matchKeyword(kw) {
         return input.matchKeyword(kw)
     }
+    /** shortcut to input.expect */
     function expect(ch) {
         return input.expect(ch)
     }
+    /** shortcut to input.expectKeyword */
     function expectKeyword(kw) {
         return input.expectKeyword(kw)
     }
 
-    function reset() {
-        uniqueId = 1
-    }
-
+    /** Top Level: Parse Module */
     function parseModule(body) {
         expectKeyword('module') //  first keyword is required
         moduleName = input.next().value
@@ -167,6 +160,7 @@ function parse(input, mangle, packge) {
         }
     }
 
+    /** Top Level: Parse Class */
     function parseClass(body) {
         expectKeyword('class') //  first keyword is required
         moduleName = input.next().value
@@ -186,18 +180,18 @@ function parse(input, mangle, packge) {
          */
         exporting.ctor = 'ctor'
         const size = Field.last
-        const params = [jsep('self|0')]
+        const params = [fragment('self|0')]
         for (let i=0; i<ctor.args.length; i++) {
             switch (ctor.args[i].type.value) {
                 case 'float': 
                     float = true
-                    params.push(jsep(`fround(${ctor.args[i].name.value})`))
+                    params.push(fragment(`fround(${ctor.args[i].name.value})`))
                     break
                 case 'double':
-                    params.push(jsep(`+${ctor.args[i].name.value}`))
+                    params.push(fragment(`+${ctor.args[i].name.value}`))
                     break
                 default:
-                    params.push(jsep(`${ctor.args[i].name.value}|0`))
+                    params.push(fragment(`${ctor.args[i].name.value}|0`))
 
             }
         }
@@ -206,7 +200,7 @@ function parse(input, mangle, packge) {
         ctor.body.push(factory.IntDeclaration('self'))
         ctor.body.push(factory.New('self', { "type": "Literal", "value": size }))
         ctor.body.push(factory.CallExpression(moduleName, params))
-        ctor.body.push(factory.Return(jsep('self|0')))
+        ctor.body.push(factory.Return(fragment('self|0')))
         body.push(factory.FunctionDeclaration({value:'ctor'}, ctor.args, ctor.body))
     }
 
@@ -262,7 +256,6 @@ function parse(input, mangle, packge) {
         if (types[input.peek().value])  return parseType(currentScope)
         //=================================
         if (currentScope !== priorScope) {
-            reset()
             priorScope = currentScope
             for (let name in symtbl[currentScope]) {
                 let sym = symtbl[currentScope][name]
@@ -273,12 +266,12 @@ function parse(input, mangle, packge) {
                         body.push(factory.New(name, { "type": "Literal", "value": tokens.length }))
                         for (let t in tokens) {
                             let sname = `${sym.heap}[(${name}+${t})<<2>>2]`
-                            let value = parseEx0(null, [tokens[t]], false).expression
+                            let value = parseExpression(null, [tokens[t]], false).expression
                             body.push(factory.AssignmentStatement(sname, value))
                         }
                     } else {
                         imtype = sym.type
-                        body.push(parseEx0([sym.name], sym.init, false))
+                        body.push(parseExpression([sym.name], sym.init, false))
                     }
                 }
             }
@@ -294,11 +287,6 @@ function parse(input, mangle, packge) {
         if (matchKeyword('switch'))     return parseSwitch()
         if (matchKeyword('while'))      return parseWhile()
         //=================================
-       return parseExpression(body)
- 
-    }    
-    
-    function parseExpression(body) {
 
         const lhs = []
         const rhs = []
@@ -321,308 +309,36 @@ function parse(input, mangle, packge) {
         }
 
         if (rhs.length === 0) {
-            return parseEx0(null, lhs, isReturn)
+            return parseExpression(null, lhs, isReturn)
         } else {
-            return parseEx0(lhs, rhs, false)
+            return parseExpression(lhs, rhs, false)
         }
 
     }
 
-
-    function parseEx0(lhs, rhs, isReturn) {
-
-        try {
-            if (isReturn) {
-                imtype = symtbl.global[currentScope].type
-                return factory.Return(jsep(recode(rhs)))
-            } else if (lhs == null) {
-                return esprima.parse(recode(rhs)).body[0]
-            } else {
-                return esprima.parse(`${recode(lhs, true)} = ${recode(rhs)}`).body[0]
-            }
-        } catch (ex) {
-            console.log(ex.stack)
-            process.exit(0)
-        }
-    }
 
     /**
-     * recode
+     * Parse expression
      * 
-     * @param tokens parsed input expression
-     * @param isLhs if true, set the implied type for the rhs
-     * @returns string re-written code
+     * entry point to parsing an expression
+     * 
+     * @param lhs   left hand side of the expression
+     * @param rhs   right hand side of the expression
+     * @param isEeturn true if this is a return expression
+     * @return compiled ast
      */
-    function recode(tokens, isLhs) {
-        for (let t in tokens) {
-            switch (tokens[t]) {
-                case 'true':        tokens[t] = 1; break
-                case 'false':       tokens[t] = 0; break
-                case 'to!double':   tokens[t] = '__double__'; imtype = 'double'; break
-                case 'to!int':      tokens[t] = '__int__'; imtype = 'int'; break
-                case 'to!float':    tokens[t] = 'fround'; imtype = 'float'; float = true; break
-            }
-        }
-
-        if (tokens[0] === 'new') {
-            malloc = true
-            if (mem[tokens[1]]) {
-                const exp = []
-                let bracket = 0
-                let i = 2
-                do {
-                    if (tokens[i] === '[') bracket++
-                    if (tokens[i] === ']') bracket--
-                    exp.push(tokens[i++])
-                } while (bracket !== 0)
-                exp[0] = '('
-                exp[exp.length-1] = ')'
-                
-                heaps[mem[tokens[1]].name] = true
-                return `malloc(${exp.join(' ')} << ${mem[tokens[1]].size})|0`
-            }
-            const exp = []
-            const par = []
-            let paren = 0
-            let i = 2
-            let p = 0
-            do {
-                if (tokens[i] === '(') paren++, i++
-                else if (tokens[i] === ')') paren--, i++
-                else if (tokens[i] === ',') i++, p++
-                else {
-                    if (!par[p]) par[p] = []
-                    par[p].push(tokens[i++])
-                }
-            } while (paren !== 0)
-
-            const api = require('../dish.json')
-            const def = api[packge][tokens[1]].api['ctor']
-            let param = []
-            for (let k in def) {
-                param.push(def[k])
-            }
-            for (p in par) {
-                switch (param[p]) {
-                    case 'float':   exp.push(`fround(${par[p].join(' ')})`); break;
-                    case 'double':  exp.push(`+(${par[p].join(' ')})`); break;
-                    default:        exp.push(`${par[p].join(' ')}|0`); break
-                }
-            }
-            heaps.HEAPI32 = true
-            return `${tokens[1]}_ctor(${exp.join(',')})|0`
-
-        }
-        const sym = symtbl[currentScope][tokens[0]]?symtbl[currentScope][tokens[0]]:symtbl.global[tokens[0]]
-
-        if (tokens[1] === '.') {
-            /**
-             * name.member
-             * name.member(..)
-             * name.member[index]
-             */
-
-            if (tokens[3] === '[') {
-                const def = lookupField(sym.type, tokens[2])
-                const exp = []
-                let bracket = 0
-                let i = 3
-                do {
-                    if (tokens[i] === '[') bracket++
-                    if (tokens[i] === ']') bracket--
-                    exp.push(tokens[i++])
-                } while (bracket !== 0)
-                exp[0] = '('
-                exp[exp.length-1] = ')'
-                heaps[mem[def.type].heap] = true
-
-                const out = `${mem[def.type].heap}[${tokens[0]}+${def.offset}+(${exp.join(' ')} << ${mem[def.type].size}) >> ${mem[def.type].size}]`
-                if (isLhs) {
-                    imtype = def.type
-                    return out
-                } else return coerce(imtype, out)
-
-            } else if (tokens[3] === '(') {
-                /**
-                 * [0] = object
-                 * [1] = '.'
-                 * [2] = method
-                 * [3] = '('
-                 */
-                //console.log(imtype, tokens)
-                const exp = []
-                const par = []
-                let paren = 0
-                let i = 3
-                let p = 0
-                do {
-                    if (tokens[i] === '(') paren++, i++
-                    else if (tokens[i] === ')') paren--, i++
-                    else if (tokens[i] === ',') i++, p++
-                    else {
-                        if (!par[p]) par[p] = []
-                        par[p].push(tokens[i++])
-                    }
-                } while (paren !== 0)
-
-
-                const def = api[tokens[2]]?api[tokens[2]]:external(tokens[0])
-                if (!def) {
-
-                    console.log(`Type not found for ${tokens[0]}.${tokens[2]} in ${moduleName}.${currentScope}`)
-                    process.exit(0)
-                }
-                const type = symtbl.global[tokens[2]] 
-                            ? symtbl.global[tokens[2]].type 
-                            : def.symtbl.global[tokens[2]].type
-                
-                let param = []
-                for (let k in def) {
-                    param.push(def[k])
-                }
-                param.shift()
-                for (p in par) {
-                    switch (param[p]) {
-                        case 'float':   exp.push(`fround(${par[p].join(' ')})`); break;
-                        case 'double':  exp.push(`+(${par[p].join(' ')})`); break;
-                        default:        exp.push(`${par[p].join(' ')}|0`); break
-                    }
-                }
-                exp.unshift(`${tokens[0]}|0`)
-
-                const out = symtbl[currentScope][tokens[0]].type===moduleName
-                            ?`${tokens[2]}(${exp.join(',')})`
-                            :`${symtbl[currentScope][tokens[0]].type}_${tokens[2]}(${exp.join(',')})`
-
-                if (isLhs) {
-                    imtype = symtbl.global[tokens[2]].type
-                    return out
-                } else {
-                    imtype = type
-                    return coerce(imtype, out)
-                }
-            } else {
-                const def = lookupField(sym.type, tokens[2])
-                heaps[mem[def.type].heap] = true
-                const out = `${mem[def.type].heap}[${tokens[0]}+${def.offset} >> ${mem[def.type].size}]`
-                if (isLhs) {
-                    imtype = def.type
-                    return out 
-                } else return coerce(imtype, out)
-                return out
-            }
-            
-        } else if (tokens[1] === '[') {
-            /**
-             * name[index]
-             */
-            const exp = []
-            let bracket = 0
-            let i = 1
-            do {
-                if (tokens[i] === '[') bracket++
-                if (tokens[i] === ']') bracket--
-                exp.push(tokens[i++])
-            } while (bracket !== 0)
-            exp[0] = '('
-            exp[exp.length-1] = ')'
-            heaps[mem[sym.type].heap] = true
-            // const out = `${mem[sym.type].heap}[${tokens[0]}+${exp.join(' ')}*${mem[sym.type].width} >> ${mem[sym.type].size}]`
-            const out = `${mem[sym.type].heap}[${tokens[0]}+(${exp.join(' ')} << ${mem[sym.type].size}) >> ${mem[sym.type].size}]`
-            if (isLhs) {
-                imtype = sym.type
-                return out 
-            } else return coerce(imtype, out)
-        } else if (tokens[1] === '(' && tokens[0]!== '(') {
-            /**
-             * name(...)
-             */
-            const exp = []
-            const par = []
-            let paren = 0
-            let i = 1
-            let p = 0
-            do {
-                if (tokens[i] === '(') paren++, i++
-                else if (tokens[i] === ')') paren--, i++
-                else if (tokens[i] === ',') i++, p++
-                else {
-                    if (!par[p]) par[p] = []
-                    par[p].push(tokens[i++])
-                }
-            } while (paren !== 0)
-
-            const api = require('../dish.json')
-            const def = symtbl[currentScope]
-            let param = []
-            for (let k in def) {
-                param.push(def[k])
-            }
-            param.shift()
-
-            for (p in par) {
-                switch (param[p].type) {
-                    case 'float':   exp.push(`fround(${par[p].join(' ')})`); break;
-                    case 'double':  exp.push(`+(${par[p].join(' ')})`); break;
-                    default:        exp.push(`${par[p].join(' ')}|0`); break
-                }
-            }
-            const out = `${tokens[0]}(${exp.join(',')})`
-            if (isLhs) {
-                imtype = def.type
-                return out
-            } else return coerce(imtype, out)
-        }
-
-
-        const out = tokens.join(' ')
-        if (isLhs) {
-            return out 
-        } else return coerce(imtype, out)
-    }
-
-    function lookupField(type, name) {
-        let t = null
-        if (type === moduleName) {
-            t = data
+    function parseExpression(lhs, rhs, isReturn) {
+        if (isReturn) {
+            return factory.Return(esprima.parse(rhs.join(' ')).body[0])
+        } else if (lhs == null) {
+            return esprima.parse(rhs.join(' ')).body[0]
         } else {
-            const ext = require('../dish.json')
-            try {
-                t = ext[packge][name].data
-            } catch (ex) {
-                input.raise(`Unable to lookupField ${packge} ${name} `)
-            }
+            return esprima.parse(`${lhs.join(' ')} = ${rhs.join(' ')}`).body[0]
         }
-        for (let i in t) {
-            if (t[i].name === name) return t[i]
-        }
-        input.raise(`Type ${type} not found`)
-
     }
 
-    function fixExpression(tokens) {
-        const exp = []
-
-        for (let i in tokens) {
-
-            switch(tokens[i]) {
-                case 'to!double':
-                    tokens[i].value = '__double__'
-                    break
-                case 'to!int':
-                    tokens[i].value = '__int__'
-                    break
-                case 'to!float':
-                    tokens[i].value = 'fround'
-                    float = true
-                    break
-            }
-            
-            exp.push(tokens[i].value)
-        }
-        return exp.join(' ')
-    }
-
+    
+    /**
     /**
      * Constant 
      */
@@ -642,7 +358,6 @@ function parse(input, mangle, packge) {
 
         expectKeyword('static')
         isStatic = true
-        // if (matchKeyword('public'))     return parseExport('public')
         if (matchKeyword('const'))      return parseConst()
         if (matchKeyword('double'))     return parseDouble(scope)
         if (matchKeyword('float'))      return parseFloat32(scope)
@@ -766,47 +481,6 @@ function parse(input, mangle, packge) {
     }
 
     /**
-     * Create Variable
-     * 
-     * @param body block to create variable in
-     * @param name name of the variable
-     * @param type type of the variable
-     * @param value value of the variable
-     */
-    function createVar(body, name, type, value) {
-        if (name.substr(0,(mangle?1:2)) !== (mangle?'$':'__')) return
-        if (!symtbl[currentScope][name]) {
-            symtbl[currentScope][name] = new Symbol(name, type)
-            if (name === (mangle?'$01':'__01__') && block.vars.declarations[0].id.name === (mangle?'$ZZ':'__ZZ__')) { 
-                block.vars.declarations[0] = {
-                    "type": "VariableDeclarator",
-                    "id": {
-                        "type": "Identifier",
-                        "name": name
-                    },
-                    "init": {
-                        "type": "Literal",
-                        "value": value,
-                        "raw": String(value)
-                    }
-                }
-                return
-            }
-            block.vars.declarations.push({
-                "type": "VariableDeclarator",
-                "id": {
-                    "type": "Identifier",
-                    "name": name
-                },
-                "init": {
-                    "type": "Literal",
-                    "value": value,
-                    "raw": String(value)
-                }
-            })
-        }
-    }
-    /**
      * returns a sequence of AssignmentExpressions
      * used in for loop header
      * 
@@ -838,16 +512,16 @@ function parse(input, mangle, packge) {
             } else if (match(',')) { /** a sequence of assignments */
                 expect(',')
                 names.push(name)
-                inits.push(parseEx0(null, tokens, false).expression)
+                inits.push(parseExpression(null, tokens, false).expression)
                 name = ''
             } else { /** just copy the token to the output stack */
                 tokens.push(input.next().value)
             }
         }
         names.push(name)
-        inits.push(parseEx0(null, tokens, false).expression)
+        inits.push(parseExpression(null, tokens, false).expression)
         if (names.length === 1) {
-            return factory.AssignmentStatement(names[0], parseEx0(null, tokens, false).expression)
+            return factory.AssignmentStatement(names[0], parseExpression(null, tokens, false).expression)
         } else {
             return factory.AssignmentStatement(names, inits)
         }
@@ -936,7 +610,7 @@ function parse(input, mangle, packge) {
         }
         expect(')')
 
-        return factory.DoWhileStatement(parseEx0(null, values(tokens), false).expression, body)
+        return factory.DoWhileStatement(parseExpression(null, values(tokens), false).expression, body)
         
     }
     function parseDouble(scope) {
@@ -1135,7 +809,7 @@ function parse(input, mangle, packge) {
         expect('}')
 
         const _init = init.length>0?init[0].expression:null
-        const _cond = parseEx0(null, values(tokens), false).expression
+        const _cond = parseExpression(null, values(tokens), false).expression
         const _update = update.length>0?update[0].expression:null
 
         return factory.ForStatement(_init, _cond, _update, body)
@@ -1219,7 +893,8 @@ function parse(input, mangle, packge) {
             expect('}')
         }
 
-        const _cond = parseEx0(null, values(tokens), false).expression
+        //console.log(values(tokens))
+        const _cond = parseExpression(null, values(tokens), false).expression
         const _then = consequent.length === 0 ? null : { "type": "BlockStatement", "body": consequent }
         const _else = alternate.length === 0 ? null : { "type": "BlockStatement", "body": alternate }
 
@@ -1377,7 +1052,7 @@ function parse(input, mangle, packge) {
             }
         }
         expect('}')
-        return factory.SwitchStatement(parseEx0(null, values(tokens), false).expression, cases)
+        return factory.SwitchStatement(parseExpression(null, values(tokens), false).expression, cases)
     }
 
     function parseType(scope) {
@@ -1503,7 +1178,7 @@ function parse(input, mangle, packge) {
             if (!input.eof()) if (match(';')) expect(';')
         }
         expect('}')
-        return factory.WhileStatement(parseEx0(null, values(tokens), false).expression, body)
+        return factory.WhileStatement(parseExpression(null, values(tokens), false).expression, body)
     }
 
     function tokens2Array(tokens) {
