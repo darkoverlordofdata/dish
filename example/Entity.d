@@ -43,17 +43,14 @@ class Entity {
     }
 
     public void release() {
-        // bool ignore;
-        // int refCount = this._refCount;
-        // int creationIndex = this._creationIndex
-        // this._refCount = refCount-1;
-        // if ((refCount|0) == 1) {
-        // // if ((this._refCount|0) == 1) {
-        //     ignore = this.onEntityReleased();
-        // } 
-        // if ((refCount|0) < 1) {
-        //     throw EntityIsAlreadyReleasedException(creationIndex);
-        // }
+        bool ignore;
+        this._refCount = this._refCount-1;
+        if (this._refCount == 1) {
+            ignore = this.onEntityReleased();
+        } 
+        if (this._refCount < 1) {
+            throw EntityIsAlreadyReleasedException(creationIndex);
+        }
     }
 
    /**
@@ -77,14 +74,12 @@ class Entity {
     */
     public Entity addComponent(int index, int component) {
         bool added;
-        bool isEnabled = this._isEnabled;
-        bool hasComponent = this.hasComponent(index);
 
-        if (!isEnabled) {
+        if (!this._isEnabled) {
             throw EntityIsNotEnabledException();
         }
 
-        if (hasComponent) {
+        if (this.hasComponent(index)) {
             throw EntityAlreadyHasComponentException(index);
         }
         this.components[index] = component;
@@ -96,7 +91,7 @@ class Entity {
         bool ignore;
         int previousComponent = this.components[index];
         if (previousComponent) {
-            if ((previousComponent|0) == (component|0)) {
+            if (previousComponent == component) {
                 ignore = this.onComponentReplaced(index, previousComponent, component);
             } else {
                 this.components[index] = component;
@@ -189,7 +184,7 @@ class Entity {
         int index;
         int component;
 
-        for (i=0; (i|0)<20; i++) {
+        for (i=0; i<20; i++) {
             index = indices[i];
             if (index) {
                 component = this.components[index];
@@ -206,7 +201,7 @@ class Entity {
         int index;
         int component;
 
-        for (i=0; (i|0)<20; i++) {
+        for (i=0; i<20; i++) {
             index = indices[i];
             if (index) {
                 component = this.components[index];
@@ -224,7 +219,7 @@ class Entity {
         int ignore;
         
 
-        for (i=0; (i|0)<20; i++) {
+        for (i=0; i<20; i++) {
             component = this.components[i];
             if (component) {
                 ignore = this._replaceComponent(i, 0);

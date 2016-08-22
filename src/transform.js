@@ -45,14 +45,16 @@ function code(packge, moduleName, str) {
     const lines = []
 
     /**
+     * Do the MemberExpression thunks
+     * 
      * 0 - ExpressionStatement  'use asm'
      * 1 - VariableDeclaration  - imports
      * i - FunctionDeclaration  - functions
      * n - ReturnStatement      - exports
      */
-    for (let l in body) {
-        if (body[l].type === 'FunctionDeclaration') {
-            const func = body[l]
+    for (let each in body) {
+        if (body[each].type === 'FunctionDeclaration') {
+            const func = body[each]
 
             for (let k = func.params.length; k<func.body.body.length; k++) {
                 estraverse.replace(func.body.body[k], {
@@ -61,7 +63,9 @@ function code(packge, moduleName, str) {
                         if (node.type === 'CallExpression' 
                             && node.callee.type === 'MemberExpression' &&  !node.callee.computed) {
                             /**
-                             *  self.hasComponent(...) => Klass_hasComponent(...)
+                             *  self.hasComponent(...) 
+                             *  => 
+                             *  Klass_hasComponent(...)
                              */
 
                             const object = symtbl[func.id.name][node.callee.object.name]
@@ -70,23 +74,17 @@ function code(packge, moduleName, str) {
                                         : object.type+'_'+node.callee.property.name
                             node.arguments.unshift({ type: 'Identifier', name: object.name })
 
-                            //console.log(JSON.stringify(parent, null, 2))//.type)
-                            if (parent.type === 'AssignmentExpression') {
-                                // right hand side should be coerced
-                            }
-
                             return factory.ObjectMethod(name, node.arguments)
                             
                         }
 
-                        if (node.type === 'MemberExpression' && !node.computed) {
+                        if (node.type === 'MemberExpression' && !node.computed
+                            && parent.type !== 'MemberExpression') {
                             /**
-                             *  self.x => HEAP[self+x>>size]
+                             *  self.x 
+                             *  => 
+                             *  HEAP[self+x>>size]
                              */
-
-                            if (parent.type === 'MemberExpression') return 
-                            // self.components[index] => HEAP[self+components+(index<<size)>>size]
-
                             const object = symtbl[func.id.name][node.object.name]
                             const member = getField(node.property.name, meta[packge][object.type].data)
                             if (member) {
@@ -94,34 +92,62 @@ function code(packge, moduleName, str) {
                                 const size = mem[member.type].size
                                 const offset = member.offset
                                 
-                                // console.log(JSON.stringify(parent, null, 2))//.type)
-                                if (parent.type === 'AssignmentExpression') {
-                                    // right hand side should be coerced
-                                }
                                 return factory.ObjectMember(node.object.name, offset, heap, size)
                             }                        
                         }
 
-                        if (node.type === 'MemberExpression' && !!node.computed) {
+                        if (node.type === 'MemberExpression' && node.computed) {
                             if (node.object.type === 'MemberExpression' ) {
                                 /**
-                                 *  self.components[index] => HEAP[self+components+(index<<size)>>size]
+                                 *  self.components[index] 
+                                 *  => 
+                                 *  HEAP[self+components+(index<<size)>>size]
                                  */
-                                //console.log(node)
+                                const object = symtbl[func.id.name][node.object.object.name]
+                                const member = getField(node.object.property.name, meta[packge][object.type].data)
+                                if (member) {
+                                    const heap = mem[member.type].heap
+                                    const size = mem[member.type].size
+                                    const offset = member.offset
+                                    return factory.ObjectArray(node.object.object.name, node.object.property.name, offset, heap, size)
+                                }                        
                                 
-                                return factory.ObjectArray()
                             } else {
                                 /**
-                                 *  indices[index] => HEAP[indices+(index<<size)>>size]
+                                 *  indices[index] 
+                                 *  => 
+                                 *  HEAP[indices+(index<<size)>>size]
                                  */
-                                // console.log(node)
-                                return factory.LocalArray()
+                                const object = symtbl[func.id.name][node.object.name]
+                                const index = symtbl[func.id.name][node.property.name]
+                                const heap = mem[object.type].heap
+                                const size = mem[object.type].size
+                                return factory.LocalArray(object.name, index.name, heap, size)
                             }
 
                         }
                     }
                 })
             }
+
+            /**
+             * Ensure the RHS is coerced
+             */
+            for (let k = func.params.length; k<func.body.body.length; k++) {
+                estraverse.replace(func.body.body[k], {
+                    enter: function(node, parent) {
+                        // if (node.type === 'AssignmentExpression') {
+                            //BinaryExpression
+                            //ReturnStatement
+                            console.log(JSON.stringify(node, null, 2))
+                            console.log('-------------------------------------')
+                            // right hand side should be coerced
+                        // }
+
+                    }
+                })
+            }
+            
         }
     }
     

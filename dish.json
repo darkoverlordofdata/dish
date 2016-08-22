@@ -733,6 +733,16 @@
             "immutable": false,
             "size": 2,
             "heap": "HEAPI32"
+          },
+          "ignore": {
+            "name": "ignore",
+            "type": "bool",
+            "func": false,
+            "init": "",
+            "array": false,
+            "immutable": false,
+            "size": 2,
+            "heap": "HEAPI32"
           }
         },
         "hasComponent": {
@@ -793,37 +803,6 @@
             "type": "bool",
             "func": false,
             "init": "",
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "isEnabled": {
-            "name": "isEnabled",
-            "type": "bool",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "_isEnabled"
-            ],
-            "array": false,
-            "immutable": false,
-            "size": 2,
-            "heap": "HEAPI32"
-          },
-          "hasComponent": {
-            "name": "hasComponent",
-            "type": "bool",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "hasComponent",
-              "(",
-              "index",
-              ")"
-            ],
             "array": false,
             "immutable": false,
             "size": 2,

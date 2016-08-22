@@ -36,16 +36,7 @@ function parse(input, mangle, packge) {
     const types = {}
     const api = {}
     const data = []
-    // const mem = {
-    //     byte:   {size: 0, width: 1, heap: 'HEAPU8',   name: 'HEAPU8'},
-    //     char:   {size: 1, width: 2, heap: 'HEAPI16',  name: 'HEAPI16'},
-    //     bool:   {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
-    //     int:    {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
-    //     uint:   {size: 2, width: 4, heap: 'HEAPU32',  name: 'HEAPU32'},
-    //     object: {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPU32'},
-    //     float:  {size: 2, width: 4, heap: 'HEAPF32',  name: 'HEAPF32'},
-    //     double: {size: 3, width: 8, heap: 'HEAPF64',  name: 'HEAPF64'}
-    // }
+
     const heaps = {
         HEAPI8: false,
         HRAPU8: false,

@@ -18,12 +18,91 @@ function clone(obj) {
     return JSON.parse(JSON.stringify(obj))
 }
 
-function ObjectArray(name) {
+function ObjectArray(name, index, offset, heap, size) {
+    return {
+        "type": "MemberExpression",
+        "computed": true,
+        "object": {
+            "type": "Identifier",
+            "name": heap
+        },
+        "property": {
+            "type": "BinaryExpression",
+            "operator": ">>",
+            "left": {
+                "type": "BinaryExpression",
+                "operator": "+",
+                "left": {
+                    "type": "BinaryExpression",
+                    "operator": "+",
+                    "left": {
+                        "type": "Identifier",
+                        "name": name
+                    },
+                    "right": {
+                        "type": "Identifier",
+                        "name": offset
+                    }
+                },
+                "right": {
+                    "type": "BinaryExpression",
+                    "operator": "<<",
+                    "left": {
+                        "type": "Identifier",
+                        "name": index
+                    },
+                    "right": {
+                        "type": "Identifier",
+                        "name": size
+                    }
+                }
+            },
+            "right": {
+                "type": "Identifier",
+                "name": size
+            }
+        }
+    }
 
 }
 
-function LocalArray(name) {
-
+function LocalArray(name, index, heap, size) {
+    return {
+        "type": "MemberExpression",
+        "computed": true,
+        "object": {
+            "type": "Identifier",
+            "name": heap
+        },
+        "property": {
+            "type": "BinaryExpression",
+            "operator": ">>",
+            "left": {
+                "type": "BinaryExpression",
+                "operator": "+",
+                "left": {
+                    "type": "Identifier",
+                    "name": name
+                },
+                "right": {
+                    "type": "BinaryExpression",
+                    "operator": "<<",
+                    "left": {
+                        "type": "Identifier",
+                        "name": index
+                    },
+                    "right": {
+                        "type": "Identifier",
+                        "name": size
+                    }
+                }
+            },
+            "right": {
+                "type": "Identifier",
+                "name": size
+            }
+        }
+    }
 }
 
 function ObjectMethod(name, args) {

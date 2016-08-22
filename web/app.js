@@ -260,28 +260,33 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                 }
                 function release(self) {
                     self = self | 0;
+                    var ignore = 0;
+                    HEAPI32[self + 4 >> 2] = HEAPI32[self + 4 >> 2] - 1;
+                    if (HEAPI32[self + 4 >> 2] == 1) {
+                        ignore = onEntityReleased(self);
+                    }
+                    if (HEAPI32[self + 4 >> 2] < 1) {
+                        EntityIsAlreadyReleasedException(creationIndex | 0);
+                        return;
+                    }
                 }
                 function hasComponent(self, index) {
                     self = self | 0;
                     index = index | 0;
-                    return self.components[index];
+                    return HEAPI32[self + 16 + (components << 2) >> 2];
                 }
                 function addComponent(self, index, component) {
                     self = self | 0;
                     index = index | 0;
                     component = component | 0;
                     var added = 0;
-                    var isEnabled = 0;
-                    var hasComponent = 0;
-                    isEnabled = HEAPI32[self + 12 >> 2];
-                    hasComponent = hasComponent(self, index);
-                    if (!isEnabled) {
+                    if (!HEAPI32[self + 12 >> 2]) {
                         return EntityIsNotEnabledException() | 0;
                     }
-                    if (hasComponent) {
+                    if (hasComponent(self, index)) {
                         return EntityAlreadyHasComponentException(index | 0) | 0;
                     }
-                    self.components[index] = component;
+                    HEAPI32[self + 16 + (components << 2) >> 2] = component;
                     added = onComponentAdded(self, index, component);
                     return self;
                 }
@@ -291,13 +296,13 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     component = component | 0;
                     var ignore = 0;
                     var previousComponent = 0;
-                    previousComponent = self.components[index];
+                    previousComponent = HEAPI32[self + 16 + (components << 2) >> 2];
                     if (previousComponent) {
-                        if ((previousComponent | 0) == (component | 0)) {
+                        if (previousComponent == component) {
                             ignore = onComponentReplaced(self, index, previousComponent, component);
                         }
                         else {
-                            self.components[index] = component;
+                            HEAPI32[self + 16 + (components << 2) >> 2] = component;
                             if (!component) {
                                 ignore = onComponentRemoved(self, index, previousComponent);
                             }
@@ -350,9 +355,9 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     index = index | 0;
                     component = component | 0;
                     var previousComponent = 0;
-                    previousComponent = self.components[index];
+                    previousComponent = HEAPI32[self + 16 + (components << 2) >> 2];
                     if (previousComponent) {
-                        self.components[index] = component;
+                        HEAPI32[self + 16 + (components << 2) >> 2] = component;
                     }
                     return self;
                 }
@@ -372,10 +377,10 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var i = 0;
                     var index = 0;
                     var component = 0;
-                    for (i = 0; (i | 0) < 20; i = i + 1 | 0) {
-                        index = indices[i];
+                    for (i = 0; i < 20; i = i + 1 | 0) {
+                        index = HEAPI32[indices + (i << 2) >> 2];
                         if (index) {
-                            component = self.components[index];
+                            component = HEAPI32[self + 16 + (components << 2) >> 2];
                             if (!component) {
                                 return false;
                             }
@@ -389,10 +394,10 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var i = 0;
                     var index = 0;
                     var component = 0;
-                    for (i = 0; (i | 0) < 20; i = i + 1 | 0) {
-                        index = indices[i];
+                    for (i = 0; i < 20; i = i + 1 | 0) {
+                        index = HEAPI32[indices + (i << 2) >> 2];
                         if (index) {
-                            component = self.components[index];
+                            component = HEAPI32[self + 16 + (components << 2) >> 2];
                             if (component) {
                                 return true;
                             }
@@ -405,8 +410,8 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     var i = 0;
                     var component = 0;
                     var ignore = 0;
-                    for (i = 0; (i | 0) < 20; i = i + 1 | 0) {
-                        component = self.components[i];
+                    for (i = 0; i < 20; i = i + 1 | 0) {
+                        component = HEAPI32[self + 16 + (components << 2) >> 2];
                         if (component) {
                             ignore = _replaceComponent(self, i, 0);
                         }
