@@ -215,8 +215,8 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                 stdlib_2 = stdlib_2_1;
             }],
         execute: function() {
-            exports_4("Entity", Entity = function (stdlib, foreign, heap) {
-                'use asm';
+            exports_4("Entity", Entity = (function (stdlib, foreign, heap) {
+                "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
@@ -456,9 +456,9 @@ System.register("Entity", ["ffi", "stdlib"], function(exports_4, context_4) {
                     removeAllComponents: removeAllComponents,
                     retain: retain,
                     destroy: destroy,
-                    ctor: ctor
+                    ctor: ctor,
                 };
-            }(stdlib_2.default, ffi_3.default, ffi_4.buffer));
+            }(stdlib_2.default, ffi_3.default, ffi_4.buffer)));
             for (var k in Entity) {
                 ffi_3.default['Entity_' + k] = Entity[k];
             }
@@ -480,8 +480,8 @@ System.register("Position", ["ffi", "stdlib"], function(exports_5, context_5) {
                 stdlib_3 = stdlib_3_1;
             }],
         execute: function() {
-            exports_5("Position", Position = function (stdlib, foreign, heap) {
-                'use asm';
+            exports_5("Position", Position = (function (stdlib, foreign, heap) {
+                "use asm";
                 var malloc = foreign.malloc;
                 var free = foreign.free;
                 function Position(self, x, y) {
@@ -525,9 +525,9 @@ System.register("Position", ["ffi", "stdlib"], function(exports_5, context_5) {
                     setX: setX,
                     getY: getY,
                     setY: setY,
-                    ctor: ctor
+                    ctor: ctor,
                 };
-            }(stdlib_3.default, ffi_5.default, ffi_6.buffer));
+            }(stdlib_3.default, ffi_5.default, ffi_6.buffer)));
             for (var k in Position) {
                 ffi_5.default['Position_' + k] = Position[k];
             }
@@ -549,8 +549,8 @@ System.register("Pool", ["ffi", "stdlib"], function(exports_6, context_6) {
                 stdlib_4 = stdlib_4_1;
             }],
         execute: function() {
-            exports_6("Pool", Pool = function (stdlib, foreign, heap) {
-                'use asm';
+            exports_6("Pool", Pool = (function (stdlib, foreign, heap) {
+                "use asm";
                 var HEAPI32 = new stdlib.Int32Array(heap);
                 var malloc = foreign.malloc;
                 var free = foreign.free;
@@ -608,9 +608,9 @@ System.register("Pool", ["ffi", "stdlib"], function(exports_6, context_6) {
                     Pool: Pool,
                     onEntityCreated: onEntityCreated,
                     createEntity: createEntity,
-                    ctor: ctor
+                    ctor: ctor,
                 };
-            }(stdlib_4.default, ffi_7.default, ffi_8.buffer));
+            }(stdlib_4.default, ffi_7.default, ffi_8.buffer)));
             for (var k in Pool) {
                 ffi_7.default['Pool_' + k] = Pool[k];
             }

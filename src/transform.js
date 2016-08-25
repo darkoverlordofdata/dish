@@ -15,7 +15,7 @@ module.exports = {
     code: code
 }
 
-function code(packge, moduleName, str) {
+function code(packge, moduleName, ast) {
 
     const esprima = require('esprima')
     const escodegen = require('escodegen')
@@ -23,25 +23,25 @@ function code(packge, moduleName, str) {
     const factory = require('./asmfactory')
     const meta = require('../dish.json')
 
+    /** get the phase I scanned meta data */
     const symtbl = meta[packge][moduleName].symtbl
     const fields = meta[packge][moduleName].data
-    const startPos = str.indexOf('const ') /** skip over import/export */
-    const ast = esprima.parse(str.substr(startPos))    
-    const mem = {
-        byte:   {size: 0, width: 1, heap: 'HEAPU8',   name: 'HEAPU8'},
-        char:   {size: 1, width: 2, heap: 'HEAPI16',  name: 'HEAPI16'},
-        bool:   {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
-        int:    {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPI32'},
-        uint:   {size: 2, width: 4, heap: 'HEAPU32',  name: 'HEAPU32'},
-        object: {size: 2, width: 4, heap: 'HEAPI32',  name: 'HEAPU32'},
-        float:  {size: 2, width: 4, heap: 'HEAPF32',  name: 'HEAPF32'},
-        double: {size: 3, width: 8, heap: 'HEAPF64',  name: 'HEAPF64'}
+
+    const mem = {   /** memory parameters */
+        byte:   {size: 0, width: 1, heap: 'HEAPU8'},
+        char:   {size: 1, width: 2, heap: 'HEAPI16'},
+        bool:   {size: 2, width: 4, heap: 'HEAPI32'},
+        int:    {size: 2, width: 4, heap: 'HEAPI32'},
+        uint:   {size: 2, width: 4, heap: 'HEAPU32'},
+        object: {size: 2, width: 4, heap: 'HEAPI32'},
+        float:  {size: 2, width: 4, heap: 'HEAPF32'},
+        double: {size: 3, width: 8, heap: 'HEAPF64'}
     }
 
     /**
      * Transform Code
      */
-    const body = ast.body[0].declarations[0].init.callee.body.body;
+    const body = ast.body
     const lines = []
 
     /**
@@ -64,7 +64,7 @@ function code(packge, moduleName, str) {
                             && node.callee.type === 'MemberExpression' &&  !node.callee.computed) {
                             /**
                              *  self.hasComponent(...) 
-                             *  => 
+                             *      => 
                              *  Klass_hasComponent(...)
                              */
 
@@ -82,7 +82,7 @@ function code(packge, moduleName, str) {
                             && parent.type !== 'MemberExpression') {
                             /**
                              *  self.x 
-                             *  => 
+                             *      => 
                              *  HEAP[self+x>>size]
                              */
                             const object = symtbl[func.id.name][node.object.name]
@@ -100,7 +100,7 @@ function code(packge, moduleName, str) {
                             if (node.object.type === 'MemberExpression' ) {
                                 /**
                                  *  self.components[index] 
-                                 *  => 
+                                 *      => 
                                  *  HEAP[self+components+(index<<size)>>size]
                                  */
                                 const object = symtbl[func.id.name][node.object.object.name]
@@ -115,7 +115,7 @@ function code(packge, moduleName, str) {
                             } else {
                                 /**
                                  *  indices[index] 
-                                 *  => 
+                                 *      => 
                                  *  HEAP[indices+(index<<size)>>size]
                                  */
                                 const object = symtbl[func.id.name][node.object.name]
@@ -152,7 +152,8 @@ function code(packge, moduleName, str) {
     }
     
 
-    const out = str.substr(0, startPos)+escodegen.generate(ast)
+    //const out = str.substr(0, startPos)+escodegen.generate(ast)
+    const out = escodegen.generate(ast)
     return out
 
     function getField(name, fields) {

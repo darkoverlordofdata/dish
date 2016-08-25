@@ -69,17 +69,21 @@ compile = (source, template, output, packge, mangle, whitespace) ->
 
     parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle, packge)
 
-    tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
+    console.log "dish #{manifest.version} phase II/refactoring"
+    code = transform.code(packge, parsed.name, parsed.ast)
+    if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", code
 
-    try
-        code = escodegen.generate(parsed.ast, verbatim: 'verbatim')
-    catch ex
-        console.log '============================='
-        console.log "Error from escodegen:", ex.message
-        console.log '============================='
-        fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.json", JSON.stringify(parsed, null, 2)
-        return
+
+    # try
+    #     code = escodegen.generate(parsed.ast, verbatim: 'verbatim')
+    # catch ex
+    #     console.log '============================='
+    #     console.log "Error from escodegen:", ex.message
+    #     console.log '============================='
+    #     fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.json", JSON.stringify(parsed, null, 2)
+    #     return
     
+    tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
     out = tpl.render
         name:       parsed.name
         version:    manifest.version
@@ -149,10 +153,10 @@ compile = (source, template, output, packge, mangle, whitespace) ->
      *      HEAPI32[self+12+(index<<2)>>2] = component|0;
      *
     ###
-    console.log "dish #{manifest.version} phase II/refactoring"
-    out = transform.code(packge, parsed.name, out)
-    if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", out
-    else console.log out
+    # console.log "dish #{manifest.version} phase II/refactoring"
+    # out = transform.code(packge, parsed.name, out)
+    # if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", out
+    # else console.log out
 
 
 

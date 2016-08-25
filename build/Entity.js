@@ -2,248 +2,248 @@
 import Ffi from 'ffi'
 import {buffer} from 'ffi'
 import Stdlib from 'stdlib'
-export const Entity = function (stdlib, foreign, heap) {
-    'use asm';
-    var HEAPI32 = new stdlib.Int32Array(heap);
-    var malloc = foreign.malloc;
-    var free = foreign.free;
-    var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
-    var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
-    var EntityDoesNotHaveComponentException = foreign.EntityDoesNotHaveComponentException;
-    var EntityIsAlreadyReleasedException = foreign.EntityIsAlreadyReleasedException;
-    function Entity(self, totalComponents) {
-        self = self | 0;
-        totalComponents = totalComponents | 0;
-        HEAPI32[self + 0 >> 2] = totalComponents;
+export const Entity = (function(stdlib, foreign, heap) {
+"use asm";
+var HEAPI32 = new stdlib.Int32Array(heap);
+var malloc = foreign.malloc;
+var free = foreign.free;
+var EntityIsNotEnabledException = foreign.EntityIsNotEnabledException;
+var EntityAlreadyHasComponentException = foreign.EntityAlreadyHasComponentException;
+var EntityDoesNotHaveComponentException = foreign.EntityDoesNotHaveComponentException;
+var EntityIsAlreadyReleasedException = foreign.EntityIsAlreadyReleasedException;
+function Entity(self, totalComponents) {
+    self = self | 0;
+    totalComponents = totalComponents | 0;
+    HEAPI32[self + 0 >> 2] = totalComponents;
+}
+function initialize(self, creationIndex) {
+    self = self | 0;
+    creationIndex = creationIndex | 0;
+    HEAPI32[self + 8 >> 2] = creationIndex;
+    HEAPI32[self + 12 >> 2] = true;
+}
+function onComponentAdded(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    return false;
+}
+function onComponentRemoved(self, index, previousComponent) {
+    self = self | 0;
+    index = index | 0;
+    previousComponent = previousComponent | 0;
+    return false;
+}
+function onComponentReplaced(self, index, previousComponent, component) {
+    self = self | 0;
+    index = index | 0;
+    previousComponent = previousComponent | 0;
+    component = component | 0;
+    return false;
+}
+function onEntityReleased(self) {
+    self = self | 0;
+    return false;
+}
+function release(self) {
+    self = self | 0;
+    var ignore = 0;
+    HEAPI32[self + 4 >> 2] = HEAPI32[self + 4 >> 2] - 1;
+    if (HEAPI32[self + 4 >> 2] == 1) {
+        ignore = onEntityReleased(self);
     }
-    function initialize(self, creationIndex) {
-        self = self | 0;
-        creationIndex = creationIndex | 0;
-        HEAPI32[self + 8 >> 2] = creationIndex;
-        HEAPI32[self + 12 >> 2] = true;
+    if (HEAPI32[self + 4 >> 2] < 1) {
+        EntityIsAlreadyReleasedException(creationIndex | 0);
+        return;
     }
-    function onComponentAdded(self, index, component) {
-        self = self | 0;
-        index = index | 0;
-        component = component | 0;
-        return false;
+}
+function hasComponent(self, index) {
+    self = self | 0;
+    index = index | 0;
+    return HEAPI32[self + 16 + (components << 2) >> 2];
+}
+function addComponent(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    var added = 0;
+    if (!HEAPI32[self + 12 >> 2]) {
+        return EntityIsNotEnabledException() | 0;
     }
-    function onComponentRemoved(self, index, previousComponent) {
-        self = self | 0;
-        index = index | 0;
-        previousComponent = previousComponent | 0;
-        return false;
+    if (hasComponent(self, index)) {
+        return EntityAlreadyHasComponentException(index | 0) | 0;
     }
-    function onComponentReplaced(self, index, previousComponent, component) {
-        self = self | 0;
-        index = index | 0;
-        previousComponent = previousComponent | 0;
-        component = component | 0;
-        return false;
-    }
-    function onEntityReleased(self) {
-        self = self | 0;
-        return false;
-    }
-    function release(self) {
-        self = self | 0;
-        var ignore = 0;
-        HEAPI32[self + 4 >> 2] = HEAPI32[self + 4 >> 2] - 1;
-        if (HEAPI32[self + 4 >> 2] == 1) {
-            ignore = onEntityReleased(self);
-        }
-        if (HEAPI32[self + 4 >> 2] < 1) {
-            EntityIsAlreadyReleasedException(creationIndex | 0);
-            return;
-        }
-    }
-    function hasComponent(self, index) {
-        self = self | 0;
-        index = index | 0;
-        return HEAPI32[self + 16 + (components << 2) >> 2];
-    }
-    function addComponent(self, index, component) {
-        self = self | 0;
-        index = index | 0;
-        component = component | 0;
-        var added = 0;
-        if (!HEAPI32[self + 12 >> 2]) {
-            return EntityIsNotEnabledException() | 0;
-        }
-        if (hasComponent(self, index)) {
-            return EntityAlreadyHasComponentException(index | 0) | 0;
-        }
-        HEAPI32[self + 16 + (components << 2) >> 2] = component;
-        added = onComponentAdded(self, index, component);
-        return self;
-    }
-    function _replaceComponent(self, index, component) {
-        self = self | 0;
-        index = index | 0;
-        component = component | 0;
-        var ignore = 0;
-        var previousComponent = 0;
-        previousComponent = HEAPI32[self + 16 + (components << 2) >> 2];
-        if (previousComponent) {
-            if (previousComponent == component) {
-                ignore = onComponentReplaced(self, index, previousComponent, component);
-            } else {
-                HEAPI32[self + 16 + (components << 2) >> 2] = component;
-                if (!component) {
-                    ignore = onComponentRemoved(self, index, previousComponent);
-                } else {
-                    ignore = onComponentReplaced(self, index, previousComponent, component);
-                }
-            }
-        }
-        return self;
-    }
-    function removeComponent(self, index) {
-        self = self | 0;
-        index = index | 0;
-        var isEnabled = 0;
-        var hasComponent = 0;
-        var ignore = 0;
-        isEnabled = HEAPI32[self + 12 >> 2];
-        hasComponent = hasComponent(self, index);
-        if (isEnabled) {
-            return EntityIsNotEnabledException() | 0;
-        }
-        if (hasComponent) {
-            return EntityDoesNotHaveComponentException(index | 0) | 0;
-        }
-        ignore = _replaceComponent(self, index, 0);
-        return self;
-    }
-    function replaceComponent(self, index, component) {
-        self = self | 0;
-        index = index | 0;
-        component = component | 0;
-        var isEnabled = 0;
-        var hasComponent = 0;
-        var ignore = 0;
-        isEnabled = HEAPI32[self + 12 >> 2];
-        hasComponent = hasComponent(self, index);
-        if (!isEnabled) {
-            return EntityIsNotEnabledException() | 0;
-        }
-        if (hasComponent) {
-            ignore = addComponent(self, index, component);
-        }
-        if (!hasComponent) {
-            ignore = _replaceComponent(self, index, component);
-        }
-        return self;
-    }
-    function updateComponent(self, index, component) {
-        self = self | 0;
-        index = index | 0;
-        component = component | 0;
-        var previousComponent = 0;
-        previousComponent = HEAPI32[self + 16 + (components << 2) >> 2];
-        if (previousComponent) {
+    HEAPI32[self + 16 + (components << 2) >> 2] = component;
+    added = onComponentAdded(self, index, component);
+    return self;
+}
+function _replaceComponent(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    var ignore = 0;
+    var previousComponent = 0;
+    previousComponent = HEAPI32[self + 16 + (components << 2) >> 2];
+    if (previousComponent) {
+        if (previousComponent == component) {
+            ignore = onComponentReplaced(self, index, previousComponent, component);
+        } else {
             HEAPI32[self + 16 + (components << 2) >> 2] = component;
-        }
-        return self;
-    }
-    function getComponent(self, index) {
-        self = self | 0;
-        index = index | 0;
-        var component = 0;
-        component = hasComponent(self, index);
-        if (!component) {
-            return EntityDoesNotHaveComponentException(index | 0) | 0;
-        }
-        return component;
-    }
-    function hasComponents(self, indices) {
-        self = self | 0;
-        indices = indices | 0;
-        var i = 0;
-        var index = 0;
-        var component = 0;
-        for (i = 0; i < 20; i = i + 1 | 0) {
-            index = HEAPI32[indices + (i << 2) >> 2];
-            if (index) {
-                component = HEAPI32[self + 16 + (components << 2) >> 2];
-                if (!component) {
-                    return false;
-                }
+            if (!component) {
+                ignore = onComponentRemoved(self, index, previousComponent);
+            } else {
+                ignore = onComponentReplaced(self, index, previousComponent, component);
             }
         }
-        return true;
     }
-    function hasAnyComponent(self, indices) {
-        self = self | 0;
-        indices = indices | 0;
-        var i = 0;
-        var index = 0;
-        var component = 0;
-        for (i = 0; i < 20; i = i + 1 | 0) {
-            index = HEAPI32[indices + (i << 2) >> 2];
-            if (index) {
-                component = HEAPI32[self + 16 + (components << 2) >> 2];
-                if (component) {
-                    return true;
-                }
+    return self;
+}
+function removeComponent(self, index) {
+    self = self | 0;
+    index = index | 0;
+    var isEnabled = 0;
+    var hasComponent = 0;
+    var ignore = 0;
+    isEnabled = HEAPI32[self + 12 >> 2];
+    hasComponent = hasComponent(self, index);
+    if (isEnabled) {
+        return EntityIsNotEnabledException() | 0;
+    }
+    if (hasComponent) {
+        return EntityDoesNotHaveComponentException(index | 0) | 0;
+    }
+    ignore = _replaceComponent(self, index, 0);
+    return self;
+}
+function replaceComponent(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    var isEnabled = 0;
+    var hasComponent = 0;
+    var ignore = 0;
+    isEnabled = HEAPI32[self + 12 >> 2];
+    hasComponent = hasComponent(self, index);
+    if (!isEnabled) {
+        return EntityIsNotEnabledException() | 0;
+    }
+    if (hasComponent) {
+        ignore = addComponent(self, index, component);
+    }
+    if (!hasComponent) {
+        ignore = _replaceComponent(self, index, component);
+    }
+    return self;
+}
+function updateComponent(self, index, component) {
+    self = self | 0;
+    index = index | 0;
+    component = component | 0;
+    var previousComponent = 0;
+    previousComponent = HEAPI32[self + 16 + (components << 2) >> 2];
+    if (previousComponent) {
+        HEAPI32[self + 16 + (components << 2) >> 2] = component;
+    }
+    return self;
+}
+function getComponent(self, index) {
+    self = self | 0;
+    index = index | 0;
+    var component = 0;
+    component = hasComponent(self, index);
+    if (!component) {
+        return EntityDoesNotHaveComponentException(index | 0) | 0;
+    }
+    return component;
+}
+function hasComponents(self, indices) {
+    self = self | 0;
+    indices = indices | 0;
+    var i = 0;
+    var index = 0;
+    var component = 0;
+    for (i = 0; i < 20; i = i + 1 | 0) {
+        index = HEAPI32[indices + (i << 2) >> 2];
+        if (index) {
+            component = HEAPI32[self + 16 + (components << 2) >> 2];
+            if (!component) {
+                return false;
             }
         }
-        return false;
     }
-    function removeAllComponents(self) {
-        self = self | 0;
-        var i = 0;
-        var component = 0;
-        var ignore = 0;
-        for (i = 0; i < 20; i = i + 1 | 0) {
+    return true;
+}
+function hasAnyComponent(self, indices) {
+    self = self | 0;
+    indices = indices | 0;
+    var i = 0;
+    var index = 0;
+    var component = 0;
+    for (i = 0; i < 20; i = i + 1 | 0) {
+        index = HEAPI32[indices + (i << 2) >> 2];
+        if (index) {
             component = HEAPI32[self + 16 + (components << 2) >> 2];
             if (component) {
-                ignore = _replaceComponent(self, i, 0);
+                return true;
             }
         }
     }
-    function retain(self) {
-        self = self | 0;
-        var refCount = 0;
-        refCount = HEAPI32[self + 4 >> 2];
-        HEAPI32[self + 4 >> 2] = refCount + 1;
-        return self;
+    return false;
+}
+function removeAllComponents(self) {
+    self = self | 0;
+    var i = 0;
+    var component = 0;
+    var ignore = 0;
+    for (i = 0; i < 20; i = i + 1 | 0) {
+        component = HEAPI32[self + 16 + (components << 2) >> 2];
+        if (component) {
+            ignore = _replaceComponent(self, i, 0);
+        }
     }
-    function destroy(self) {
-        self = self | 0;
-        removeAllComponents(self);
-        HEAPI32[self + 12 >> 2] = false;
-    }
-    function ctor(totalComponents) {
-        totalComponents = totalComponents | 0;
-        var self = 0;
-        self = malloc(96 | 0) | 0;
-        Entity(self | 0, totalComponents | 0);
-        return self | 0;
-    }
-    return {
-        Entity: Entity,
-        initialize: initialize,
-        onComponentAdded: onComponentAdded,
-        onComponentRemoved: onComponentRemoved,
-        onComponentReplaced: onComponentReplaced,
-        onEntityReleased: onEntityReleased,
-        release: release,
-        hasComponent: hasComponent,
-        addComponent: addComponent,
-        _replaceComponent: _replaceComponent,
-        removeComponent: removeComponent,
-        replaceComponent: replaceComponent,
-        updateComponent: updateComponent,
-        getComponent: getComponent,
-        hasComponents: hasComponents,
-        hasAnyComponent: hasAnyComponent,
-        removeAllComponents: removeAllComponents,
-        retain: retain,
-        destroy: destroy,
-        ctor: ctor
-    };
-}(Stdlib, Ffi, buffer);
-for (let k in Entity) {
-    Ffi['Entity_' + k] = Entity[k];
+}
+function retain(self) {
+    self = self | 0;
+    var refCount = 0;
+    refCount = HEAPI32[self + 4 >> 2];
+    HEAPI32[self + 4 >> 2] = refCount + 1;
+    return self;
+}
+function destroy(self) {
+    self = self | 0;
+    removeAllComponents(self);
+    HEAPI32[self + 12 >> 2] = false;
+}
+function ctor(totalComponents) {
+    totalComponents = totalComponents | 0;
+    var self = 0;
+    self = malloc(96 | 0) | 0;
+    Entity(self | 0, totalComponents | 0);
+    return self | 0;
+}    
+return { 
+    Entity:Entity,
+    initialize:initialize,
+    onComponentAdded:onComponentAdded,
+    onComponentRemoved:onComponentRemoved,
+    onComponentReplaced:onComponentReplaced,
+    onEntityReleased:onEntityReleased,
+    release:release,
+    hasComponent:hasComponent,
+    addComponent:addComponent,
+    _replaceComponent:_replaceComponent,
+    removeComponent:removeComponent,
+    replaceComponent:replaceComponent,
+    updateComponent:updateComponent,
+    getComponent:getComponent,
+    hasComponents:hasComponents,
+    hasAnyComponent:hasAnyComponent,
+    removeAllComponents:removeAllComponents,
+    retain:retain,
+    destroy:destroy,
+    ctor:ctor, 
+};
+}(Stdlib, Ffi, buffer))
+for (let k in Entity) { 
+    Ffi['Entity_'+k] = Entity[k] 
 }
