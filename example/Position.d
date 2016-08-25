@@ -9,7 +9,6 @@ class Position {
     }
     
     public double getX() {
-        double z = this.x;
         return this.x;
     }
     public void setX(double x) {

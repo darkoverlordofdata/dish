@@ -3,14 +3,19 @@
  * dē-ish compiler
  * 
  * usage:
- *      node ./src/dish.js test/test.d -m -w --output test/test.js
+ *
+ * dish example/Position.d,example/Entity.d,example/Pool.d \
+ *      --package entitas \
+ *      --template example/asm.tpl.js \  
+ *      --output build 
  * 
 ###
 'use strict'
+
 fs = require('fs')
 path = require('path')
 util = require("util")
-{args, flags} = require('./args')
+{args, flags} = require('./args+flags')
 lexer = require('./lexer')
 parser = require('./parser')
 esprima = require('esprima')
@@ -21,7 +26,7 @@ liquid = require('liquid.coffee')
 manifest = require('../package.json')
 
 ###
- * main 
+ * Process the command line args 
 ###
 main = ->
     usage = """
@@ -37,27 +42,23 @@ main = ->
         console.log usage
         process.exit 1
 
-    template    = args  '-t', '--template', './src/asm.tpl.js'
-    output      = args  '-o', '--output'
-    packge      = args  '-p', '--package'
-    mangle      = flags '-m', '--mangle'
-    whitespace  = flags '-w', '--whitespace'
+    compile(
+        source,
+        args('-t', '--template', './src/asm.tpl.js'),
+        args('-o', '--output'),
+        args('-p', '--package'),
+        flags('-m', '--mangle'),
+        flags('-w', '--whitespace')
+        ) for source in args().split(',')
 
-    source      = args()
-    for file in source.split(',')
-        compile file, template, output, packge, mangle, whitespace
+
 
 ###
  * compile each source file
 ###
 compile = (source, template, output, packge, mangle, whitespace) ->
-    console.log "dish #{manifest.version} #{packge||''}  #{source}"
-    ###
-     * Phase I
-     *
-     *  collect type information and output intermediate javascript  
-     *
-    ###
+
+    ## Initialize the metadata ##
     if packge
         if not fs.existsSync("./dish.json")
             fs.writeFileSync "./dish.json", """
@@ -67,22 +68,42 @@ compile = (source, template, output, packge, mangle, whitespace) ->
             """
         api = require("../dish.json")
 
+    ###
+     * Phase I
+     *
+     *  collect type information and build the ast  
+     *
+    ###
     parsed = parser.parse(lexer(fs.readFileSync(source, 'utf8')), mangle, packge)
+    ###
+    * Update package metadata
+    ###
+    if packge
+        api[packge][parsed.name] = {
+            name:   parsed.name,
+            class:  parsed.class
+            size:   parsed.size
+            api:    parsed.api
+            data:   parsed.data
+            symtbl: parsed.symtbl
+            source: source
+        }
+        fs.writeFileSync "./dish.json", JSON.stringify(api, null, 2)
 
-    console.log "dish #{manifest.version} phase II/refactoring"
+    ###
+     * Phase II
+     *
+     *  transform ast by refactoring expressions 
+     *
+    ###
     code = transform.code(packge, parsed.name, parsed.ast)
-    if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", code
 
-
-    # try
-    #     code = escodegen.generate(parsed.ast, verbatim: 'verbatim')
-    # catch ex
-    #     console.log '============================='
-    #     console.log "Error from escodegen:", ex.message
-    #     console.log '============================='
-    #     fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.json", JSON.stringify(parsed, null, 2)
-    #     return
-    
+    ###
+     * Phase III
+     *
+     * set up the enviromment and linkages
+     *
+    ###
     tpl = liquid.Template.parse(fs.readFileSync(template, 'utf8'))
     out = tpl.render
         name:       parsed.name
@@ -113,6 +134,9 @@ compile = (source, template, output, packge, mangle, whitespace) ->
     out = out.replace(/\n\n/mg, '\n') while /\n\n/.test(out)    # fix-up empty lines
     out = out.replace(/;;/mg, ';')                              # fix-up redundant semicolon
 
+    ###
+    * Fixups for name mangling
+    ###
     if mangle
         i = out.indexOf(parsed.name)
         if i>0 
@@ -125,40 +149,9 @@ compile = (source, template, output, packge, mangle, whitespace) ->
         else out = out.replace(/\('0.0'\)/g, '0.0')     # reverse verbatim option
     else out = out.replace(/\('0.0'\)/g, '0.0')         # reverse verbatim option
 
-    ###
-    * Update package api info
-    ###
-    if packge
-        api[packge][parsed.name] = {
-            name:   parsed.name,
-            class:  parsed.class
-            size:   parsed.size
-            api:    parsed.api
-            data:   parsed.data
-            symtbl: parsed.symtbl
-            source: source
-        }
-        fs.writeFileSync "./dish.json", JSON.stringify(api, null, 2)
 
     if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", out
-
-    ###
-     * Phase II
-     *
-     *  transform intermediate javascript by refactoring expressions 
-     *
-     *  ex: 
-     *      self.components[index] = component;
-     *  to:
-     *      HEAPI32[self+12+(index<<2)>>2] = component|0;
-     *
-    ###
-    # console.log "dish #{manifest.version} phase II/refactoring"
-    # out = transform.code(packge, parsed.name, out)
-    # if output then fs.writeFileSync "#{output}/#{path.basename(source, '.d')}.js", out
-    # else console.log out
-
-
+    console.log "dish #{manifest.version} #{packge||''}  #{source}"
 
 
 main()

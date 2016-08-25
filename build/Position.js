@@ -15,8 +15,6 @@ function Position(self, x, y) {
 }
 function getX(self) {
     self = self | 0;
-    var z = 0;
-    z = HEAPF64[self + 0 >> 3];
     return HEAPF64[self + 0 >> 3];
 }
 function setX(self, x) {

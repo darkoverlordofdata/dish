@@ -145,7 +145,7 @@ function parse(input, mangle, packge) {
         expect(';')
 
         while (!input.eof()) {
-            let node = parseGlobal(body)
+            const node = parseGlobal(body)
             if (node) body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
         }
@@ -160,7 +160,7 @@ function parse(input, mangle, packge) {
             isPublic = true
             isStatic = false
             isConst = false
-            let node = parseGlobal(body)
+            const node = parseGlobal(body)
             if (node) body.push(node)
             if (!input.eof()) if (match(';')) expect(';')
             if (match('}')) break
@@ -249,15 +249,15 @@ function parse(input, mangle, packge) {
         if (currentScope !== priorScope) {
             priorScope = currentScope
             for (let name in symtbl[currentScope]) {
-                let sym = symtbl[currentScope][name]
+                const sym = symtbl[currentScope][name]
                 if (sym.init) {
                     if (sym.array) {
                         malloc = true
                         const tokens = tokens2Array(sym.init)
                         body.push(factory.New(name, { "type": "Literal", "value": tokens.length }))
                         for (let t in tokens) {
-                            let sname = `${sym.heap}[(${name}+${t})<<2>>2]`
-                            let value = parseExpression(null, [tokens[t]], false).expression
+                            const sname = `${sym.heap}[(${name}+${t})<<2>>2]`
+                            const value = parseExpression(null, [tokens[t]], false).expression
                             body.push(factory.AssignmentStatement(sname, value))
                         }
                     } else {

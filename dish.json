@@ -148,20 +148,6 @@
             "immutable": false,
             "size": 2,
             "heap": "HEAPI32"
-          },
-          "z": {
-            "name": "z",
-            "type": "double",
-            "func": false,
-            "init": [
-              "self",
-              ".",
-              "x"
-            ],
-            "array": false,
-            "immutable": false,
-            "size": 3,
-            "heap": "HEAPF64"
           }
         },
         "setX": {
